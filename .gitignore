@@ -1,0 +1,9 @@
+node_modules
+dist
+.env
+.env.local
+.vercel
+
+# material de referência local (não versionado)
+Documentação API Helena/
+melhoria-no-dashboard/

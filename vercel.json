@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/dashboard.js": { "maxDuration": 30 },
+    "api/admin/panels.js": { "maxDuration": 30 },
+    "api/admin/clinics.js": { "maxDuration": 30 }
+  },
+  "rewrites": [
+    { "source": "/onboarding", "destination": "/index.html" }
+  ]
+}
