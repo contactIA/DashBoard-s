@@ -3,8 +3,12 @@ const SUPABASE_URL  = process.env.SUPABASE_URL
 const SUPABASE_KEY  = process.env.SUPABASE_SERVICE_KEY
 const PAGE_SIZE     = 100
 
-async function getClinicConfig(accountId) {
-  const url = `${SUPABASE_URL}/rest/v1/clinics?account_id=eq.${encodeURIComponent(accountId)}&select=*&limit=1`
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+// Aceita o account_id (UUID) ou o slug amigável da clínica
+async function getClinicConfig(idOrSlug) {
+  const field = UUID_RE.test(idOrSlug) ? 'account_id' : 'slug'
+  const url = `${SUPABASE_URL}/rest/v1/clinics?${field}=eq.${encodeURIComponent(idOrSlug)}&select=*&limit=1`
 
   const res = await fetch(url, {
     headers: {
@@ -48,9 +52,9 @@ function parseDescription(description) {
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
 
-  const { accountId } = req.query
+  const accountId = req.query.accountId ?? req.query.clinic
   if (!accountId) {
-    return res.status(400).json({ error: 'Parâmetro "accountId" obrigatório. Ex: ?accountId=uuid' })
+    return res.status(400).json({ error: 'Parâmetro "clinic" (slug) ou "accountId" (uuid) obrigatório. Ex: ?clinic=minha-clinica' })
   }
 
   if (!SUPABASE_URL || !SUPABASE_KEY) {
@@ -62,7 +66,7 @@ export default async function handler(req, res) {
   })
 
   if (!config) {
-    return res.status(404).json({ error: `Clínica com accountId "${accountId}" não encontrada.` })
+    return res.status(404).json({ error: `Clínica "${accountId}" não encontrada.` })
   }
 
   const steps = config.steps // já é objeto (JSONB do Supabase)

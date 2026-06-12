@@ -38,7 +38,7 @@ function LoginGate({ onAuthed }) {
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-red-500 flex items-center justify-center mb-4">
           <ToothIcon />
         </div>
-        <h1 className="text-lg font-bold text-slate-900">Onboarding de clínicas</h1>
+        <h1 className="text-lg font-bold text-slate-900">Setup de clínicas</h1>
         <p className="text-sm text-slate-500 mt-1">Área restrita — informe a senha de administrador.</p>
         <input
           type="password" value={password} onChange={e => setPassword(e.target.value)}
@@ -59,9 +59,12 @@ function ClinicList({ clinics, onNew, onEdit, onDeleted, onError }) {
   const [copiedId, setCopiedId] = useState(null)
   const [deleting, setDeleting] = useState(null)
 
-  const copyUrl = async (accountId) => {
-    await navigator.clipboard.writeText(`${window.location.origin}/?accountId=${accountId}`)
-    setCopiedId(accountId)
+  const copyUrl = async (clinic) => {
+    const url = clinic.slug
+      ? `${window.location.origin}/?clinic=${clinic.slug}`
+      : `${window.location.origin}/?accountId=${clinic.accountId}`
+    await navigator.clipboard.writeText(url)
+    setCopiedId(clinic.accountId)
     setTimeout(() => setCopiedId(null), 2000)
   }
 
@@ -90,7 +93,7 @@ function ClinicList({ clinics, onNew, onEdit, onDeleted, onError }) {
         <div className="bg-white border border-dashed border-slate-300 rounded-xl p-12 text-center">
           <div className="text-3xl mb-2">🦷</div>
           <p className="text-sm text-slate-500">Nenhuma clínica cadastrada ainda.</p>
-          <p className="text-xs text-slate-400 mt-1">Clique em "Nova clínica" para iniciar o onboarding.</p>
+          <p className="text-xs text-slate-400 mt-1">Clique em "Nova clínica" para iniciar o setup.</p>
         </div>
       ) : (
         <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
@@ -110,7 +113,9 @@ function ClinicList({ clinics, onNew, onEdit, onDeleted, onError }) {
                   <tr key={c.accountId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60">
                     <td className="px-4 py-3">
                       <div className="font-semibold text-slate-900">{c.name}</div>
-                      <div className="text-[10px] font-mono text-slate-400 truncate max-w-[220px]">{c.accountId}</div>
+                      <div className="text-[10px] font-mono text-slate-400 truncate max-w-[220px]">
+                        {c.slug ? `/?clinic=${c.slug}` : c.accountId}
+                      </div>
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
                       <div className="flex flex-wrap gap-1">
@@ -124,7 +129,7 @@ function ClinicList({ clinics, onNew, onEdit, onDeleted, onError }) {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1.5">
-                        <button onClick={() => copyUrl(c.accountId)}
+                        <button onClick={() => copyUrl(c)}
                           className="text-xs px-2.5 py-1.5 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50">
                           {copiedId === c.accountId ? 'Copiado ✓' : 'Copiar URL'}
                         </button>
@@ -187,7 +192,7 @@ export default function AdminApp() {
               <ToothIcon />
             </div>
             <div className="text-sm font-bold text-slate-900">
-              Onboarding <span className="text-slate-400 font-normal">· Dashboards Odontológicos</span>
+              Setup <span className="text-slate-400 font-normal">· Dashboards Odontológicos</span>
             </div>
           </div>
           <button onClick={() => { clearSecret(); setAuthed(false) }}

@@ -29,6 +29,14 @@ export function guessType(title) {
   return 'ignore'
 }
 
+// "OBClinic São Paulo" → "obclinic-sao-paulo" (slug de URL da clínica)
+export function kebabify(name) {
+  return stripAccents(String(name))
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
 // "Compareceu e NÃO Fechou" → "compareceuENaoFechou"
 export function slugify(title) {
   const words = stripAccents(String(title))

@@ -45,7 +45,7 @@ const RefreshIcon = ({ spin }) => (
 
 export default function App() {
   const params     = new URLSearchParams(window.location.search)
-  const clinicSlug = params.get('accountId')
+  const clinicSlug = params.get('clinic') ?? params.get('accountId')
 
   const [data,      setData]      = useState(null)
   const [loading,   setLoading]   = useState(false)
@@ -118,7 +118,7 @@ export default function App() {
           <p className="text-slate-500 mt-2 text-sm leading-relaxed">
             Acesse com{' '}
             <code className="bg-slate-100 text-indigo-600 px-1.5 py-0.5 rounded font-mono text-xs">
-              ?accountId=uuid-da-clinica
+              ?clinic=slug-da-clinica
             </code>
           </p>
         </div>

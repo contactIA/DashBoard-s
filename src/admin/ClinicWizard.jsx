@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { listPanels, getPanelSteps, createClinic, updateClinic } from './adminApi'
-import { METRIC_TYPES, guessType, typeColor, buildStepsConfig } from './metricTypes'
+import { METRIC_TYPES, guessType, typeColor, buildStepsConfig, kebabify } from './metricTypes'
+
+const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
 const WIZARD_STEPS = ['Credenciais', 'Painel', 'Métricas', 'Revisão']
 
@@ -46,6 +48,8 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
   const [loading,  setLoading]  = useState(false)
 
   const [name,  setName]  = useState(clinic?.name ?? '')
+  const [slug,  setSlug]  = useState(clinic?.slug ?? '')
+  const [slugTouched, setSlugTouched] = useState(Boolean(clinic?.slug))
   const [token, setToken] = useState('')
 
   const [panels,        setPanels]        = useState([])
@@ -72,6 +76,9 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
   // ── Etapa 1 → 2: buscar painéis ──────────────────────────────────────────
   const fetchPanels = () => run(async () => {
     if (!name.trim()) throw new Error('Informe o nome da clínica.')
+    const cleanSlug = kebabify(slug)
+    if (!SLUG_RE.test(cleanSlug)) throw new Error('Slug inválido — use apenas letras minúsculas, números e hífens (ex: minha-clinica).')
+    setSlug(cleanSlug)
     if (!isEdit && !token.trim()) throw new Error('Informe o token Helena (pn_...).')
     const { panels } = await listPanels(auth)
     if (!panels.length) throw new Error('Nenhum painel encontrado para este token.')
@@ -117,6 +124,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
     const payload = {
       accountId: selectedPanel.companyId,
       name:      name.trim(),
+      slug,
       token:     token.trim(),
       panelId:   selectedPanel.id,
       ticket:    Number(ticket) || null,
@@ -124,7 +132,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
     }
     if (isEdit) await updateClinic(payload)
     else        await createClinic(payload)
-    setSavedUrl(`${window.location.origin}/?accountId=${selectedPanel.companyId}`)
+    setSavedUrl(`${window.location.origin}/?clinic=${slug}`)
   })
 
   const copyUrl = async () => {
@@ -180,7 +188,20 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       {step === 0 && (
         <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
           <Field label="Nome da clínica">
-            <input className={inputCls} value={name} onChange={e => setName(e.target.value)} placeholder="Ex: OBClinic" autoFocus />
+            <input className={inputCls} value={name}
+              onChange={e => {
+                setName(e.target.value)
+                if (!slugTouched) setSlug(kebabify(e.target.value))
+              }}
+              placeholder="Ex: OBClinic" autoFocus />
+          </Field>
+          <Field label="Slug (URL do dashboard)" hint={`O cliente acessa por /?clinic=${slug || 'slug-da-clinica'}`}>
+            <input className={`${inputCls} font-mono`} value={slug}
+              onChange={e => {
+                setSlugTouched(true)
+                setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-{2,}/g, '-'))
+              }}
+              placeholder="minha-clinica" />
           </Field>
           <Field
             label="Token Helena"
@@ -300,8 +321,9 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
           <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100">
             {[
               ['Clínica',     name],
+              ['URL',         <code key="u" className="font-mono text-xs text-indigo-600">/?clinic={slug}</code>],
               ['Painel',      `${selectedPanel.title} (${selectedPanel.key})`],
-              ['Account ID',  <code key="a" className="font-mono text-xs text-indigo-600">{selectedPanel.companyId}</code>],
+              ['Account ID',  <code key="a" className="font-mono text-xs text-slate-500">{selectedPanel.companyId}</code>],
               ['Token',       token.trim() ? 'Novo token informado' : (isEdit ? `Mantém o atual (${clinic.tokenMasked})` : '—')],
               ['Ticket médio', `R$ ${Number(ticket).toLocaleString('pt-BR')}`],
             ].map(([k, v]) => (

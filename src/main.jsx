@@ -4,10 +4,10 @@ import './index.css'
 import App from './App.jsx'
 import AdminApp from './admin/AdminApp.jsx'
 
-const isOnboarding = window.location.pathname.startsWith('/onboarding')
+const isSetup = window.location.pathname.startsWith('/setup')
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {isOnboarding ? <AdminApp /> : <App />}
+    {isSetup ? <AdminApp /> : <App />}
   </StrictMode>,
 )

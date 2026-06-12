@@ -30,10 +30,15 @@ function maskToken(token) {
   return `${raw.slice(0, 8)}…${raw.slice(-4)}`
 }
 
+const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/
+
 function validatePayload(body, { requireToken }) {
   const errors = []
   if (!body.accountId) errors.push('accountId é obrigatório')
   if (!body.name?.trim()) errors.push('name é obrigatório')
+  if (!body.slug || !SLUG_RE.test(body.slug)) {
+    errors.push('slug é obrigatório (apenas letras minúsculas, números e hífens, ex: minha-clinica)')
+  }
   if (requireToken && !normalizeToken(body.token)) errors.push('token é obrigatório')
   if (!body.panelId) errors.push('panelId é obrigatório')
   if (!body.steps || typeof body.steps !== 'object' || Object.keys(body.steps).length === 0) {
@@ -53,11 +58,12 @@ export default async function handler(req, res) {
   try {
     // ── Listar ───────────────────────────────────────────────────────────────
     if (req.method === 'GET') {
-      const rows = await sb('/clinics?select=account_id,name,token,panel_id,ticket,steps&order=name.asc')
+      const rows = await sb('/clinics?select=*&order=name.asc')
       return res.status(200).json({
         clinics: rows.map(r => ({
           accountId:   r.account_id,
           name:        r.name,
+          slug:        r.slug ?? null,
           tokenMasked: maskToken(r.token),
           panelId:     r.panel_id,
           ticket:      r.ticket,
@@ -72,9 +78,13 @@ export default async function handler(req, res) {
       const errors = validatePayload(body, { requireToken: true })
       if (errors.length) return res.status(400).json({ error: errors.join('; ') })
 
-      const existing = await sb(`/clinics?account_id=eq.${encodeURIComponent(body.accountId)}&select=account_id&limit=1`)
+      const conflictFilter = `or=(account_id.eq.${encodeURIComponent(body.accountId)},slug.eq.${encodeURIComponent(body.slug)})`
+      const existing = await sb(`/clinics?${conflictFilter}&select=account_id,slug&limit=1`)
       if (existing.length > 0) {
-        return res.status(409).json({ error: 'Já existe uma clínica cadastrada para este accountId. Use a edição.' })
+        const reason = existing[0].slug === body.slug
+          ? `O slug "${body.slug}" já está em uso por outra clínica.`
+          : 'Já existe uma clínica cadastrada para esta conta Helena. Use a edição.'
+        return res.status(409).json({ error: reason })
       }
 
       const [row] = await sb('/clinics', {
@@ -83,13 +93,14 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           account_id: body.accountId,
           name:       body.name.trim(),
+          slug:       body.slug,
           token:      normalizeToken(body.token),
           panel_id:   body.panelId,
           ticket:     body.ticket ?? null,
           steps:      body.steps,
         }),
       })
-      return res.status(201).json({ accountId: row.account_id })
+      return res.status(201).json({ accountId: row.account_id, slug: row.slug })
     }
 
     // ── Atualizar ────────────────────────────────────────────────────────────
@@ -98,8 +109,16 @@ export default async function handler(req, res) {
       const errors = validatePayload(body, { requireToken: false })
       if (errors.length) return res.status(400).json({ error: errors.join('; ') })
 
+      const slugTaken = await sb(
+        `/clinics?slug=eq.${encodeURIComponent(body.slug)}&account_id=neq.${encodeURIComponent(body.accountId)}&select=account_id&limit=1`
+      )
+      if (slugTaken.length > 0) {
+        return res.status(409).json({ error: `O slug "${body.slug}" já está em uso por outra clínica.` })
+      }
+
       const patch = {
         name:     body.name.trim(),
+        slug:     body.slug,
         panel_id: body.panelId,
         ticket:   body.ticket ?? null,
         steps:    body.steps,
@@ -113,7 +132,7 @@ export default async function handler(req, res) {
         body: JSON.stringify(patch),
       })
       if (!rows?.length) return res.status(404).json({ error: 'Clínica não encontrada.' })
-      return res.status(200).json({ accountId: rows[0].account_id })
+      return res.status(200).json({ accountId: rows[0].account_id, slug: rows[0].slug })
     }
 
     // ── Excluir ──────────────────────────────────────────────────────────────

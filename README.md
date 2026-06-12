@@ -7,10 +7,10 @@
 ## Visão Geral
 
 ```
-https://seu-dominio.vercel.app/?accountId=3e35f9a6-4f6b-430c-9f80-b7b4b41fbca7
+https://seu-dominio.vercel.app/?clinic=ob-clinic
 ```
 
-Cada clínica acessa seu próprio dashboard com a URL acima. As credenciais ficam seguras no **Supabase** — nunca expostas no frontend ou no repositório.
+Cada clínica acessa seu próprio dashboard pelo slug configurado no setup (o formato antigo `?accountId=uuid` segue funcionando). As credenciais ficam seguras no **Supabase** — nunca expostas no frontend ou no repositório.
 
 ---
 
@@ -114,15 +114,15 @@ DashBoard-s/
 ├── api/
 │   ├── dashboard.js          # Serverless function (Vercel)
 │   └── admin/
-│       ├── panels.js         # Proxy Helena: listar paineis e steps (onboarding)
-│       └── clinics.js        # CRUD de clinicas no Supabase (onboarding)
+│       ├── panels.js         # Proxy Helena: listar paineis e steps (setup)
+│       └── clinics.js        # CRUD de clinicas no Supabase (setup)
 │
 ├── src/
 │   ├── App.jsx               # Componente raiz, estado global, layout
 │   ├── api.js                # fetchDashboard() — chamada ao backend
 │   │
 │   ├── admin/
-│   │   ├── AdminApp.jsx      # /onboarding — gate de senha + lista de clinicas
+│   │   ├── AdminApp.jsx      # /setup — gate de senha + lista de clinicas
 │   │   ├── ClinicWizard.jsx  # Assistente: credenciais → painel → metricas → revisao
 │   │   ├── adminApi.js       # Cliente das rotas /api/admin/*
 │   │   └── metricTypes.js    # Tipos de metrica + sugestao automatica por titulo
@@ -163,19 +163,19 @@ Cada step do painel Helena e mapeado para um `type` semantico:
 
 ## Como Adicionar uma Nova Clinica
 
-### Via Onboarding (recomendado)
+### Via Setup (recomendado)
 
-Acesse `/onboarding`, informe a senha de administrador (`ADMIN_SECRET`) e siga o assistente:
+Acesse `/setup`, informe a senha de administrador (`ADMIN_SECRET`) e siga o assistente:
 
-1. **Credenciais** — nome da clinica + token Helena (`pn_...`)
+1. **Credenciais** — nome da clinica, slug da URL (sugerido automaticamente) + token Helena (`pn_...`)
 2. **Painel** — o app lista os paineis da conta via API; selecione o que alimenta o dashboard
 3. **Metricas** — cada step do painel recebe uma sugestao automatica de metrica (scheduled, attended, converted, missed, cancelled); ajuste tipos e cores, defina o ticket medio
-4. **Revisao** — confira e salve; a URL `?accountId=...` e gerada automaticamente (o accountId e o `companyId` da conta Helena)
+4. **Revisao** — confira e salve; a URL `?clinic=slug` e gerada automaticamente (internamente o accountId e o `companyId` da conta Helena)
 
 O painel tambem lista as clinicas cadastradas, com edicao (re-mapear steps, trocar token, ajustar ticket) e exclusao. Tokens nunca sao exibidos por completo apos o cadastro.
 
 ```
-/onboarding  →  senha admin  →  listar paineis  →  mapear steps  →  URL pronta
+/setup  →  senha admin  →  listar paineis  →  mapear steps  →  URL pronta
 ```
 
 ### Via SQL (alternativa manual)
@@ -183,10 +183,11 @@ O painel tambem lista as clinicas cadastradas, com edicao (re-mapear steps, troc
 Insira um registro no Supabase — nenhum redeploy necessario:
 
 ```sql
-INSERT INTO clinics (account_id, name, token, panel_id, ticket, steps)
+INSERT INTO clinics (account_id, name, slug, token, panel_id, ticket, steps)
 VALUES (
   'uuid-da-clinica',
   'Nome da Clinica',
+  'slug-da-clinica',
   'Bearer pn_TOKEN_AQUI',
   'UUID_DO_PAINEL',
   12000,
@@ -203,7 +204,7 @@ VALUES (
 
 URL gerada automaticamente:
 ```
-https://dashboard.vercel.app/?accountId=uuid-da-clinica
+https://dashboard.vercel.app/?clinic=slug-da-clinica
 ```
 
 ---
@@ -267,7 +268,7 @@ Ou conecte o repositorio GitHub na Vercel UI e configure as Environment Variable
 - Token Helena e service key Supabase ficam apenas no servidor, nunca no bundle do frontend
 - RLS (Row Level Security) habilitado na tabela `clinics`
 - `.env` no `.gitignore` — credenciais nunca vao para o repositorio
-- Pagina `/onboarding` e rotas `/api/admin/*` protegidas por `ADMIN_SECRET` (header `x-admin-secret`)
+- Pagina `/setup` e rotas `/api/admin/*` protegidas por `ADMIN_SECRET` (header `x-admin-secret`)
 - Tokens das clinicas sao exibidos mascarados apos o cadastro (`pn_xxxx…xxxx`)
 
 ---
