@@ -73,8 +73,7 @@ export default async function handler(req, res) {
 
   try {
     const first      = await fetchPage(config.panel_id, config.token, 1)
-    const totalCards = first.total ?? first.totalCount ?? first.count ?? (first.items?.length ?? 0)
-    const totalPages = Math.max(1, Math.ceil(totalCards / PAGE_SIZE))
+    const totalPages = first.totalPages ?? 1
 
     let items = [...(first.items ?? [])]
 
