@@ -1,3 +1,5 @@
+import { effectiveDate } from './parseCards.js'
+
 const MONTHS_PT = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
 
 function addDays(dateStr, n) {
@@ -50,18 +52,22 @@ export function groupCardsByTime(cards, from, to, steps) {
   if (!cards?.length || !from || !to || !steps) return { data: [], granularity: 'day' }
 
   const granularity = getGranularity(from, to)
-  const inRange = cards.filter(c => c.date && c.date >= from && c.date <= to)
+  const inRange = cards.filter(c => {
+    const d = effectiveDate(c)
+    return d && d >= from && d <= to
+  })
   const stepKeys = Object.keys(steps)
 
-  // Agrupa cards nos seus buckets
+  // Agrupa cards nos seus buckets (pela data efetiva)
   const cardsByBucket = {}
   for (const card of inRange) {
+    const date = effectiveDate(card)
     const bucket =
       granularity === 'day'
-        ? card.date
+        ? date
         : granularity === 'week'
-        ? getWeekStart(card.date)
-        : getMonthStart(card.date)
+        ? getWeekStart(date)
+        : getMonthStart(date)
 
     if (!cardsByBucket[bucket]) cardsByBucket[bucket] = []
     cardsByBucket[bucket].push(card)

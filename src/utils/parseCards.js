@@ -29,11 +29,28 @@ export function fmtBRL(n, { short = false } = {}) {
   return 'R$ ' + n.toLocaleString('pt-BR')
 }
 
+/**
+ * Data efetiva do card para "aconteceu no período":
+ * data de agendamento quando existe; senão a data em que o card foi movido
+ * (updatedAt); senão a criação. Resolve painéis cujos cards não trazem a data
+ * de agendamento no texto (a maioria, fora do agendamento pela IA).
+ */
+export function effectiveDate(c) {
+  return c?.date || c?.updatedAt?.slice(0, 10) || c?.createdAt?.slice(0, 10) || null
+}
+
+/** O card cai no período [from, to] pela data efetiva? */
+export function inPeriod(c, from, to) {
+  const d = effectiveDate(c)
+  return Boolean(d && d >= from && d <= to)
+}
+
 /** Calcula KPIs para o período [from, to] */
 export function computeKpis(cards, from, to) {
   if (!cards?.length || !from || !to) return null
 
-  const inRange   = cards.filter(c => c.date && c.date >= from && c.date <= to)
+  // Leads ficam fora dos KPIs de atendimento (vivem no funil, não na agenda)
+  const inRange   = cards.filter(c => c.stepType !== 'lead' && inPeriod(c, from, to))
   const shouldAttend = inRange.filter(c => ['attended', 'converted', 'missed'].includes(c.stepType))
   const attended  = inRange.filter(c => ['attended', 'converted'].includes(c.stepType))
   const converted = inRange.filter(c => c.stepType === 'converted')
@@ -86,7 +103,7 @@ export function delta(current, prev) {
 export function computeRevenue(cards, from, to, ticket, today) {
   if (!cards?.length) return null
 
-  const inRange = cards.filter(c => c.date && c.date >= from && c.date <= to)
+  const inRange = cards.filter(c => inPeriod(c, from, to))
 
   const fechados  = inRange.filter(c => c.stepType === 'converted')
   const naoFechou = inRange.filter(c => c.stepType === 'attended')
@@ -192,8 +209,8 @@ export function breakdownByDimension(cards, dimKey, values, from, to) {
 export function getLost(cards, from, to) {
   if (!cards?.length) return []
   return cards
-    .filter(c => c.stepType === 'attended' && c.date && c.date >= from && c.date <= to)
-    .sort((a, b) => b.date.localeCompare(a.date))
+    .filter(c => c.stepType === 'attended' && inPeriod(c, from, to))
+    .sort((a, b) => (effectiveDate(b) ?? '').localeCompare(effectiveDate(a) ?? ''))
     .map(c => ({ ...c, ...parseTitle(c.title) }))
 }
 

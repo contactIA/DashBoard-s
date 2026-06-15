@@ -163,6 +163,7 @@ export default async function handler(req, res) {
         time:      appt?.time  ?? null,
         value:     card.monetaryAmount ?? null,
         createdAt: card.createdAt ?? null,
+        updatedAt: card.updatedAt ?? null,
         dims:      computeDims(card, dimsCfg),
       }
     })
