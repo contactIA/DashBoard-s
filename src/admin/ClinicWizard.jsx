@@ -1,17 +1,57 @@
 import { useState } from 'react'
 import { listPanels, getPanelSteps, createClinic, updateClinic } from './adminApi'
 import { METRIC_TYPES, guessType, typeColor, buildStepsConfig, kebabify } from './metricTypes'
+import { extractWith } from '../utils/extract.js'
 
 const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
-const WIZARD_STEPS = ['Credenciais', 'Painel', 'Métricas', 'Revisão']
+const WIZARD_STEPS = ['Credenciais', 'Painel', 'Métricas', 'Extração', 'Dimensões', 'Revisão']
+
+const EXTRACT_FIELDS = [
+  { key: 'date',  label: 'Data de agendamento', kind: 'date', hint: 'A data que filtra o dashboard. Sem ela o card some das métricas por período.' },
+  { key: 'time',  label: 'Horário',             kind: 'text', hint: 'Opcional — usado na lista de agendamentos.' },
+  { key: 'name',  label: 'Nome do paciente',    kind: 'text', hint: 'Exibido nas tabelas.' },
+  { key: 'phone', label: 'Telefone',            kind: 'text', hint: 'Opcional.' },
+]
+
+const emptyExtract = () => ({
+  date:  [{ from: 'description', regex: '', format: 'YMD' }],
+  time:  [{ from: 'description', regex: '' }],
+  name:  [{ from: 'title', regex: '' }],
+  phone: [{ from: 'description', regex: '' }],
+})
+
+const hasAnyRule = (ex) => ex && Object.values(ex).some(rules => rules?.some(r => r.regex || r.from))
+
+// _dims (config) → estado de atribuição por tag { tagId: { dim, value } }
+function dimsToTagAssign(dims) {
+  const assign = {}
+  for (const def of Object.values(dims ?? {})) {
+    for (const [tid, value] of Object.entries(def.values ?? {})) {
+      assign[tid] = { dim: def.label ?? '', value }
+    }
+  }
+  return assign
+}
+
+// estado de atribuição → _dims (config)
+function buildDims(tagAssign) {
+  const dims = {}
+  for (const [tid, a] of Object.entries(tagAssign)) {
+    if (!a?.dim?.trim() || !a?.value?.trim()) continue
+    const key = kebabify(a.dim).replace(/-/g, '') || 'dim'
+    dims[key] = dims[key] ?? { label: a.dim.trim(), source: 'tag', values: {} }
+    dims[key].values[tid] = a.value.trim()
+  }
+  return dims
+}
 
 function Stepper({ current }) {
   return (
-    <div className="flex items-center gap-2 text-xs">
+    <div className="flex items-center gap-2 text-xs flex-wrap">
       {WIZARD_STEPS.map((label, i) => (
         <div key={label} className="flex items-center gap-2">
-          {i > 0 && <div className="w-6 h-px bg-slate-200" />}
+          {i > 0 && <div className="w-5 h-px bg-slate-200" />}
           <div className={`flex items-center gap-1.5 ${i === current ? 'text-slate-900 font-semibold' : i < current ? 'text-emerald-600' : 'text-slate-400'}`}>
             <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono border ${
               i === current ? 'border-slate-900 bg-slate-900 text-white'
@@ -39,6 +79,73 @@ function Field({ label, children, hint }) {
 }
 
 const inputCls = 'mt-1 w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 bg-white'
+const miniSelect = 'px-2 py-1.5 text-xs border border-slate-200 rounded-md bg-white focus:outline-none focus:border-slate-400'
+const miniInput  = 'px-2 py-1.5 text-xs border border-slate-200 rounded-md bg-white font-mono focus:outline-none focus:border-slate-400'
+
+// ── Editor de regras de extração para um campo, com preview ao vivo ──────────
+function ExtractField({ field, rules, sampleCards, onChange }) {
+  const setRule = (i, patch) => onChange(rules.map((r, j) => j === i ? { ...r, ...patch } : r))
+  const addRule = () => onChange([...rules, { from: 'description', regex: '', ...(field.kind === 'date' ? { format: 'YMD' } : {}) }])
+  const delRule = (i) => onChange(rules.filter((_, j) => j !== i))
+
+  // Preview: primeiro card de amostra cujo resultado não é nulo, senão os primeiros
+  const previews = sampleCards.slice(0, 6).map(c => ({
+    title: c.title ?? '(sem título)',
+    value: extractWith(rules, c, field.kind === 'date' ? 'date' : 'text'),
+  }))
+  const hits = previews.filter(p => p.value).length
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl p-4">
+      <div className="flex items-baseline justify-between">
+        <h4 className="text-sm font-semibold text-slate-800">{field.label}</h4>
+        {sampleCards.length > 0 && (
+          <span className={`text-[11px] font-mono ${hits ? 'text-emerald-600' : 'text-slate-400'}`}>
+            {hits}/{previews.length} amostras
+          </span>
+        )}
+      </div>
+      <p className="text-[11px] text-slate-400 mt-0.5 mb-3">{field.hint}</p>
+
+      <div className="space-y-2">
+        {rules.map((r, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <select className={miniSelect} value={r.from} onChange={e => setRule(i, { from: e.target.value })}>
+              <option value="title">Título</option>
+              <option value="description">Descrição</option>
+            </select>
+            <input
+              className={`${miniInput} flex-1`} placeholder="regex (grupo 1 = valor)"
+              value={r.regex} onChange={e => setRule(i, { regex: e.target.value })}
+            />
+            {field.kind === 'date' && (
+              <select className={miniSelect} value={r.format ?? 'YMD'} onChange={e => setRule(i, { format: e.target.value })}>
+                <option value="YMD">AAAA-MM-DD</option>
+                <option value="DMY">DD/MM/AAAA</option>
+              </select>
+            )}
+            <button onClick={() => delRule(i)} disabled={rules.length === 1}
+              className="text-slate-300 hover:text-red-500 disabled:opacity-30 px-1" title="Remover regra">✕</button>
+          </div>
+        ))}
+        <button onClick={addRule} className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium">+ adicionar regra (fallback)</button>
+      </div>
+
+      {sampleCards.length > 0 && (
+        <div className="mt-3 pt-3 border-t border-slate-100 space-y-1">
+          {previews.map((p, i) => (
+            <div key={i} className="flex items-center gap-2 text-[11px]">
+              <span className="text-slate-400 truncate flex-1 font-mono">{p.title.slice(0, 42)}</span>
+              <span className={`font-mono shrink-0 ${p.value ? 'text-emerald-600' : 'text-slate-300'}`}>
+                {p.value ?? '—'}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function ClinicWizard({ clinic, onDone, onCancel }) {
   const isEdit = Boolean(clinic)
@@ -58,10 +165,14 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
   const [mappedSteps, setMappedSteps] = useState([])
   const [ticket,      setTicket]      = useState(clinic?.ticket ?? 10000)
 
+  const [sampleCards, setSampleCards] = useState([])
+  const [panelTags,   setPanelTags]   = useState([])
+  const [extract,     setExtract]     = useState(emptyExtract())
+  const [tagAssign,   setTagAssign]   = useState({})
+
   const [savedUrl, setSavedUrl] = useState(null)
   const [copied,   setCopied]   = useState(false)
 
-  // credencial usada nas chamadas à Helena: token digitado ou accountId já cadastrado
   const auth = token.trim()
     ? { helenaToken: token.trim() }
     : isEdit ? { accountId: clinic.accountId } : {}
@@ -87,37 +198,33 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
     setStep(1)
   })
 
-  // ── Etapa 2 → 3: buscar steps do painel ──────────────────────────────────
+  // ── Etapa 2 → 3: buscar steps + amostra de cards/tags ─────────────────────
   const fetchSteps = () => run(async () => {
     if (!selectedPanel) throw new Error('Selecione um painel.')
     const panel = await getPanelSteps(auth, selectedPanel.id)
     if (!panel.steps.length) throw new Error('Este painel não possui etapas (steps).')
 
-    // reaproveita o mapeamento salvo (edição); steps novos recebem sugestão automática
     const existingById = {}
-    for (const cfg of Object.values(clinic?.steps ?? {})) existingById[cfg.id] = cfg
+    for (const [k, cfg] of Object.entries(clinic?.steps ?? {})) {
+      if (k.startsWith('_')) continue
+      existingById[cfg.id] = cfg
+    }
 
     setMappedSteps(panel.steps.map(s => {
       const existing = existingById[s.id]
       const type = existing?.type ?? guessType(s.title)
-      return {
-        id:        s.id,
-        title:     s.title,
-        cardCount: s.cardCount,
-        type,
-        color:     existing?.color ?? typeColor(type),
-      }
+      return { id: s.id, title: s.title, cardCount: s.cardCount, type, color: existing?.color ?? typeColor(type) }
     }))
+
+    setSampleCards(panel.sampleCards ?? [])
+    setPanelTags(panel.tags ?? [])
+
+    // pré-carrega config existente (edição)
+    setExtract(hasAnyRule(clinic?.steps?._extract) ? clinic.steps._extract : emptyExtract())
+    setTagAssign(dimsToTagAssign(clinic?.steps?._dims))
+
     setStep(2)
   })
-
-  // ── Etapa 3 → 4: validar mapeamento ──────────────────────────────────────
-  const goReview = () => {
-    const active = mappedSteps.filter(s => s.type !== 'ignore')
-    if (!active.length) { setError('Mapeie ao menos um step para uma métrica.'); return }
-    setError(null)
-    setStep(3)
-  }
 
   // ── Salvar ───────────────────────────────────────────────────────────────
   const save = () => run(async () => {
@@ -128,7 +235,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       token:     token.trim(),
       panelId:   selectedPanel.id,
       ticket:    Number(ticket) || null,
-      steps:     buildStepsConfig(mappedSteps),
+      steps:     buildStepsConfig(mappedSteps, extract, buildDims(tagAssign)),
     }
     if (isEdit) await updateClinic(payload)
     else        await createClinic(payload)
@@ -141,14 +248,30 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const goMetrics = () => {
+    if (!mappedSteps.filter(s => s.type !== 'ignore').length) { setError('Mapeie ao menos um step para uma métrica.'); return }
+    setError(null); setStep(3)
+  }
+
   const updateStep = (id, patch) =>
     setMappedSteps(steps => steps.map(s => {
       if (s.id !== id) return s
       const next = { ...s, ...patch }
-      // ao trocar o tipo, a cor acompanha o padrão do novo tipo
       if (patch.type && !patch.color) next.color = typeColor(patch.type)
       return next
     }))
+
+  const setTag = (tid, patch) =>
+    setTagAssign(a => ({ ...a, [tid]: { dim: '', value: '', ...a[tid], ...patch } }))
+
+  // tags conhecidas (amostra) + já atribuídas que não vieram na amostra
+  const displayTags = (() => {
+    const map = new Map(panelTags.map(t => [t.id, t]))
+    for (const tid of Object.keys(tagAssign)) if (!map.has(tid)) map.set(tid, { id: tid, count: 0, sampleTitle: null })
+    return [...map.values()]
+  })()
+
+  const builtDims = buildDims(tagAssign)
 
   // ── Tela de sucesso ───────────────────────────────────────────────────────
   if (savedUrl) {
@@ -251,7 +374,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
             <button onClick={() => setStep(0)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
             <button onClick={fetchSteps} disabled={loading || !selectedPanel}
               className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 text-white hover:bg-slate-700 disabled:opacity-40">
-              {loading ? 'Carregando steps...' : 'Configurar métricas →'}
+              {loading ? 'Carregando...' : 'Configurar métricas →'}
             </button>
           </div>
         </div>
@@ -262,7 +385,6 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
         <div className="space-y-4">
           <p className="text-sm text-slate-500">
             Defina o que cada etapa do painel <strong>{selectedPanel.title}</strong> representa nas métricas.
-            A sugestão automática foi aplicada — ajuste se necessário.
           </p>
           <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
             <table className="w-full text-sm">
@@ -307,7 +429,108 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
           </div>
           <div className="flex justify-between pt-2">
             <button onClick={() => setStep(1)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
-            <button onClick={goReview}
+            <button onClick={goMetrics}
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 text-white hover:bg-slate-700">
+              Extração de dados →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Etapa 4: extração ────────────────────────────────────────────── */}
+      {step === 3 && (
+        <div className="space-y-4">
+          <p className="text-sm text-slate-500">
+            Cada chatbot escreve o card de um jeito. Defina como extrair os dados — o preview à direita
+            mostra o resultado em cards reais. A primeira regra que casar vence; as demais são fallback.
+          </p>
+          {sampleCards.length === 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 text-xs text-amber-700">
+              Sem cards de amostra neste painel — você ainda pode configurar as regras manualmente.
+            </div>
+          )}
+          <div className="grid grid-cols-1 gap-3">
+            {EXTRACT_FIELDS.map(f => (
+              <ExtractField
+                key={f.key} field={f} rules={extract[f.key]} sampleCards={sampleCards}
+                onChange={rules => setExtract(ex => ({ ...ex, [f.key]: rules }))}
+              />
+            ))}
+          </div>
+          <div className="flex justify-between pt-2">
+            <button onClick={() => setStep(2)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
+            <button onClick={() => setStep(4)}
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 text-white hover:bg-slate-700">
+              Dimensões →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Etapa 5: dimensões (tags) ────────────────────────────────────── */}
+      {step === 4 && (
+        <div className="space-y-4">
+          <p className="text-sm text-slate-500">
+            As <strong>tags de card</strong> viram cortes do funil (ex: origem <em>Meta/Orgânico</em>, agendador <em>CRC/IA</em>).
+            Para cada tag, informe a <strong>dimensão</strong> e o <strong>rótulo do valor</strong>. Tags sem dimensão são ignoradas.
+          </p>
+
+          {displayTags.length === 0 ? (
+            <div className="bg-white border border-slate-200 rounded-xl p-6 text-center text-sm text-slate-400">
+              Nenhuma tag de card encontrada na amostra deste painel. Esta clínica fica sem quebras por dimensão.
+            </div>
+          ) : (
+            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 text-[10px] uppercase tracking-wide text-slate-400">
+                    <th className="text-left px-4 py-2.5 font-semibold">Tag (uso · exemplo)</th>
+                    <th className="text-left px-4 py-2.5 font-semibold w-44">Dimensão</th>
+                    <th className="text-left px-4 py-2.5 font-semibold w-44">Valor (rótulo)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayTags.map(t => (
+                    <tr key={t.id} className="border-b border-slate-100 last:border-0">
+                      <td className="px-4 py-3">
+                        <div className="font-mono text-[11px] text-slate-500">{t.id.slice(0, 8)}…</div>
+                        <div className="text-[11px] text-slate-400">
+                          {t.count > 0 ? `${t.count} cards` : 'fora da amostra'}
+                          {t.sampleTitle && ` · ${t.sampleTitle.slice(0, 30)}`}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <input className={`${miniInput} w-full`} list="dim-suggestions" placeholder="ex: Origem"
+                          value={tagAssign[t.id]?.dim ?? ''} onChange={e => setTag(t.id, { dim: e.target.value })} />
+                      </td>
+                      <td className="px-4 py-3">
+                        <input className={`${miniInput} w-full`} placeholder="ex: Meta"
+                          value={tagAssign[t.id]?.value ?? ''} onChange={e => setTag(t.id, { value: e.target.value })} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <datalist id="dim-suggestions">
+                <option value="Origem" />
+                <option value="Agendador" />
+              </datalist>
+            </div>
+          )}
+
+          {Object.keys(builtDims).length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {Object.values(builtDims).map(def => (
+                <span key={def.label} className="text-[11px] px-2 py-1 rounded-md border border-indigo-200 bg-indigo-50 text-indigo-700">
+                  {def.label}: {Object.values(def.values).join(', ')}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <div className="flex justify-between pt-2">
+            <button onClick={() => setStep(3)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
+            <button onClick={() => setStep(5)}
               className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 text-white hover:bg-slate-700">
               Revisar →
             </button>
@@ -315,8 +538,8 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
         </div>
       )}
 
-      {/* ── Etapa 4: revisão ─────────────────────────────────────────────── */}
-      {step === 3 && (
+      {/* ── Etapa 6: revisão ─────────────────────────────────────────────── */}
+      {step === 5 && (
         <div className="space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100">
             {[
@@ -344,9 +567,21 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                 ))}
               </div>
             </div>
+            {Object.keys(builtDims).length > 0 && (
+              <div className="px-4 py-3">
+                <div className="text-sm text-slate-500 mb-2">Dimensões</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {Object.values(builtDims).map(def => (
+                    <span key={def.label} className="text-[11px] px-2 py-1 rounded-md border border-indigo-200 bg-indigo-50 text-indigo-700">
+                      {def.label}: {Object.values(def.values).join(', ')}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           <div className="flex justify-between pt-2">
-            <button onClick={() => setStep(2)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
+            <button onClick={() => setStep(4)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
             <button onClick={save} disabled={loading}
               className="px-5 py-2 text-sm font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-40">
               {loading ? 'Salvando...' : isEdit ? 'Salvar alterações' : 'Cadastrar clínica'}

@@ -1,9 +1,22 @@
+import { extractCard, computeDims } from '../src/utils/extract.js'
+
 const HELENA_BASE   = 'https://api.wts.chat'
 const SUPABASE_URL  = process.env.SUPABASE_URL
 const SUPABASE_KEY  = process.env.SUPABASE_SERVICE_KEY
 const PAGE_SIZE     = 100
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+// Chaves reservadas dentro do JSONB `steps` — não são etapas, e sim config v2.
+const RESERVED_KEYS = new Set(['_extract', '_dims'])
+
+// Garante o prefixo "Bearer " no token (o mesmo cuidado do admin/panels.js).
+function normalizeToken(raw) {
+  if (!raw) return null
+  const t = String(raw).trim()
+  if (!t) return null
+  return /^bearer /i.test(t) ? t : `Bearer ${t}`
+}
 
 // Aceita o account_id (UUID) ou o slug amigável da clínica
 async function getClinicConfig(idOrSlug) {
@@ -38,16 +51,46 @@ async function fetchPage(panelId, token, pageNumber) {
   return res.json()
 }
 
+// Resolve os títulos das etapas do painel — usado só para rotular cards em
+// steps não mapeados (diagnóstico). Falha de forma silenciosa.
+async function fetchStepTitles(panelId, token) {
+  try {
+    const res = await fetch(
+      `${HELENA_BASE}/crm/v1/panel/${encodeURIComponent(panelId)}?IncludeDetails=Steps`,
+      { headers: { Authorization: token } },
+    )
+    if (!res.ok) return {}
+    const panel = await res.json()
+    return Object.fromEntries((panel.steps ?? []).map(s => [s.id, s.title]))
+  } catch {
+    return {}
+  }
+}
+
+// ── Fallback legado (clínicas sem config _extract) ───────────────────────────
 function parseDescription(description) {
   if (!description) return null
   const dateMatch = description.match(/Data de agendamento:\s*(\d{4}-\d{2}-\d{2})/)
   const timeMatch = description.match(/Horário de atendimento:\s*(\d{2}:\d{2})/)
   if (!dateMatch) return null
-  return {
-    date: dateMatch[1],
-    time: timeMatch?.[1] ?? null,
-  }
+  return { date: dateMatch[1], time: timeMatch?.[1] ?? null }
 }
+
+function parseTitleAppointment(title) {
+  if (!title) return null
+  const parts = title.split(',').map(p => p.trim())
+  if (parts.length < 3) return null
+  const date = parts[parts.length - 1].match(/^(\d{4}-\d{2}-\d{2})$/)?.[1]
+  if (!date) return null
+  const time = parts.map(p => p.match(/^(\d{2}:\d{2})$/)?.[1]).find(Boolean) ?? null
+  return { date, time }
+}
+
+// ── Dimensões (cortes do funil) ──────────────────────────────────────────────
+//
+// _dims: { <chave>: { label, source, values?, rules? } }
+//   source 'tag'           → values: { <tagId>: 'Rótulo' }  (casa contra card.tagIds)
+//   source 'metadata.<x>'  → rules:  [ { match, value } ]   (substring em metadata.x)
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -69,10 +112,17 @@ export default async function handler(req, res) {
     return res.status(404).json({ error: `Clínica "${accountId}" não encontrada.` })
   }
 
-  const steps = config.steps // já é objeto (JSONB do Supabase)
+  const token       = normalizeToken(config.token)
+  const rawSteps    = config.steps ?? {}             // JSONB do Supabase
+  const extractCfg  = rawSteps._extract ?? null
+  const dimsCfg     = rawSteps._dims ?? null
+  // Steps "de verdade" (sem as chaves reservadas de config)
+  const steps = Object.fromEntries(
+    Object.entries(rawSteps).filter(([k]) => !RESERVED_KEYS.has(k))
+  )
 
   try {
-    const first      = await fetchPage(config.panel_id, config.token, 1)
+    const first      = await fetchPage(config.panel_id, token, 1)
     const totalPages = first.totalPages ?? 1
 
     let items = [...(first.items ?? [])]
@@ -80,7 +130,7 @@ export default async function handler(req, res) {
     if (totalPages > 1) {
       const pages = await Promise.all(
         Array.from({ length: totalPages - 1 }, (_, i) =>
-          fetchPage(config.panel_id, config.token, i + 2)
+          fetchPage(config.panel_id, token, i + 2)
         )
       )
       for (const page of pages) items = items.concat(page.items ?? [])
@@ -94,11 +144,17 @@ export default async function handler(req, res) {
     )
 
     const cards = items.map(card => {
-      const appt = parseDescription(card.description)
+      const appt = extractCfg
+        ? extractCard(card, extractCfg)
+        : { ...(parseDescription(card.description) ?? parseTitleAppointment(card.title) ?? { date: null, time: null }), name: null, phone: null }
+
       const step = stepLookup[card.stepId] ?? null
+
       return {
         id:        card.id,
         title:     card.title ?? null,
+        name:      appt.name  ?? null,
+        phone:     appt.phone ?? null,
         stepKey:   step?.key   ?? null,
         stepLabel: step?.label ?? null,
         stepType:  step?.type  ?? null,
@@ -107,8 +163,40 @@ export default async function handler(req, res) {
         time:      appt?.time  ?? null,
         value:     card.monetaryAmount ?? null,
         createdAt: card.createdAt ?? null,
+        dims:      computeDims(card, dimsCfg),
       }
     })
+
+    // ── Diagnóstico: nada some em silêncio ───────────────────────────────────
+    const unmappedByStep = {}
+    for (const card of items) {
+      if (stepLookup[card.stepId]) continue
+      const e = unmappedByStep[card.stepId] ?? { stepId: card.stepId, label: null, count: 0 }
+      e.count++
+      unmappedByStep[card.stepId] = e
+    }
+    const unmapped = Object.values(unmappedByStep)
+    if (unmapped.length) {
+      const titles = await fetchStepTitles(config.panel_id, token)
+      for (const u of unmapped) u.label = titles[u.stepId] ?? null
+    }
+
+    const diagnostics = {
+      total:         cards.length,
+      noDate:        cards.filter(c => !c.date).length,
+      unmappedCount: unmapped.reduce((s, u) => s + u.count, 0),
+      unmapped:      unmapped.sort((a, b) => b.count - a.count),
+    }
+
+    // Definição das dimensões para o frontend renderizar quebras genericamente
+    const dimensions = dimsCfg
+      ? Object.fromEntries(Object.entries(dimsCfg).map(([k, def]) => {
+          const values = def.source === 'tag'
+            ? [...new Set(Object.values(def.values ?? {}))]
+            : [...new Set((def.rules ?? []).map(r => r.value))]
+          return [k, { label: def.label ?? k, values }]
+        }))
+      : {}
 
     const closedWithValue = cards.filter(c => c.stepType === 'converted' && c.value > 0)
     const computedTicket  = closedWithValue.length > 0
@@ -116,11 +204,13 @@ export default async function handler(req, res) {
       : (config.ticket ?? 10000)
 
     return res.status(200).json({
-      clinic:    config.name,
-      ticket:    computedTicket,
+      clinic:     config.name,
+      ticket:     computedTicket,
       steps,
+      dimensions,
       cards,
-      fetchedAt: new Date().toISOString(),
+      diagnostics,
+      fetchedAt:  new Date().toISOString(),
     })
   } catch (err) {
     console.error('[dashboard]', err)

@@ -41,7 +41,10 @@ function validatePayload(body, { requireToken }) {
   }
   if (requireToken && !normalizeToken(body.token)) errors.push('token é obrigatório')
   if (!body.panelId) errors.push('panelId é obrigatório')
-  if (!body.steps || typeof body.steps !== 'object' || Object.keys(body.steps).length === 0) {
+  const realSteps = body.steps && typeof body.steps === 'object'
+    ? Object.keys(body.steps).filter(k => !k.startsWith('_'))
+    : []
+  if (!realSteps.length) {
     errors.push('steps deve conter ao menos uma etapa mapeada')
   }
   return errors

@@ -3,6 +3,11 @@ export function parseTitle(title) {
   if (!title) return { name: 'Sem nome', phone: null }
   const m = title.match(/Nome:\s*(.+?)\s*-\s*Telefone:\s*(\d+)/i)
   if (m) return { name: m[1].trim(), phone: m[2] }
+  // Formato "Nome, nascimento, HH:MM, AAAA-MM-DD" — usa só o nome
+  const parts = title.split(',').map(p => p.trim())
+  if (parts.length >= 3 && /^\d{4}-\d{2}-\d{2}$/.test(parts[parts.length - 1])) {
+    return { name: parts[0] || 'Sem nome', phone: null }
+  }
   return { name: title, phone: null }
 }
 
@@ -119,6 +124,68 @@ export function computeRevenue(cards, from, to, ticket, today) {
     oportunidade,
     semValor,
   }
+}
+
+/**
+ * Funil de pipeline a partir de um conjunto de cards (estado atual de cada card).
+ * Na Helena o card está em uma única etapa por vez, então isto é a foto da coorte:
+ * de quem entrou, quantos hoje estão em cada estágio.
+ */
+export function funnelOf(cards) {
+  const n = (t) => cards.filter(c => c.stepType === t).length
+  const lead      = n('lead')
+  const scheduled = n('scheduled')
+  const attended  = n('attended')
+  const converted = n('converted')
+  const missed    = n('missed')
+  const cancelled = n('cancelled')
+
+  const entrou      = cards.length
+  const agendou     = entrou - lead           // saiu do topo do funil
+  const compareceu  = attended + converted
+  const fechou      = converted
+
+  return {
+    entrou, lead, scheduled, attended, converted, missed, cancelled,
+    agendou, compareceu, fechou,
+    taxaAgendamento: entrou > 0 ? (agendou / entrou) * 100 : null,
+    // comparecimento entre os que tiveram desfecho de consulta (compareceu ou faltou)
+    taxaComparecimento: (compareceu + missed) > 0 ? (compareceu / (compareceu + missed)) * 100 : null,
+    taxaFechamento: compareceu > 0 ? (fechou / compareceu) * 100 : null,
+  }
+}
+
+/** Filtra cards pela data de ENTRADA (createdAt) no período — base do funil/coorte. */
+export function byEntryDate(cards, from, to) {
+  if (!cards?.length) return []
+  if (!from || !to) return cards
+  return cards.filter(c => {
+    const d = (c.createdAt ?? '').slice(0, 10)
+    return d && d >= from && d <= to
+  })
+}
+
+/** Funil da coorte que entrou em [from, to]. */
+export function computeFunnel(cards, from, to) {
+  if (!cards?.length) return null
+  return funnelOf(byEntryDate(cards, from, to))
+}
+
+/**
+ * Quebra o funil por uma dimensão (origem, agendador, …).
+ * Retorna [{ value, funnel }] em ordem de volume de entrada.
+ */
+export function breakdownByDimension(cards, dimKey, values, from, to) {
+  if (!cards?.length || !dimKey) return []
+  const inRange = byEntryDate(cards, from, to)
+  const labels = [...(values ?? []), null] // null = "sem" valor
+  return labels
+    .map(v => ({
+      value: v,
+      funnel: funnelOf(inRange.filter(c => (c.dims?.[dimKey] ?? null) === v)),
+    }))
+    .filter(r => r.funnel.entrou > 0)
+    .sort((a, b) => b.funnel.entrou - a.funnel.entrou)
 }
 
 /** Cards de "compareceu mas não fechou" dentro do período, com nome/telefone */

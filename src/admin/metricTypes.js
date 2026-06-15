@@ -1,5 +1,6 @@
 // Tipos de métrica que o dashboard entende (ver utils/parseCards.js)
 export const METRIC_TYPES = [
+  { value: 'lead',      label: 'Lead (topo do funil)',   hint: 'Entrou, ainda não agendou',   color: '#0EA5E9' },
   { value: 'scheduled', label: 'Agendamento',            hint: 'Agendou, Reagendou',          color: '#6366F1' },
   { value: 'attended',  label: 'Compareceu, não fechou', hint: 'Oportunidade recuperável',    color: '#F59E0B' },
   { value: 'converted', label: 'Fechou contrato',        hint: 'Conta como receita',          color: '#10B981' },
@@ -20,6 +21,7 @@ const stripAccents = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '')
 // "não fechou" precisa ser testado antes de "fechou")
 export function guessType(title) {
   const t = stripAccents(String(title).toLowerCase())
+  if (t.includes('lead') || t.includes('novo contato') || t.includes('prospec')) return 'lead'
   if (t.includes('nao fechou') || t.includes('sem fechar')) return 'attended'
   if (t.includes('fechou') || t.includes('fechamento') || t.includes('converte')) return 'converted'
   if (t.includes('falt')) return 'missed'
@@ -50,8 +52,9 @@ export function slugify(title) {
 }
 
 // Monta o JSONB `steps` no formato que o dashboard consome:
-// { slug: { id, label, color, type } } — steps "ignore" ficam de fora
-export function buildStepsConfig(mappedSteps) {
+// { slug: { id, label, color, type } } — steps "ignore" ficam de fora.
+// extract/dims (opcionais) entram como chaves reservadas _extract/_dims.
+export function buildStepsConfig(mappedSteps, extract, dims) {
   const config = {}
   for (const s of mappedSteps) {
     if (s.type === 'ignore') continue
@@ -59,5 +62,7 @@ export function buildStepsConfig(mappedSteps) {
     while (config[slug]) slug += '2'
     config[slug] = { id: s.id, label: s.title, color: s.color, type: s.type }
   }
+  if (extract && Object.values(extract).some(rules => rules?.length)) config._extract = extract
+  if (dims && Object.keys(dims).length) config._dims = dims
   return config
 }

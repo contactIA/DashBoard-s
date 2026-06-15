@@ -49,9 +49,36 @@ export default async function handler(req, res) {
   if (!token) return res.status(400).json({ error: 'Informe o token Helena (header "x-helena-token") ou um accountId já cadastrado.' })
 
   try {
-    // ── Painel específico, com steps ─────────────────────────────────────────
+    // ── Painel específico, com steps + amostra de cards e tags ────────────────
     if (panelId) {
       const panel = await helenaGet(`/crm/v1/panel/${encodeURIComponent(panelId)}?IncludeDetails=Steps`, token)
+
+      // Amostra de cards (1ª página) para o wizard: preview de extração + tags de card.
+      let cards = []
+      try {
+        const page = await helenaGet(`/crm/v1/panel/card?PanelId=${encodeURIComponent(panelId)}&PageSize=100&PageNumber=1`, token)
+        cards = page.items ?? []
+      } catch { /* sem amostra — wizard ainda funciona, só sem preview */ }
+
+      // Tags de card distintas, com contagem e um título de exemplo
+      const tagAgg = {}
+      for (const c of cards) {
+        for (const tid of c.tagIds ?? []) {
+          const e = tagAgg[tid] ?? { id: tid, count: 0, sampleTitle: c.title ?? null }
+          e.count++
+          tagAgg[tid] = e
+        }
+      }
+      const tags = Object.values(tagAgg).sort((a, b) => b.count - a.count)
+
+      // Cards de amostra enxutos (só o necessário para o preview de extração)
+      const sampleCards = cards.slice(0, 12).map(c => ({
+        title:       c.title ?? null,
+        description: c.description ?? null,
+        tagIds:      c.tagIds ?? [],
+        metadata:    c.metadata ?? null,
+      }))
+
       return res.status(200).json({
         id:        panel.id,
         title:     panel.title,
@@ -60,6 +87,8 @@ export default async function handler(req, res) {
           .filter(s => !s.archived)
           .sort((a, b) => a.position - b.position)
           .map(s => ({ id: s.id, title: s.title, position: s.position, cardCount: s.cardCount })),
+        tags,
+        sampleCards,
       })
     }
 

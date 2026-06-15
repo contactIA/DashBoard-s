@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { fetchDashboard } from './api'
 import {
   computeKpis, computePreviousKpis, computeRevenue, delta,
-  getLost, getUpcoming,
+  getLost, getUpcoming, computeFunnel, breakdownByDimension,
 } from './utils/parseCards'
 import { groupCardsByTime, getGranularity } from './utils/groupByTime'
 import DateRangePicker  from './components/DateRangePicker.jsx'
@@ -12,6 +12,8 @@ import TrendChart      from './components/TrendChart.jsx'
 import LostTable       from './components/LostTable.jsx'
 import StepDistribution from './components/StepDistribution.jsx'
 import UpcomingTable   from './components/UpcomingTable.jsx'
+import PipelineFunnel  from './components/PipelineFunnel.jsx'
+import DimensionBreakdown from './components/DimensionBreakdown.jsx'
 
 function todayStr() { return new Date().toISOString().slice(0, 10) }
 function daysAgo(n) {
@@ -104,6 +106,20 @@ export default function App() {
 
   const lost     = useMemo(() => getLost(data?.cards ?? [], dateFrom, dateTo), [data, dateFrom, dateTo])
   const upcoming = useMemo(() => getUpcoming(data?.cards ?? [], today), [data, today])
+
+  const funnel = useMemo(
+    () => computeFunnel(data?.cards ?? [], dateFrom, dateTo),
+    [data, dateFrom, dateTo],
+  )
+  // Quebras do funil por cada dimensão configurada (origem, agendador, …)
+  const breakdowns = useMemo(() => {
+    const dims = data?.dimensions ?? {}
+    return Object.entries(dims).map(([key, def]) => ({
+      key,
+      label: def.label,
+      rows: breakdownByDimension(data?.cards ?? [], key, def.values, dateFrom, dateTo),
+    })).filter(b => b.rows.length > 0)
+  }, [data, dateFrom, dateTo])
 
   const applyRange = (days) => { setDateFrom(daysAgo(days)); setDateTo(todayStr()) }
   const isRange = (days) => dateFrom === daysAgo(days) && dateTo === todayStr()
@@ -204,6 +220,19 @@ export default function App() {
         </div>
       )}
 
+      {/* ── Aviso de cards não mapeados (drift de steps) ──────────────────── */}
+      {data?.diagnostics?.unmappedCount > 0 && (
+        <div className="mx-5 mt-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 flex gap-2">
+          <span>⚠</span>
+          <span>
+            {data.diagnostics.unmappedCount} card(s) estão em etapas não mapeadas e ficam fora das métricas
+            {data.diagnostics.unmapped?.length > 0 && (
+              <>: {data.diagnostics.unmapped.map(u => `${u.label ?? u.stepId} (${u.count})`).join(', ')}</>
+            )}. Ajuste o mapeamento em <code className="font-mono">/setup</code>.
+          </span>
+        </div>
+      )}
+
       {data && (
         <>
           {/* ── KPI Strip ────────────────────────────────────────────────── */}
@@ -218,6 +247,25 @@ export default function App() {
 
           {/* ── Revenue Row ──────────────────────────────────────────────── */}
           <RevenueRow revenue={revenue} kpis={kpis} />
+
+          {/* ── Funil + quebras por dimensão ─────────────────────────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.6fr] gap-5 p-5 border-b border-slate-200">
+            <PipelineFunnel funnel={funnel} />
+            <div className="flex flex-col gap-5">
+              {breakdowns.length > 0
+                ? breakdowns.map(b => (
+                    <DimensionBreakdown key={b.key} title={b.label} rows={b.rows} />
+                  ))
+                : (
+                  <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex items-center justify-center h-full">
+                    <p className="text-sm text-slate-400 text-center max-w-xs">
+                      Esta clínica não tem dimensões configuradas (ex: origem, agendador).
+                      Configure as tags de card em <code className="font-mono">/setup</code>.
+                    </p>
+                  </div>
+                )}
+            </div>
+          </div>
 
           {/* ── Charts row ───────────────────────────────────────────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] border-b border-slate-200">

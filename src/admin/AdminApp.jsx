@@ -108,7 +108,11 @@ function ClinicList({ clinics, onNew, onEdit, onDeleted, onError }) {
             </thead>
             <tbody>
               {clinics.map(c => {
-                const types = [...new Set(Object.values(c.steps ?? {}).map(s => s.type))]
+                const types = [...new Set(
+                  Object.entries(c.steps ?? {})
+                    .filter(([k]) => !k.startsWith('_'))
+                    .map(([, s]) => s.type)
+                )]
                 return (
                   <tr key={c.accountId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60">
                     <td className="px-4 py-3">
