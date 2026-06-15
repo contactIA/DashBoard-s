@@ -56,7 +56,7 @@ export function computeKpis(cards, from, to) {
   const converted = inRange.filter(c => c.stepType === 'converted')
   const missed    = inRange.filter(c => c.stepType === 'missed')
   const cancelled = inRange.filter(c => c.stepType === 'cancelled')
-  const rescheduled = inRange.filter(c => c.stepKey === 'reagendou')
+  const rescheduled = inRange.filter(c => /reagend/i.test(c.stepLabel ?? c.stepKey ?? ''))
   const scheduled = inRange.filter(c => c.stepType === 'scheduled')
 
   return {

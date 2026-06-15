@@ -20,16 +20,17 @@ function KpiCell({ label, value, sub, spark, sparkColor, last }) {
 }
 
 export default function KpiStrip({ kpis, prevKpis, delta: d, chartData, ticket, onTicketChange }) {
-  const sparkFor = (key) =>
-    chartData?.data?.map(row => row[key] ?? 0) ?? []
+  // Séries por TIPO de métrica (emitidas por groupCardsByTime) — agnóstico de clínica
+  const rows = chartData?.data ?? []
+  const sparkFor = (key) => rows.map(row => row[key] ?? 0)
 
   const spark = {
-    total:     chartData?.data?.map(r => (r.compareceuFechou ?? 0) + (r.compareceuNaoFechou ?? 0) + (r.faltou ?? 0) + (r.cancelou ?? 0)) ?? [],
-    attended:  chartData?.data?.map(r => (r.compareceuFechou ?? 0) + (r.compareceuNaoFechou ?? 0)) ?? [],
-    converted: sparkFor('compareceuFechou'),
-    missed:    sparkFor('faltou'),
-    cancelled: sparkFor('cancelou'),
-    rescheduled: sparkFor('reagendou'),
+    total:       rows.map(r => (r.attended ?? 0) + (r.converted ?? 0) + (r.missed ?? 0) + (r.cancelled ?? 0)),
+    attended:    rows.map(r => (r.attended ?? 0) + (r.converted ?? 0)),
+    converted:   sparkFor('converted'),
+    missed:      sparkFor('missed'),
+    cancelled:   sparkFor('cancelled'),
+    rescheduled: sparkFor('rescheduled'),
   }
 
   return (

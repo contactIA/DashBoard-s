@@ -3,11 +3,12 @@ import {
   Tooltip, Legend, ResponsiveContainer,
 } from 'recharts'
 
+// Séries por tipo de métrica (chaves emitidas por groupCardsByTime) — agnóstico de clínica
 const SERIES = [
-  { key: 'faltou',              label: 'Faltou',              color: '#F97316', fill: true },
-  { key: 'compareceuNaoFechou', label: 'Compareceu s/ Fechar', color: '#F59E0B', fill: false },
-  { key: 'compareceuFechou',    label: 'Fechou',              color: '#10B981', fill: false },
-  { key: 'cancelou',            label: 'Cancelou',            color: '#EF4444', fill: false },
+  { key: 'missed',    label: 'Faltou',               color: '#F97316', fill: true },
+  { key: 'attended',  label: 'Compareceu s/ Fechar', color: '#F59E0B', fill: false },
+  { key: 'converted', label: 'Fechou',               color: '#10B981', fill: false },
+  { key: 'cancelled', label: 'Cancelou',             color: '#EF4444', fill: false },
 ]
 
 const CustomTooltip = ({ active, payload, label }) => {

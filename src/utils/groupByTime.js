@@ -56,7 +56,6 @@ export function groupCardsByTime(cards, from, to, steps) {
     const d = effectiveDate(c)
     return d && d >= from && d <= to
   })
-  const stepKeys = Object.keys(steps)
 
   // Agrupa cards nos seus buckets (pela data efetiva)
   const cardsByBucket = {}
@@ -93,12 +92,17 @@ export function groupCardsByTime(cards, from, to, steps) {
     }
   }
 
+  // Séries por TIPO de métrica (normalizado) — independente dos slugs de cada clínica
+  const TYPE_KEYS = ['lead', 'scheduled', 'attended', 'converted', 'missed', 'cancelled']
+
   const data = [...allBuckets].sort().map(bucket => {
     const row = { label: formatBucketLabel(bucket, granularity) }
     const bucketCards = cardsByBucket[bucket] ?? []
-    for (const key of stepKeys) {
-      row[key] = bucketCards.filter(c => c.stepKey === key).length
+    for (const t of TYPE_KEYS) {
+      row[t] = bucketCards.filter(c => c.stepType === t).length
     }
+    // Reagendamento não é um tipo — é identificado pelo nome do step
+    row.rescheduled = bucketCards.filter(c => /reagend/i.test(c.stepLabel ?? c.stepKey ?? '')).length
     return row
   })
 
