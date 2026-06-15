@@ -53,23 +53,80 @@ export default async function handler(req, res) {
     if (panelId) {
       const panel = await helenaGet(`/crm/v1/panel/${encodeURIComponent(panelId)}?IncludeDetails=Steps`, token)
 
-      // Amostra de cards (1ª página) para o wizard: preview de extração + tags de card.
+      // Amostra de cards (até 3 páginas) para o wizard: preview de extração,
+      // distribuição por step e tags de card.
       let cards = []
       try {
-        const page = await helenaGet(`/crm/v1/panel/card?PanelId=${encodeURIComponent(panelId)}&PageSize=100&PageNumber=1`, token)
-        cards = page.items ?? []
+        for (let pg = 1; pg <= 3; pg++) {
+          const page = await helenaGet(`/crm/v1/panel/card?PanelId=${encodeURIComponent(panelId)}&PageSize=100&PageNumber=${pg}`, token)
+          cards = cards.concat(page.items ?? [])
+          if (!page.hasMorePages) break
+        }
       } catch { /* sem amostra — wizard ainda funciona, só sem preview */ }
 
-      // Tags de card distintas, com contagem e um título de exemplo
+      const stepTitle = Object.fromEntries((panel.steps ?? []).map(s => [s.id, s.title]))
+
+      // As tags de CARD não têm nome via API. Para sugerir o que cada uma
+      // representa, cruzamos com as tags de CONTATO (essas têm nome) por
+      // co-ocorrência numa amostra de contatos.
+      let contactTagName = {}
+      try {
+        const tg = await helenaGet('/core/v1/tag?PageSize=200', token)
+        const rows = Array.isArray(tg) ? tg : (tg.items ?? [])
+        contactTagName = Object.fromEntries(rows.map(t => [t.id, t.name]))
+      } catch { /* sem nomes de contato — segue sem sugestão */ }
+
+      const sampleForCooc = cards.slice(0, 60)
+      const contactIds = [...new Set(sampleForCooc.flatMap(c => c.contactIds ?? []))].slice(0, 80)
+      const contactTags = {}
+      await Promise.all(contactIds.map(async (id) => {
+        try {
+          const ct = await helenaGet(`/core/v1/contact/${encodeURIComponent(id)}`, token)
+          contactTags[id] = (ct.tagIds ?? []).map(t => contactTagName[t]).filter(Boolean)
+        } catch { contactTags[id] = [] }
+      }))
+
+      // Agrega por tag de card: contagem, steps, títulos e nomes co-ocorrentes
       const tagAgg = {}
-      for (const c of cards) {
+      const touch = (tid, c) => {
+        const e = tagAgg[tid] ?? (tagAgg[tid] = { id: tid, count: 0, steps: {}, titles: [], cooc: {} })
+        e.count++
+        const st = stepTitle[c.stepId]
+        if (st) e.steps[st] = (e.steps[st] ?? 0) + 1
+        if (c.title && e.titles.length < 3 && !e.titles.includes(c.title)) e.titles.push(c.title)
+        return e
+      }
+      for (const c of cards) for (const tid of c.tagIds ?? []) touch(tid, c)
+      for (const c of sampleForCooc) {
+        const names = (c.contactIds ?? []).flatMap(id => contactTags[id] ?? [])
         for (const tid of c.tagIds ?? []) {
-          const e = tagAgg[tid] ?? { id: tid, count: 0, sampleTitle: c.title ?? null }
-          e.count++
-          tagAgg[tid] = e
+          const e = tagAgg[tid]; if (!e) continue
+          for (const nm of names) e.cooc[nm] = (e.cooc[nm] ?? 0) + 1
         }
       }
-      const tags = Object.values(tagAgg).sort((a, b) => b.count - a.count)
+
+      // nomes genéricos de funil/IA que não servem como rótulo de dimensão
+      const GENERIC = /usada pela ia|frio|tag agendou|urg[êe]ncia|compromisso|agendad|compareceu|faltou|reagend|n[ãa]o agendad|pendente|cliente|oportunidade|venda|desqualific|desmarcou|sem intera|viajando|inadimplente|perdid|conv[êe]nio|servi[çc]o|curr[íi]culo|curso|dor |aquecer|engano|tratativa|honra|contato futur/i
+
+      const tags = Object.values(tagAgg).sort((a, b) => b.count - a.count).map(e => {
+        const topSteps = Object.entries(e.steps).sort((a, b) => b[1] - a[1])
+        const isSource = /lead|n[ãa]o agend/i.test(topSteps[0]?.[0] ?? '')
+        const cooc = Object.entries(e.cooc).sort((a, b) => b[1] - a[1]).map(([name, n]) => ({ name, n }))
+        const cleanSource = cooc.find(x => !GENERIC.test(x.name))      // ex: Meta, Orgânico
+        // tag de contato co-ocorrente nº1 é "Agendou IA" ⇒ agendador IA
+        const strongIA = cooc[0] && /agendou ia/i.test(cooc[0].name)
+        let suggestion = null
+        if (isSource && cleanSource) suggestion = { dim: 'Origem', value: cleanSource.name }
+        else if (strongIA) suggestion = { dim: 'Agendador', value: 'IA' }
+        return {
+          id:           e.id,
+          count:        e.count,
+          steps:        topSteps.slice(0, 3).map(([title, n]) => ({ title, n })),
+          sampleTitles: e.titles,
+          coTags:       cooc.slice(0, 3),
+          suggestion,
+        }
+      })
 
       // Cards de amostra enxutos (só o necessário para o preview de extração)
       const sampleCards = cards.slice(0, 12).map(c => ({

@@ -221,7 +221,14 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
 
     // pré-carrega config existente (edição)
     setExtract(hasAnyRule(clinic?.steps?._extract) ? clinic.steps._extract : emptyExtract())
-    setTagAssign(dimsToTagAssign(clinic?.steps?._dims))
+
+    // dimensões: config salva tem prioridade; senão usa a sugestão automática
+    const fromExisting = dimsToTagAssign(clinic?.steps?._dims)
+    const seeded = { ...fromExisting }
+    for (const t of (panel.tags ?? [])) {
+      if (!seeded[t.id] && t.suggestion) seeded[t.id] = { dim: t.suggestion.dim, value: t.suggestion.value }
+    }
+    setTagAssign(seeded)
 
     setStep(2)
   })
@@ -264,10 +271,18 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
   const setTag = (tid, patch) =>
     setTagAssign(a => ({ ...a, [tid]: { dim: '', value: '', ...a[tid], ...patch } }))
 
+  const guessDim = (name) =>
+    /org[âa]nico|meta|google|facebook|instagram|indica|tr[áa]fego/i.test(name) ? 'Origem'
+    : /\bia\b|crc|humano|recep|secret|consultor/i.test(name) ? 'Agendador' : ''
+
+  // clique num chip de tag de contato → preenche o valor (e adivinha a dimensão)
+  const fillFromName = (tid, name) =>
+    setTag(tid, { value: name, dim: tagAssign[tid]?.dim || guessDim(name) })
+
   // tags conhecidas (amostra) + já atribuídas que não vieram na amostra
   const displayTags = (() => {
     const map = new Map(panelTags.map(t => [t.id, t]))
-    for (const tid of Object.keys(tagAssign)) if (!map.has(tid)) map.set(tid, { id: tid, count: 0, sampleTitle: null })
+    for (const tid of Object.keys(tagAssign)) if (!map.has(tid)) map.set(tid, { id: tid, count: 0, steps: [], coTags: [], sampleTitles: [] })
     return [...map.values()]
   })()
 
@@ -480,42 +495,54 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
               Nenhuma tag de card encontrada na amostra deste painel. Esta clínica fica sem quebras por dimensão.
             </div>
           ) : (
-            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 text-[10px] uppercase tracking-wide text-slate-400">
-                    <th className="text-left px-4 py-2.5 font-semibold">Tag (uso · exemplo)</th>
-                    <th className="text-left px-4 py-2.5 font-semibold w-44">Dimensão</th>
-                    <th className="text-left px-4 py-2.5 font-semibold w-44">Valor (rótulo)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {displayTags.map(t => (
-                    <tr key={t.id} className="border-b border-slate-100 last:border-0">
-                      <td className="px-4 py-3">
-                        <div className="font-mono text-[11px] text-slate-500">{t.id.slice(0, 8)}…</div>
-                        <div className="text-[11px] text-slate-400">
-                          {t.count > 0 ? `${t.count} cards` : 'fora da amostra'}
-                          {t.sampleTitle && ` · ${t.sampleTitle.slice(0, 30)}`}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <input className={`${miniInput} w-full`} list="dim-suggestions" placeholder="ex: Origem"
-                          value={tagAssign[t.id]?.dim ?? ''} onChange={e => setTag(t.id, { dim: e.target.value })} />
-                      </td>
-                      <td className="px-4 py-3">
-                        <input className={`${miniInput} w-full`} placeholder="ex: Meta"
-                          value={tagAssign[t.id]?.value ?? ''} onChange={e => setTag(t.id, { value: e.target.value })} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <>
               <datalist id="dim-suggestions">
                 <option value="Origem" />
                 <option value="Agendador" />
               </datalist>
-            </div>
+              <div className="space-y-2.5">
+                {displayTags.map(t => {
+                  const assigned = Boolean(tagAssign[t.id]?.dim?.trim() && tagAssign[t.id]?.value?.trim())
+                  return (
+                    <div key={t.id} className={`bg-white border rounded-xl p-4 ${assigned ? 'border-indigo-200' : 'border-slate-200'}`}>
+                      <div className="flex items-start justify-between gap-4">
+                        {/* contexto da tag */}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono text-[11px] text-slate-400">{t.id.slice(0, 8)}…</span>
+                            <span className="text-[11px] text-slate-500">{t.count > 0 ? `${t.count} cards` : 'fora da amostra'}</span>
+                            {(t.steps ?? []).slice(0, 3).map(s => (
+                              <span key={s.title} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{s.title}</span>
+                            ))}
+                          </div>
+                          {(t.sampleTitles ?? []).length > 0 && (
+                            <div className="text-[11px] text-slate-400 mt-1 truncate">ex: {t.sampleTitles.slice(0, 2).join(' · ')}</div>
+                          )}
+                          {(t.coTags ?? []).length > 0 && (
+                            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                              <span className="text-[10px] text-slate-400">aparece com:</span>
+                              {t.coTags.map(c => (
+                                <button key={c.name} type="button" onClick={() => fillFromName(t.id, c.name)}
+                                  className="text-[10px] px-1.5 py-0.5 rounded-md border border-slate-200 text-slate-600 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+                                  {c.name} <span className="text-slate-400">({c.n})</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        {/* atribuição */}
+                        <div className="flex gap-2 shrink-0">
+                          <input className={`${miniInput} w-28`} list="dim-suggestions" placeholder="Dimensão"
+                            value={tagAssign[t.id]?.dim ?? ''} onChange={e => setTag(t.id, { dim: e.target.value })} />
+                          <input className={`${miniInput} w-28`} placeholder="Valor"
+                            value={tagAssign[t.id]?.value ?? ''} onChange={e => setTag(t.id, { value: e.target.value })} />
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
           )}
 
           {Object.keys(builtDims).length > 0 && (
