@@ -14,6 +14,7 @@ import StepDistribution from './components/StepDistribution.jsx'
 import UpcomingTable   from './components/UpcomingTable.jsx'
 import PipelineFunnel  from './components/PipelineFunnel.jsx'
 import DimensionBreakdown from './components/DimensionBreakdown.jsx'
+import NotConfigured   from './components/NotConfigured.jsx'
 
 function todayStr() { return new Date().toISOString().slice(0, 10) }
 function daysAgo(n) {
@@ -52,6 +53,7 @@ export default function App() {
   const [data,      setData]      = useState(null)
   const [loading,   setLoading]   = useState(false)
   const [error,     setError]     = useState(null)
+  const [notFound,  setNotFound]  = useState(false)
   const [dateFrom,  setDateFrom]  = useState(daysAgo(30))
   const [dateTo,    setDateTo]    = useState(todayStr())
   const [ticket,    setTicket]    = useState(10000)
@@ -61,14 +63,17 @@ export default function App() {
 
   const load = () => {
     if (!clinicSlug) return
-    setLoading(true); setError(null)
+    setLoading(true); setError(null); setNotFound(false)
     fetchDashboard(clinicSlug)
       .then(d => {
         setData(d)
         setTicket(d.ticket ?? 10000)
         setLastFetch(new Date())
       })
-      .catch(err => setError(err.message))
+      .catch(err => {
+        if (err.status === 404) setNotFound(true)
+        else setError(err.message)
+      })
       .finally(() => setLoading(false))
   }
 
@@ -124,22 +129,9 @@ export default function App() {
   const applyRange = (days) => { setDateFrom(daysAgo(days)); setDateTo(todayStr()) }
   const isRange = (days) => dateFrom === daysAgo(days) && dateTo === todayStr()
 
-  // ── No clinic slug ─────────────────────────────────────────────────────────
-  if (!clinicSlug) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="text-center max-w-sm">
-          <div className="text-5xl mb-4">🦷</div>
-          <h1 className="text-xl font-bold text-slate-800">Dashboard não configurado</h1>
-          <p className="text-slate-500 mt-2 text-sm leading-relaxed">
-            Acesse com{' '}
-            <code className="bg-slate-100 text-indigo-600 px-1.5 py-0.5 rounded font-mono text-xs">
-              ?clinic=slug-da-clinica
-            </code>
-          </p>
-        </div>
-      </div>
-    )
+  // ── Sem slug ou clínica não cadastrada → tela "contate o administrador" ──────
+  if (!clinicSlug || notFound) {
+    return <NotConfigured slug={clinicSlug} />
   }
 
   return (
