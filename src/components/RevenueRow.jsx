@@ -1,4 +1,4 @@
-import { fmtBRL, fmtPhone } from '../utils/parseCards.js'
+import { fmtBRL } from '../utils/parseCards.js'
 
 function RevenueCard({ label, value, sub, icon, gradient, textColor }) {
   return (
@@ -21,7 +21,7 @@ function RevenueCard({ label, value, sub, icon, gradient, textColor }) {
 export default function RevenueRow({ revenue, kpis }) {
   if (!revenue) return null
 
-  const semValor = revenue.semValor ?? []
+  const porEtapa = revenue.semValorPorEtapa ?? []
 
   return (
     <div className="border-b border-slate-200 bg-[#F4F6FA]">
@@ -55,22 +55,25 @@ export default function RevenueRow({ revenue, kpis }) {
           />
         </div>
 
-        {/* Alerta sem valor */}
-        {semValor.length > 0 && (
-          <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-2">
-            <span className="text-amber-500 text-sm shrink-0 mt-0.5">⚠</span>
-            <div className="text-xs text-amber-700">
-              <span className="font-semibold">
-                {semValor.length} card{semValor.length > 1 ? 's' : ''} sem valor
-              </span>
-              {' — '}
-              {semValor.map((c, i) => (
-                <span key={c.id}>
-                  {i > 0 && ', '}
-                  <span className="font-medium">{c.name}</span>
-                  {c.phone && <span className="font-normal"> ({fmtPhone(c.phone)})</span>}
+        {/* Alerta sem valor — agrupado por etapa */}
+        {porEtapa.length > 0 && (
+          <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+            <div className="flex items-start gap-2">
+              <span className="text-amber-500 text-sm shrink-0 mt-0.5">⚠</span>
+              <div className="text-xs text-amber-800">
+                <span className="font-semibold">
+                  {revenue.semValorTotal} card{revenue.semValorTotal > 1 ? 's' : ''} sem valor preenchido
                 </span>
-              ))}
+                <span className="text-amber-600"> — preencha para a receita ficar precisa</span>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {porEtapa.map(s => (
+                    <span key={s.label}
+                      className="inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-md bg-white border border-amber-200 text-amber-700">
+                      {s.label} <span className="font-semibold font-mono">{s.count}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}

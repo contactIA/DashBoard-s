@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
 import { fetchDashboard } from './api'
 import {
-  computeKpis, computePreviousKpis, computeRevenue, delta,
+  computeKpis, computePreviousKpis, computeRevenue, computePreviousRevenue, delta,
   getLost, getNegotiating, getUpcoming, computeFunnel, breakdownByDimension,
 } from './utils/parseCards'
 import { groupCardsByTime, getGranularity } from './utils/groupByTime'
 import DateRangePicker  from './components/DateRangePicker.jsx'
+import HeroStrip       from './components/HeroStrip.jsx'
 import KpiStrip        from './components/KpiStrip.jsx'
 import RevenueRow      from './components/RevenueRow.jsx'
 import TrendChart      from './components/TrendChart.jsx'
@@ -13,7 +14,7 @@ import LostTable       from './components/LostTable.jsx'
 import BudgetTable     from './components/BudgetTable.jsx'
 import StepDistribution from './components/StepDistribution.jsx'
 import UpcomingTable   from './components/UpcomingTable.jsx'
-import PipelineFunnel  from './components/PipelineFunnel.jsx'
+import FunnelChart     from './components/FunnelChart.jsx'
 import DimensionBreakdown from './components/DimensionBreakdown.jsx'
 import NotConfigured   from './components/NotConfigured.jsx'
 
@@ -103,6 +104,14 @@ export default function App() {
   const revenue = useMemo(
     () => computeRevenue(data?.cards ?? [], dateFrom, dateTo, ticket, today),
     [data, dateFrom, dateTo, ticket, today],
+  )
+  const prevRevenue = useMemo(
+    () => computePreviousRevenue(data?.cards ?? [], dateFrom, dateTo, ticket, today),
+    [data, dateFrom, dateTo, ticket, today],
+  )
+  const revenueDelta = useMemo(
+    () => delta(revenue?.fechada, prevRevenue?.fechada),
+    [revenue, prevRevenue],
   )
 
   const { data: chartData, granularity } = useMemo(
@@ -229,7 +238,10 @@ export default function App() {
 
       {data && (
         <>
-          {/* ── KPI Strip ────────────────────────────────────────────────── */}
+          {/* ── 1. Faixa-herói: os 4 números que importam ────────────────── */}
+          <HeroStrip revenue={revenue} kpis={kpis} deltas={deltas} revenueDelta={revenueDelta} />
+
+          {/* ── 2. KPIs secundários (saúde operacional) ──────────────────── */}
           <KpiStrip
             kpis={kpis}
             prevKpis={prevKpis}
@@ -239,12 +251,9 @@ export default function App() {
             onTicketChange={setTicket}
           />
 
-          {/* ── Revenue Row ──────────────────────────────────────────────── */}
-          <RevenueRow revenue={revenue} kpis={kpis} />
-
-          {/* ── Funil + quebras por dimensão ─────────────────────────────── */}
+          {/* ── 3. Funil (herói visual) + quebras por dimensão ───────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.6fr] gap-5 p-5 border-b border-slate-200">
-            <PipelineFunnel funnel={funnel} />
+            <FunnelChart funnel={funnel} revenue={revenue} />
             <div className="flex flex-col gap-5">
               {breakdowns.length > 0
                 ? breakdowns.map(b => (
@@ -261,7 +270,10 @@ export default function App() {
             </div>
           </div>
 
-          {/* ── Charts row ───────────────────────────────────────────────── */}
+          {/* ── 4. Receita (detalhe) + cards sem valor por etapa ─────────── */}
+          <RevenueRow revenue={revenue} kpis={kpis} />
+
+          {/* ── 5. Tendência no tempo + distribuição por etapa ───────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] border-b border-slate-200">
             <div className="p-5 border-b lg:border-b-0 lg:border-r border-slate-200">
               <TrendChart data={chartData} granularity={granularity} />
@@ -276,15 +288,13 @@ export default function App() {
             </div>
           </div>
 
-          {/* ── Tables row ───────────────────────────────────────────────── */}
-          <div className="p-5 border-b border-slate-200 grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <LostTable cards={lost} ticket={ticket} />
-            <BudgetTable cards={negotiating} ticket={ticket} />
-          </div>
-
-          {/* ── Upcoming ─────────────────────────────────────────────────── */}
-          <div className="p-5">
+          {/* ── 6. Acionáveis: próximos, a fechar, recuperáveis ──────────── */}
+          <div className="p-5 border-b border-slate-200">
             <UpcomingTable cards={upcoming} ticket={ticket} />
+          </div>
+          <div className="p-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <BudgetTable cards={negotiating} ticket={ticket} />
+            <LostTable cards={lost} ticket={ticket} />
           </div>
 
           {/* ── Footer ───────────────────────────────────────────────────── */}

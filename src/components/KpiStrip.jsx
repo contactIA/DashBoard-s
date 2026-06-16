@@ -43,20 +43,6 @@ export default function KpiStrip({ kpis, prevKpis, delta: d, chartData, ticket, 
         sparkColor="#6366F1"
       />
       <KpiCell
-        label="Comparecimento"
-        value={kpis?.attendanceRate != null ? kpis.attendanceRate.toFixed(1).replace('.', ',') + '%' : '—'}
-        sub={`${kpis?.attended ?? 0}/${kpis?.shouldAttend ?? 0}`}
-        spark={spark.attended}
-        sparkColor="#10B981"
-      />
-      <KpiCell
-        label="Conversão"
-        value={kpis?.conversionRate != null ? kpis.conversionRate.toFixed(1).replace('.', ',') + '%' : '—'}
-        sub={`${kpis?.converted ?? 0} fechamentos`}
-        spark={spark.converted}
-        sparkColor="#0EA5E9"
-      />
-      <KpiCell
         label="Faltas"
         value={kpis?.missRate != null ? kpis.missRate.toFixed(1).replace('.', ',') + '%' : '—'}
         sub={`${kpis?.missed ?? 0} no período`}

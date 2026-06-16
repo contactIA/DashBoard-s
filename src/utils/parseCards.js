@@ -135,11 +135,21 @@ export function computeRevenue(cards, from, to, ticket, today) {
   const totalPerdida  = perdidaNaoFechou + perdidaFaltas
   const oportunidade  = fechada + perdidaNaoFechou + perdidaFaltas
 
-  // Cards sem valor preenchido — para exibir alerta
-  const semValor = [
-    ...fechados.filter(c => !(c.value > 0)).map(c => ({ ...c, ...parseTitle(c.title) })),
-    ...naoFechou.filter(c => !(c.value > 0)).map(c => ({ ...c, ...parseTitle(c.title) })),
-  ]
+  // Cards sem valor preenchido em etapas que deveriam ter valor (receita/pipeline).
+  const semValorCards = inRange.filter(
+    c => ['converted', 'negotiating', 'attended'].includes(c.stepType) && !(c.value > 0)
+  )
+  const semValor = semValorCards.map(c => ({ ...c, ...parseTitle(c.title) }))
+
+  // Agrupado por etapa — "4 sem valor na etapa X, 5 na etapa Y"
+  const byStep = {}
+  for (const c of semValorCards) {
+    const label = c.stepLabel ?? c.stepKey ?? '—'
+    byStep[label] = (byStep[label] ?? 0) + 1
+  }
+  const semValorPorEtapa = Object.entries(byStep)
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count)
 
   return {
     fechada,
@@ -152,7 +162,23 @@ export function computeRevenue(cards, from, to, ticket, today) {
     totalPerdida,
     oportunidade,
     semValor,
+    semValorPorEtapa,
+    semValorTotal: semValorCards.length,
   }
+}
+
+/** Receita do período imediatamente anterior de mesma duração (para deltas). */
+export function computePreviousRevenue(cards, from, to, ticket, today) {
+  const duration = new Date(to) - new Date(from)
+  const prevTo   = new Date(new Date(from) - 86_400_000)
+  const prevFrom = new Date(prevTo - duration)
+  return computeRevenue(
+    cards,
+    prevFrom.toISOString().slice(0, 10),
+    prevTo.toISOString().slice(0, 10),
+    ticket,
+    today,
+  )
 }
 
 /**
