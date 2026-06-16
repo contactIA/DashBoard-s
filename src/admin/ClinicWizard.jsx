@@ -23,27 +23,60 @@ const emptyExtract = () => ({
 
 const hasAnyRule = (ex) => ex && Object.values(ex).some(rules => rules?.some(r => r.regex || r.from))
 
-// _dims (config) → estado de atribuição por tag { tagId: { dim, value } }
-function dimsToTagAssign(dims) {
-  const assign = {}
-  for (const def of Object.values(dims ?? {})) {
-    for (const [tid, value] of Object.entries(def.values ?? {})) {
-      assign[tid] = { dim: def.label ?? '', value }
-    }
-  }
-  return assign
+let _dimSeq = 0
+const newDimId = () => `d${++_dimSeq}`
+
+// _dims (config salva) → estado do editor: [{ id, label, tags: [{ tid, label }] }]
+// O label de cada tag é o rótulo exibido no funil (pode diferir do nome da etiqueta).
+function dimsToState(dims) {
+  return Object.entries(dims ?? {}).map(([key, def]) => ({
+    id:    newDimId(),
+    label: def.label ?? key,
+    tags:  Object.entries(def.values ?? {}).map(([tid, label]) => ({ tid, label })),
+  }))
 }
 
-// estado de atribuição → _dims (config)
-function buildDims(tagAssign) {
-  const dims = {}
-  for (const [tid, a] of Object.entries(tagAssign)) {
-    if (!a?.dim?.trim() || !a?.value?.trim()) continue
-    const key = kebabify(a.dim).replace(/-/g, '') || 'dim'
-    dims[key] = dims[key] ?? { label: a.dim.trim(), source: 'tag', values: {} }
-    dims[key].values[tid] = a.value.trim()
+// Pré-monta dimensões a partir das sugestões automáticas das tags do painel
+// (Meta/Orgânico → Origem, IA/CRC → Agendador). O admin confirma/ajusta.
+function seedFromSuggestions(panelTags) {
+  const byDim = {}
+  for (const t of panelTags ?? []) {
+    const dim = t.suggestion?.dim
+    if (!dim) continue
+    ;(byDim[dim] ??= []).push({ tid: t.id, label: t.name })
   }
-  return dims
+  return Object.entries(byDim).map(([label, tags]) => ({ id: newDimId(), label, tags }))
+}
+
+// estado do editor → _dims (config). Rótulo do valor = label customizado ou nome da tag.
+function stateToDims(dimensions, tagName) {
+  const out = {}
+  for (const d of dimensions) {
+    const label = d.label?.trim()
+    const tags  = d.tags.filter(t => t.tid)
+    if (!label || !tags.length) continue
+    let key = kebabify(label).replace(/-/g, '') || 'dim'
+    while (out[key]) key += '2'
+    out[key] = { label, source: 'tag', values: Object.fromEntries(tags.map(t => [t.tid, (t.label?.trim() || tagName(t.tid))])) }
+  }
+  return out
+}
+
+// Chip de etiqueta de card, com a cor real vinda da Helena.
+function TagChip({ tag, onRemove }) {
+  const colored = Boolean(tag.color)
+  const style = colored ? { background: tag.color, color: tag.textColor || '#fff' } : {}
+  return (
+    <span
+      className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${colored ? 'border border-black/5' : 'border border-slate-200 bg-slate-100 text-slate-500'}`}
+      style={style}>
+      {tag.name}
+      {tag.count > 0 && <span className="opacity-70 font-mono text-[10px]">· {tag.count}</span>}
+      {onRemove && (
+        <button type="button" onClick={onRemove} className="ml-0.5 leading-none opacity-60 hover:opacity-100" title="Remover">✕</button>
+      )}
+    </span>
+  )
 }
 
 function Stepper({ current }) {
@@ -64,6 +97,15 @@ function Stepper({ current }) {
           </div>
         </div>
       ))}
+    </div>
+  )
+}
+
+function StepHeader({ title, children }) {
+  return (
+    <div>
+      <h3 className="text-sm font-bold text-slate-900">{title}</h3>
+      {children && <p className="text-sm text-slate-500 mt-1">{children}</p>}
     </div>
   )
 }
@@ -168,7 +210,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
   const [sampleCards, setSampleCards] = useState([])
   const [panelTags,   setPanelTags]   = useState([])
   const [extract,     setExtract]     = useState(emptyExtract())
-  const [tagAssign,   setTagAssign]   = useState({})
+  const [dimensions,  setDimensions]  = useState([])
 
   const [savedUrl, setSavedUrl] = useState(null)
   const [copied,   setCopied]   = useState(false)
@@ -223,12 +265,12 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
     setExtract(hasAnyRule(clinic?.steps?._extract) ? clinic.steps._extract : emptyExtract())
 
     // dimensões: config salva tem prioridade; senão usa a sugestão automática
-    const fromExisting = dimsToTagAssign(clinic?.steps?._dims)
-    const seeded = { ...fromExisting }
-    for (const t of (panel.tags ?? [])) {
-      if (!seeded[t.id] && t.suggestion) seeded[t.id] = { dim: t.suggestion.dim, value: t.suggestion.value }
-    }
-    setTagAssign(seeded)
+    const existingDims = clinic?.steps?._dims
+    setDimensions(
+      existingDims && Object.keys(existingDims).length
+        ? dimsToState(existingDims)
+        : seedFromSuggestions(panel.tags ?? [])
+    )
 
     setStep(2)
   })
@@ -242,7 +284,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       token:     token.trim(),
       panelId:   selectedPanel.id,
       ticket:    Number(ticket) || null,
-      steps:     buildStepsConfig(mappedSteps, extract, buildDims(tagAssign)),
+      steps:     buildStepsConfig(mappedSteps, extract, stateToDims(dimensions, tagName)),
     }
     if (isEdit) await updateClinic(payload)
     else        await createClinic(payload)
@@ -268,25 +310,30 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       return next
     }))
 
-  const setTag = (tid, patch) =>
-    setTagAssign(a => ({ ...a, [tid]: { dim: '', value: '', ...a[tid], ...patch } }))
-
-  const guessDim = (name) =>
-    /org[âa]nico|meta|google|facebook|instagram|indica|tr[áa]fego/i.test(name) ? 'Origem'
-    : /\bia\b|crc|humano|recep|secret|consultor/i.test(name) ? 'Agendador' : ''
-
-  // clique num chip de tag de contato → preenche o valor (e adivinha a dimensão)
-  const fillFromName = (tid, name) =>
-    setTag(tid, { value: name, dim: tagAssign[tid]?.dim || guessDim(name) })
-
-  // tags conhecidas (amostra) + já atribuídas que não vieram na amostra
-  const displayTags = (() => {
-    const map = new Map(panelTags.map(t => [t.id, t]))
-    for (const tid of Object.keys(tagAssign)) if (!map.has(tid)) map.set(tid, { id: tid, count: 0, steps: [], coTags: [], sampleTitles: [] })
-    return [...map.values()]
+  // info de cada tag conhecida do painel + órfãs (atribuídas, mas já removidas do painel)
+  const tagById = (() => {
+    const m = new Map(panelTags.map(t => [t.id, t]))
+    for (const d of dimensions) for (const t of d.tags) {
+      if (!m.has(t.tid)) m.set(t.tid, { id: t.tid, name: '(etiqueta removida)', color: null, textColor: null, count: 0 })
+    }
+    return m
   })()
+  const tagName = (tid) => tagById.get(tid)?.name ?? tid
 
-  const builtDims = buildDims(tagAssign)
+  const assignedTagIds = new Set(dimensions.flatMap(d => d.tags.map(t => t.tid)))
+  const unassignedTags = panelTags.filter(t => !assignedTagIds.has(t.id))
+
+  const addDimension     = ()              => setDimensions(ds => [...ds, { id: newDimId(), label: '', tags: [] }])
+  const removeDimension  = (id)            => setDimensions(ds => ds.filter(d => d.id !== id))
+  const renameDimension  = (id, label)     => setDimensions(ds => ds.map(d => d.id === id ? { ...d, label } : d))
+  const addTagToDim      = (id, tid)       => setDimensions(ds => ds.map(d => d.id === id ? { ...d, tags: [...d.tags, { tid, label: tagName(tid) }] } : d))
+  const removeTagFromDim = (id, tid)       => setDimensions(ds => ds.map(d => d.id === id ? { ...d, tags: d.tags.filter(t => t.tid !== tid) } : d))
+  const renameTagLabel   = (id, tid, label) => setDimensions(ds => ds.map(d => d.id === id ? { ...d, tags: d.tags.map(t => t.tid === tid ? { ...t, label } : t) } : d))
+
+  // dimensões válidas (com nome e ao menos uma tag) — para revisão
+  const reviewDims = dimensions
+    .filter(d => d.label.trim() && d.tags.length)
+    .map(d => ({ label: d.label.trim(), values: d.tags.map(t => t.label?.trim() || tagName(t.tid)) }))
 
   // ── Tela de sucesso ───────────────────────────────────────────────────────
   if (savedUrl) {
@@ -362,7 +409,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       {/* ── Etapa 2: seleção de painel ───────────────────────────────────── */}
       {step === 1 && (
         <div className="space-y-3">
-          <p className="text-sm text-slate-500">Selecione o painel do CRM que alimenta o dashboard:</p>
+          <StepHeader title="Selecione o painel">Escolha o painel do CRM que alimenta o dashboard desta clínica.</StepHeader>
           {panels.map(p => (
             <button key={p.id} onClick={() => setSelectedPanel(p)}
               className={`w-full text-left bg-white border rounded-xl p-4 transition-colors ${
@@ -398,9 +445,10 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       {/* ── Etapa 3: mapeamento de métricas ──────────────────────────────── */}
       {step === 2 && (
         <div className="space-y-4">
-          <p className="text-sm text-slate-500">
-            Defina o que cada etapa do painel <strong>{selectedPanel.title}</strong> representa nas métricas.
-          </p>
+          <StepHeader title="Mapeie as métricas">
+            Defina o que cada etapa do painel <strong>{selectedPanel.title}</strong> representa no funil.
+            Etapas marcadas como <em>Ignorar</em> ficam fora das métricas.
+          </StepHeader>
           <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead>
@@ -455,10 +503,10 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       {/* ── Etapa 4: extração ────────────────────────────────────────────── */}
       {step === 3 && (
         <div className="space-y-4">
-          <p className="text-sm text-slate-500">
-            Cada chatbot escreve o card de um jeito. Defina como extrair os dados — o preview à direita
+          <StepHeader title="Extração de dados">
+            Cada chatbot escreve o card de um jeito. Defina como extrair os dados — o preview
             mostra o resultado em cards reais. A primeira regra que casar vence; as demais são fallback.
-          </p>
+          </StepHeader>
           {sampleCards.length === 0 && (
             <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 text-xs text-amber-700">
               Sem cards de amostra neste painel — você ainda pode configurar as regras manualmente.
@@ -482,77 +530,88 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
         </div>
       )}
 
-      {/* ── Etapa 5: dimensões (tags) ────────────────────────────────────── */}
+      {/* ── Etapa 5: dimensões (etiquetas de card) ───────────────────────── */}
       {step === 4 && (
         <div className="space-y-4">
-          <p className="text-sm text-slate-500">
-            As <strong>tags de card</strong> viram cortes do funil (ex: origem <em>Meta/Orgânico</em>, agendador <em>CRC/IA</em>).
-            Para cada tag, informe a <strong>dimensão</strong> e o <strong>rótulo do valor</strong>. Tags sem dimensão são ignoradas.
-          </p>
+          <StepHeader title="Dimensões do funil">
+            As <strong>etiquetas de card</strong> viram cortes do funil. Agrupe-as em <strong>dimensões</strong>
+            {' '}— ex: <em>Origem</em> = Meta + Orgânico · <em>Agendador</em> = IA + CRC.
+            O <strong>rótulo</strong> é como o valor aparece no funil (ex: a etiqueta <em>Meta</em> pode exibir como <em>Tráfego pago</em>).
+            Etiquetas fora de qualquer dimensão são ignoradas nas métricas.
+          </StepHeader>
 
-          {displayTags.length === 0 ? (
+          {panelTags.length === 0 ? (
             <div className="bg-white border border-slate-200 rounded-xl p-6 text-center text-sm text-slate-400">
-              Nenhuma tag de card encontrada na amostra deste painel. Esta clínica fica sem quebras por dimensão.
+              Este painel não possui etiquetas de card. A clínica fica sem quebras por dimensão — pode seguir para a revisão.
             </div>
           ) : (
             <>
-              <datalist id="dim-suggestions">
-                <option value="Origem" />
-                <option value="Agendador" />
-              </datalist>
-              <div className="space-y-2.5">
-                {displayTags.map(t => {
-                  const assigned = Boolean(tagAssign[t.id]?.dim?.trim() && tagAssign[t.id]?.value?.trim())
-                  return (
-                    <div key={t.id} className={`bg-white border rounded-xl p-4 ${assigned ? 'border-indigo-200' : 'border-slate-200'}`}>
-                      <div className="flex items-start justify-between gap-4">
-                        {/* contexto da tag */}
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-mono text-[11px] text-slate-400">{t.id.slice(0, 8)}…</span>
-                            <span className="text-[11px] text-slate-500">{t.count > 0 ? `${t.count} cards` : 'fora da amostra'}</span>
-                            {(t.steps ?? []).slice(0, 3).map(s => (
-                              <span key={s.title} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{s.title}</span>
-                            ))}
-                          </div>
-                          {(t.sampleTitles ?? []).length > 0 && (
-                            <div className="text-[11px] text-slate-400 mt-1 truncate">ex: {t.sampleTitles.slice(0, 2).join(' · ')}</div>
-                          )}
-                          {(t.coTags ?? []).length > 0 && (
-                            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                              <span className="text-[10px] text-slate-400">aparece com:</span>
-                              {t.coTags.map(c => (
-                                <button key={c.name} type="button" onClick={() => fillFromName(t.id, c.name)}
-                                  className="text-[10px] px-1.5 py-0.5 rounded-md border border-slate-200 text-slate-600 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
-                                  {c.name} <span className="text-slate-400">({c.n})</span>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        {/* atribuição */}
-                        <div className="flex gap-2 shrink-0">
-                          <input className={`${miniInput} w-28`} list="dim-suggestions" placeholder="Dimensão"
-                            value={tagAssign[t.id]?.dim ?? ''} onChange={e => setTag(t.id, { dim: e.target.value })} />
-                          <input className={`${miniInput} w-28`} placeholder="Valor"
-                            value={tagAssign[t.id]?.value ?? ''} onChange={e => setTag(t.id, { value: e.target.value })} />
-                        </div>
-                      </div>
+              <div className="space-y-3">
+                {dimensions.map(d => (
+                  <div key={d.id} className="bg-white border border-slate-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <input
+                        className="flex-1 px-2.5 py-1.5 text-sm font-semibold text-slate-800 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400"
+                        placeholder="Nome da dimensão (ex: Origem)"
+                        value={d.label} onChange={e => renameDimension(d.id, e.target.value)} />
+                      <button onClick={() => removeDimension(d.id)}
+                        className="text-xs px-2.5 py-1.5 rounded-md border border-red-200 text-red-500 hover:bg-red-50 shrink-0">
+                        Remover
+                      </button>
                     </div>
-                  )
-                })}
-              </div>
-            </>
-          )}
 
-          {Object.keys(builtDims).length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {Object.values(builtDims).map(def => (
-                <span key={def.label} className="text-[11px] px-2 py-1 rounded-md border border-indigo-200 bg-indigo-50 text-indigo-700">
-                  {def.label}: {Object.values(def.values).join(', ')}
-                </span>
-              ))}
-            </div>
+                    <div className="space-y-1.5">
+                      {d.tags.length === 0 && (
+                        <span className="text-[11px] text-slate-400">Nenhuma etiqueta ainda — escolha abaixo.</span>
+                      )}
+                      {d.tags.map(t => {
+                        const info = tagById.get(t.tid) ?? { id: t.tid, name: t.label, color: null, textColor: null, count: 0 }
+                        return (
+                          <div key={t.tid} className="flex items-center gap-2">
+                            <div className="w-32 shrink-0"><TagChip tag={info} /></div>
+                            <span className="text-slate-300 text-xs shrink-0">→</span>
+                            <input
+                              className="flex-1 min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-md bg-white focus:outline-none focus:border-slate-400"
+                              placeholder={`rótulo no funil (ex: ${info.name})`}
+                              value={t.label} onChange={e => renameTagLabel(d.id, t.tid, e.target.value)} />
+                            <button type="button" onClick={() => removeTagFromDim(d.id, t.tid)}
+                              className="text-slate-300 hover:text-red-500 px-1 shrink-0" title="Remover etiqueta">✕</button>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {unassignedTags.length > 0 && (
+                      <div className="mt-2.5">
+                        <select value="" onChange={e => { if (e.target.value) addTagToDim(d.id, e.target.value) }}
+                          className="text-[11px] px-2 py-1 rounded-md border border-dashed border-slate-300 text-slate-500 bg-white hover:border-slate-400 focus:outline-none focus:border-slate-400 cursor-pointer">
+                          <option value="">+ adicionar etiqueta</option>
+                          {unassignedTags.map(t => (
+                            <option key={t.id} value={t.id}>{t.name}{t.count ? ` (${t.count})` : ''}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <button onClick={addDimension}
+                className="w-full py-2.5 text-sm font-medium rounded-xl border border-dashed border-slate-300 text-slate-500 hover:border-slate-400 hover:text-slate-700">
+                + Nova dimensão
+              </button>
+
+              {unassignedTags.length > 0 && (
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                  <div className="text-xs font-medium text-slate-500 mb-2">
+                    Etiquetas sem dimensão <span className="text-slate-400 font-normal">· ignoradas nas métricas</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {unassignedTags.map(t => <TagChip key={t.id} tag={t} />)}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           <div className="flex justify-between pt-2">
@@ -568,6 +627,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       {/* ── Etapa 6: revisão ─────────────────────────────────────────────── */}
       {step === 5 && (
         <div className="space-y-4">
+          <StepHeader title="Revisão">Confira a configuração antes de {isEdit ? 'salvar as alterações' : 'cadastrar a clínica'}.</StepHeader>
           <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100">
             {[
               ['Clínica',     name],
@@ -594,14 +654,15 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                 ))}
               </div>
             </div>
-            {Object.keys(builtDims).length > 0 && (
+            {reviewDims.length > 0 && (
               <div className="px-4 py-3">
                 <div className="text-sm text-slate-500 mb-2">Dimensões</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {Object.values(builtDims).map(def => (
-                    <span key={def.label} className="text-[11px] px-2 py-1 rounded-md border border-indigo-200 bg-indigo-50 text-indigo-700">
-                      {def.label}: {Object.values(def.values).join(', ')}
-                    </span>
+                <div className="space-y-1.5">
+                  {reviewDims.map(def => (
+                    <div key={def.label} className="flex items-baseline gap-2">
+                      <span className="text-xs font-semibold text-slate-700 shrink-0">{def.label}:</span>
+                      <span className="text-xs text-slate-500">{def.values.join(', ')}</span>
+                    </div>
                   ))}
                 </div>
               </div>

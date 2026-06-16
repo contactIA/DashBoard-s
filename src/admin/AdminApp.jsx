@@ -101,7 +101,7 @@ function ClinicList({ clinics, onNew, onEdit, onDeleted, onError }) {
             <thead>
               <tr className="border-b border-slate-200 text-[10px] uppercase tracking-wide text-slate-400">
                 <th className="text-left px-4 py-2.5 font-semibold">Clínica</th>
-                <th className="text-left px-4 py-2.5 font-semibold hidden md:table-cell">Métricas</th>
+                <th className="text-left px-4 py-2.5 font-semibold hidden md:table-cell">Métricas & dimensões</th>
                 <th className="text-right px-4 py-2.5 font-semibold hidden sm:table-cell">Ticket</th>
                 <th className="text-right px-4 py-2.5 font-semibold w-56">Ações</th>
               </tr>
@@ -113,6 +113,7 @@ function ClinicList({ clinics, onNew, onEdit, onDeleted, onError }) {
                     .filter(([k]) => !k.startsWith('_'))
                     .map(([, s]) => s.type)
                 )]
+                const dims = Object.values(c.steps?._dims ?? {}).map(d => d.label).filter(Boolean)
                 return (
                   <tr key={c.accountId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60">
                     <td className="px-4 py-3">
@@ -125,6 +126,9 @@ function ClinicList({ clinics, onNew, onEdit, onDeleted, onError }) {
                       <div className="flex flex-wrap gap-1">
                         {types.map(t => (
                           <span key={t} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{typeLabel(t)}</span>
+                        ))}
+                        {dims.map(d => (
+                          <span key={d} className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 border border-indigo-100">{d}</span>
                         ))}
                       </div>
                     </td>
