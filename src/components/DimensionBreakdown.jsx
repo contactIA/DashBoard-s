@@ -8,10 +8,10 @@ export default function DimensionBreakdown({ title, rows }) {
   if (!rows?.length) return null
 
   const cols = [
-    { key: 'entrou',     label: 'Entrou' },
-    { key: 'agendou',    label: 'Agendou' },
-    { key: 'compareceu', label: 'Compareceu' },
-    { key: 'fechou',     label: 'Fechou' },
+    { key: 'entrou',    label: 'Entrou' },
+    { key: 'agendou',   label: 'Agendou' },
+    { key: 'attended',  label: 'Não fechou' },
+    { key: 'converted', label: 'Fechou' },
   ]
 
   return (

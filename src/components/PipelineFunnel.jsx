@@ -1,7 +1,11 @@
 const fmtPct = (v) => v == null ? '—' : v.toFixed(1).replace('.', ',') + '%'
 
 function Stage({ label, value, base, color, rate }) {
-  const pct = base > 0 ? (value / base) * 100 : 0
+  // A barra reflete a porcentagem exibida ao lado (quando há taxa), para que
+  // largura e número sempre conversem. Sem taxa (estágio base), usa value/base.
+  const pct = rate != null
+    ? Math.max(0, Math.min(100, rate))
+    : (base > 0 ? (value / base) * 100 : 0)
   return (
     <div>
       <div className="flex items-center justify-between text-xs mb-1.5">

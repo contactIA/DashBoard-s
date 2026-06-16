@@ -1,11 +1,14 @@
 import { useState } from 'react'
+import { effectiveDate } from '../utils/parseCards.js'
 
 export default function StepDistribution({ cards, steps, from, to }) {
   const [mode, setMode] = useState('period') // 'period' | 'all'
   if (!cards?.length || !steps) return null
 
+  // Modo Período usa a data efetiva (agendamento → updatedAt → createdAt),
+  // igual aos KPIs e ao funil — para não esconder cards sem data de agendamento.
   const filtered = mode === 'period' && from && to
-    ? cards.filter(c => c.date && c.date >= from && c.date <= to)
+    ? cards.filter(c => { const d = effectiveDate(c); return d && d >= from && d <= to })
     : cards
 
   const counts = Object.entries(steps).map(([key, step]) => ({
