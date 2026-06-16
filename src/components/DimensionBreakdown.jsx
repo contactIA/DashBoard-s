@@ -7,10 +7,14 @@ const fmtPct = (v) => v == null ? '—' : v.toFixed(0) + '%'
 export default function DimensionBreakdown({ title, rows }) {
   if (!rows?.length) return null
 
+  // "Em aberto" só aparece se alguma linha tiver orçamento em negociação
+  const hasNegotiating = rows.some(r => r.funnel.negotiating > 0)
+
   const cols = [
     { key: 'entrou',    label: 'Entrou' },
     { key: 'agendou',   label: 'Agendou' },
     { key: 'attended',  label: 'Não fechou' },
+    ...(hasNegotiating ? [{ key: 'negotiating', label: 'Em aberto' }] : []),
     { key: 'converted', label: 'Fechou' },
   ]
 

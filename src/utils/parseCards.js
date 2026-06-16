@@ -50,30 +50,37 @@ export function computeKpis(cards, from, to) {
   if (!cards?.length || !from || !to) return null
 
   // Leads ficam fora dos KPIs de atendimento (vivem no funil, não na agenda)
-  const inRange   = cards.filter(c => c.stepType !== 'lead' && inPeriod(c, from, to))
-  const shouldAttend = inRange.filter(c => ['attended', 'converted', 'missed'].includes(c.stepType))
-  const attended  = inRange.filter(c => ['attended', 'converted'].includes(c.stepType))
-  const converted = inRange.filter(c => c.stepType === 'converted')
-  const missed    = inRange.filter(c => c.stepType === 'missed')
-  const cancelled = inRange.filter(c => c.stepType === 'cancelled')
+  const inRange     = cards.filter(c => c.stepType !== 'lead' && inPeriod(c, from, to))
+  const negotiating = inRange.filter(c => c.stepType === 'negotiating')   // orçamento em aberto
+  const notClosed   = inRange.filter(c => c.stepType === 'attended')      // compareceu, não fechou
+  const converted   = inRange.filter(c => c.stepType === 'converted')
+  const missed      = inRange.filter(c => c.stepType === 'missed')
+  const cancelled   = inRange.filter(c => c.stepType === 'cancelled')
+  const scheduled   = inRange.filter(c => c.stepType === 'scheduled')
   const rescheduled = inRange.filter(c => /reagend/i.test(c.stepLabel ?? c.stepKey ?? ''))
-  const scheduled = inRange.filter(c => c.stepType === 'scheduled')
+
+  // Quem compareceu = não fechou + em negociação + fechou
+  const showed       = notClosed.length + negotiating.length + converted.length
+  const shouldAttend = showed + missed.length            // tinha consulta: compareceu ou faltou
+  const decided      = notClosed.length + converted.length // compareceu E já decidiu (em aberto fora)
 
   return {
     total:        inRange.length,
-    shouldAttend: shouldAttend.length,
-    attended:     attended.length,
+    shouldAttend,
+    attended:     showed,            // compareceram (inclui em negociação e fechados)
+    notClosed:    notClosed.length,  // compareceram e não fecharam (sem os em aberto)
+    negotiating:  negotiating.length,
     converted:    converted.length,
     missed:       missed.length,
     cancelled:    cancelled.length,
     rescheduled:  rescheduled.length,
     scheduled:    scheduled.length,
     attendanceRate:
-      shouldAttend.length > 0 ? (attended.length / shouldAttend.length) * 100 : null,
+      shouldAttend > 0 ? (showed / shouldAttend) * 100 : null,
     conversionRate:
-      attended.length > 0 ? (converted.length / attended.length) * 100 : null,
+      decided > 0 ? (converted.length / decided) * 100 : null,   // em aberto fora do denominador
     missRate:
-      shouldAttend.length > 0 ? (missed.length / shouldAttend.length) * 100 : null,
+      shouldAttend > 0 ? (missed.length / shouldAttend) * 100 : null,
     noDate: cards.filter(c => !c.date).length,
   }
 }
@@ -106,7 +113,8 @@ export function computeRevenue(cards, from, to, ticket, today) {
   const inRange = cards.filter(c => inPeriod(c, from, to))
 
   const fechados  = inRange.filter(c => c.stepType === 'converted')
-  const naoFechou = inRange.filter(c => c.stepType === 'attended')
+  const naoFechou = inRange.filter(c => c.stepType === 'attended')      // já exclui em negociação
+  const negociacao= inRange.filter(c => c.stepType === 'negotiating')   // orçamento em aberto
   const faltas    = inRange.filter(c => c.stepType === 'missed')
 
   // Agendamentos futuros — base real para projeção
@@ -116,10 +124,12 @@ export function computeRevenue(cards, from, to, ticket, today) {
   const sumReal = (arr) => arr.filter(c => c.value > 0).reduce((s, c) => s + c.value, 0)
 
   const fechada          = sumReal(fechados)
+  const emNegociacao     = sumReal(negociacao)             // pipeline quente, a fechar
   const perdidaNaoFechou = sumReal(naoFechou)
   const perdidaFaltas    = ticket ? faltas.length * ticket : 0
-  const rate             = (fechados.length + naoFechou.length + faltas.length) > 0
-    ? fechados.length / (fechados.length + naoFechou.length + faltas.length)
+  // Taxa de fechamento só entre os que já decidiram (em aberto fora)
+  const rate             = (fechados.length + naoFechou.length) > 0
+    ? fechados.length / (fechados.length + naoFechou.length)
     : 0
   const projetada = ticket ? Math.round(agendados.length * rate * ticket) : 0
   const totalPerdida  = perdidaNaoFechou + perdidaFaltas
@@ -133,6 +143,8 @@ export function computeRevenue(cards, from, to, ticket, today) {
 
   return {
     fechada,
+    emNegociacao,
+    negociacaoCount: negociacao.length,
     projetada,
     agendadosFuturos: agendados.length,
     perdidaNaoFechou,
@@ -150,25 +162,28 @@ export function computeRevenue(cards, from, to, ticket, today) {
  */
 export function funnelOf(cards) {
   const n = (t) => cards.filter(c => c.stepType === t).length
-  const lead      = n('lead')
-  const scheduled = n('scheduled')
-  const attended  = n('attended')
-  const converted = n('converted')
-  const missed    = n('missed')
-  const cancelled = n('cancelled')
+  const lead        = n('lead')
+  const scheduled   = n('scheduled')
+  const attended    = n('attended')        // compareceu, não fechou
+  const negotiating = n('negotiating')     // orçamento em aberto
+  const converted   = n('converted')
+  const missed      = n('missed')
+  const cancelled   = n('cancelled')
 
   const entrou      = cards.length
-  const agendou     = entrou - lead           // saiu do topo do funil
-  const compareceu  = attended + converted
+  const agendou     = entrou - lead                       // saiu do topo do funil
+  const compareceu  = attended + negotiating + converted  // todos que compareceram
+  const decididos   = attended + converted                // compareceram E decidiram (em aberto fora)
   const fechou      = converted
 
   return {
-    entrou, lead, scheduled, attended, converted, missed, cancelled,
-    agendou, compareceu, fechou,
+    entrou, lead, scheduled, attended, negotiating, converted, missed, cancelled,
+    agendou, compareceu, decididos, fechou,
     taxaAgendamento: entrou > 0 ? (agendou / entrou) * 100 : null,
     // comparecimento entre os que tiveram desfecho de consulta (compareceu ou faltou)
     taxaComparecimento: (compareceu + missed) > 0 ? (compareceu / (compareceu + missed)) * 100 : null,
-    taxaFechamento: compareceu > 0 ? (fechou / compareceu) * 100 : null,
+    // fechamento só entre os que já decidiram — em negociação não derruba a taxa
+    taxaFechamento: decididos > 0 ? (fechou / decididos) * 100 : null,
   }
 }
 
@@ -211,6 +226,15 @@ export function getLost(cards, from, to) {
   return cards
     .filter(c => c.stepType === 'attended' && inPeriod(c, from, to))
     .sort((a, b) => (effectiveDate(b) ?? '').localeCompare(effectiveDate(a) ?? ''))
+    .map(c => ({ ...c, ...parseTitle(c.title) }))
+}
+
+/** Cards com orçamento em aberto (em negociação) no período, com nome/telefone/valor */
+export function getNegotiating(cards, from, to) {
+  if (!cards?.length) return []
+  return cards
+    .filter(c => c.stepType === 'negotiating' && inPeriod(c, from, to))
+    .sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
     .map(c => ({ ...c, ...parseTitle(c.title) }))
 }
 

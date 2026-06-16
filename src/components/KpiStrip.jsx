@@ -25,8 +25,8 @@ export default function KpiStrip({ kpis, prevKpis, delta: d, chartData, ticket, 
   const sparkFor = (key) => rows.map(row => row[key] ?? 0)
 
   const spark = {
-    total:       rows.map(r => (r.attended ?? 0) + (r.converted ?? 0) + (r.missed ?? 0) + (r.cancelled ?? 0)),
-    attended:    rows.map(r => (r.attended ?? 0) + (r.converted ?? 0)),
+    total:       rows.map(r => (r.attended ?? 0) + (r.negotiating ?? 0) + (r.converted ?? 0) + (r.missed ?? 0) + (r.cancelled ?? 0)),
+    attended:    rows.map(r => (r.attended ?? 0) + (r.negotiating ?? 0) + (r.converted ?? 0)),
     converted:   sparkFor('converted'),
     missed:      sparkFor('missed'),
     cancelled:   sparkFor('cancelled'),

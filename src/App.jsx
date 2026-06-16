@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { fetchDashboard } from './api'
 import {
   computeKpis, computePreviousKpis, computeRevenue, delta,
-  getLost, getUpcoming, computeFunnel, breakdownByDimension,
+  getLost, getNegotiating, getUpcoming, computeFunnel, breakdownByDimension,
 } from './utils/parseCards'
 import { groupCardsByTime, getGranularity } from './utils/groupByTime'
 import DateRangePicker  from './components/DateRangePicker.jsx'
@@ -10,6 +10,7 @@ import KpiStrip        from './components/KpiStrip.jsx'
 import RevenueRow      from './components/RevenueRow.jsx'
 import TrendChart      from './components/TrendChart.jsx'
 import LostTable       from './components/LostTable.jsx'
+import BudgetTable     from './components/BudgetTable.jsx'
 import StepDistribution from './components/StepDistribution.jsx'
 import UpcomingTable   from './components/UpcomingTable.jsx'
 import PipelineFunnel  from './components/PipelineFunnel.jsx'
@@ -109,8 +110,9 @@ export default function App() {
     [data, dateFrom, dateTo],
   )
 
-  const lost     = useMemo(() => getLost(data?.cards ?? [], dateFrom, dateTo), [data, dateFrom, dateTo])
-  const upcoming = useMemo(() => getUpcoming(data?.cards ?? [], today), [data, today])
+  const lost       = useMemo(() => getLost(data?.cards ?? [], dateFrom, dateTo), [data, dateFrom, dateTo])
+  const negotiating = useMemo(() => getNegotiating(data?.cards ?? [], dateFrom, dateTo), [data, dateFrom, dateTo])
+  const upcoming   = useMemo(() => getUpcoming(data?.cards ?? [], today), [data, today])
 
   const funnel = useMemo(
     () => computeFunnel(data?.cards ?? [], dateFrom, dateTo),
@@ -275,8 +277,9 @@ export default function App() {
           </div>
 
           {/* ── Tables row ───────────────────────────────────────────────── */}
-          <div className="p-5 border-b border-slate-200">
+          <div className="p-5 border-b border-slate-200 grid grid-cols-1 lg:grid-cols-2 gap-5">
             <LostTable cards={lost} ticket={ticket} />
+            <BudgetTable cards={negotiating} ticket={ticket} />
           </div>
 
           {/* ── Upcoming ─────────────────────────────────────────────────── */}

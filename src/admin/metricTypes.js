@@ -1,12 +1,13 @@
 // Tipos de métrica que o dashboard entende (ver utils/parseCards.js)
 export const METRIC_TYPES = [
-  { value: 'lead',      label: 'Lead (topo do funil)',   hint: 'Entrou, ainda não agendou',   color: '#0EA5E9' },
-  { value: 'scheduled', label: 'Agendamento',            hint: 'Agendou, Reagendou',          color: '#6366F1' },
-  { value: 'attended',  label: 'Compareceu, não fechou', hint: 'Oportunidade recuperável',    color: '#F59E0B' },
-  { value: 'converted', label: 'Fechou contrato',        hint: 'Conta como receita',          color: '#10B981' },
-  { value: 'missed',    label: 'Faltou',                 hint: 'Entra na taxa de faltas',     color: '#F97316' },
-  { value: 'cancelled', label: 'Cancelou',               hint: 'Cancelamentos do período',    color: '#EF4444' },
-  { value: 'ignore',    label: 'Ignorar',                hint: 'Step fora das métricas',      color: '#94A3B8' },
+  { value: 'lead',       label: 'Lead (topo do funil)',   hint: 'Entrou, ainda não agendou',   color: '#0EA5E9' },
+  { value: 'scheduled',  label: 'Agendamento',            hint: 'Agendou, Reagendou',          color: '#6366F1' },
+  { value: 'attended',   label: 'Compareceu, não fechou', hint: 'Oportunidade recuperável',    color: '#F59E0B' },
+  { value: 'negotiating', label: 'Orçamento em aberto',   hint: 'Compareceu, em negociação',   color: '#8B5CF6' },
+  { value: 'converted',  label: 'Fechou contrato',        hint: 'Conta como receita',          color: '#10B981' },
+  { value: 'missed',     label: 'Faltou',                 hint: 'Entra na taxa de faltas',     color: '#F97316' },
+  { value: 'cancelled',  label: 'Cancelou',               hint: 'Cancelamentos do período',    color: '#EF4444' },
+  { value: 'ignore',     label: 'Ignorar',                hint: 'Step fora das métricas',      color: '#94A3B8' },
 ]
 
 export const typeColor = (type) =>
@@ -22,6 +23,7 @@ const stripAccents = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '')
 export function guessType(title) {
   const t = stripAccents(String(title).toLowerCase())
   if (t.includes('lead') || t.includes('novo contato') || t.includes('prospec')) return 'lead'
+  if (t.includes('orcamento') || t.includes('em aberto') || t.includes('negocia') || t.includes('proposta')) return 'negotiating'
   if (t.includes('nao fechou') || t.includes('sem fechar')) return 'attended'
   if (t.includes('fechou') || t.includes('fechamento') || t.includes('converte')) return 'converted'
   if (t.includes('falt')) return 'missed'

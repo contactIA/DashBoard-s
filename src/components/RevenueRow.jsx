@@ -48,7 +48,7 @@ export default function RevenueRow({ revenue, kpis }) {
           <RevenueCard
             label="Oportunidade perdida"
             value={fmtBRL(revenue.perdidaNaoFechou)}
-            sub={`${kpis?.attended ?? 0} pacientes compareceram mas não fecharam`}
+            sub={`${kpis?.notClosed ?? 0} pacientes compareceram mas não fecharam`}
             icon="↗"
             gradient="rgba(245,158,11,0.12)"
             textColor="text-amber-500"

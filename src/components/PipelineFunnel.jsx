@@ -41,6 +41,10 @@ export default function PipelineFunnel({ funnel }) {
         <Stage label="Leads (entraram)" value={f.entrou}     base={f.entrou} color="#0EA5E9" />
         <Stage label="Agendou"          value={f.agendou}    base={f.entrou} color="#6366F1" rate={f.taxaAgendamento} />
         <Stage label="Compareceu"       value={f.compareceu} base={f.entrou} color="#F59E0B" rate={f.taxaComparecimento} />
+        {f.negotiating > 0 && (
+          <Stage label="Em negociação"  value={f.negotiating} base={f.compareceu} color="#8B5CF6"
+            rate={f.compareceu > 0 ? (f.negotiating / f.compareceu) * 100 : null} />
+        )}
         <Stage label="Fechou"           value={f.fechou}     base={f.entrou} color="#10B981" rate={f.taxaFechamento} />
       </div>
 
