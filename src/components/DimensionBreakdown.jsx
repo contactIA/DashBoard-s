@@ -13,8 +13,8 @@ export default function DimensionBreakdown({ title, rows }) {
   const cols = [
     { key: 'entrou',    label: 'Entrou' },
     { key: 'agendou',   label: 'Agendou' },
-    { key: 'attended',  label: 'Não fechou' },
     ...(hasNegotiating ? [{ key: 'negotiating', label: 'Em aberto' }] : []),
+    { key: 'attended',  label: 'Não fechou' },
     { key: 'converted', label: 'Fechou' },
   ]
 

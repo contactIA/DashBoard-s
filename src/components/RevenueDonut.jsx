@@ -1,8 +1,27 @@
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { fmtBRL } from '../utils/parseCards.js'
 
 // Paleta consistente com o restante do painel
 const PALETTE = ['#6366F1', '#0EA5E9', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444', '#14B8A6']
+
+const DonutTooltip = ({ active, payload, total }) => {
+  if (!active || !payload?.length) return null
+  const d = payload[0].payload
+  const pct = total > 0 ? (d.value / total) * 100 : 0
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-3 text-xs min-w-[150px]">
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <span className="w-2 h-2 rounded-full inline-block" style={{ background: d.color }} />
+        <span className="font-semibold text-slate-700">{d.name}</span>
+      </div>
+      <div className="flex justify-between gap-4 text-slate-500">
+        <span>{fmtBRL(d.value)}</span>
+        <span className="font-semibold text-slate-800 font-mono">{pct.toFixed(1).replace('.', ',')}%</span>
+      </div>
+      <div className="text-slate-400 mt-0.5">{d.count} contrato{d.count === 1 ? '' : 's'}</div>
+    </div>
+  )
+}
 
 /**
  * Rosca de receita FECHADA (R$) por valor de uma dimensão (ex: agendador).
@@ -43,6 +62,7 @@ export default function RevenueDonut({ title, rows }) {
               >
                 {data.map((d, i) => <Cell key={i} fill={d.color} />)}
               </Pie>
+              <Tooltip content={<DonutTooltip total={total} />} />
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
