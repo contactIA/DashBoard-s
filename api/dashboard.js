@@ -195,7 +195,7 @@ export default async function handler(req, res) {
           const values = def.source === 'tag'
             ? [...new Set(Object.values(def.values ?? {}))]
             : [...new Set((def.rules ?? []).map(r => r.value))]
-          return [k, { label: def.label ?? k, values }]
+          return [k, { label: def.label ?? k, values, isUnit: def.isUnit ?? false }]
         }))
       : {}
 

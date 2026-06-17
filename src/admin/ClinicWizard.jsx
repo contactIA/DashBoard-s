@@ -30,9 +30,10 @@ const newDimId = () => `d${++_dimSeq}`
 // O label de cada tag é o rótulo exibido no funil (pode diferir do nome da etiqueta).
 function dimsToState(dims) {
   return Object.entries(dims ?? {}).map(([key, def]) => ({
-    id:    newDimId(),
-    label: def.label ?? key,
-    tags:  Object.entries(def.values ?? {}).map(([tid, label]) => ({ tid, label })),
+    id:     newDimId(),
+    label:  def.label ?? key,
+    isUnit: def.isUnit ?? false,
+    tags:   Object.entries(def.values ?? {}).map(([tid, label]) => ({ tid, label })),
   }))
 }
 
@@ -57,7 +58,11 @@ function stateToDims(dimensions, tagName) {
     if (!label || !tags.length) continue
     let key = kebabify(label).replace(/-/g, '') || 'dim'
     while (out[key]) key += '2'
-    out[key] = { label, source: 'tag', values: Object.fromEntries(tags.map(t => [t.tid, (t.label?.trim() || tagName(t.tid))])) }
+    out[key] = {
+      label, source: 'tag',
+      values: Object.fromEntries(tags.map(t => [t.tid, (t.label?.trim() || tagName(t.tid))])),
+      ...(d.isUnit ? { isUnit: true } : {}),
+    }
   }
   return out
 }
@@ -323,8 +328,10 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
   const assignedTagIds = new Set(dimensions.flatMap(d => d.tags.map(t => t.tid)))
   const unassignedTags = panelTags.filter(t => !assignedTagIds.has(t.id))
 
-  const addDimension     = ()              => setDimensions(ds => [...ds, { id: newDimId(), label: '', tags: [] }])
+  const addDimension     = ()              => setDimensions(ds => [...ds, { id: newDimId(), label: '', isUnit: false, tags: [] }])
   const removeDimension  = (id)            => setDimensions(ds => ds.filter(d => d.id !== id))
+  // Marca (ou desmarca) uma dimensão como a unidade — exclusivo: só uma pode ser
+  const toggleUnitDim    = (id)            => setDimensions(ds => ds.map(d => ({ ...d, isUnit: d.id === id ? !d.isUnit : false })))
   const renameDimension  = (id, label)     => setDimensions(ds => ds.map(d => d.id === id ? { ...d, label } : d))
   const addTagToDim      = (id, tid)       => setDimensions(ds => ds.map(d => d.id === id ? { ...d, tags: [...d.tags, { tid, label: tagName(tid) }] } : d))
   const removeTagFromDim = (id, tid)       => setDimensions(ds => ds.map(d => d.id === id ? { ...d, tags: d.tags.filter(t => t.tid !== tid) } : d))
@@ -554,6 +561,15 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                         className="flex-1 px-2.5 py-1.5 text-sm font-semibold text-slate-800 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400"
                         placeholder="Nome da dimensão (ex: Origem)"
                         value={d.label} onChange={e => renameDimension(d.id, e.target.value)} />
+                      <button type="button" onClick={() => toggleUnitDim(d.id)}
+                        title="Usar esta dimensão como filtro de unidade no topo do dashboard"
+                        className={`text-xs px-2.5 py-1.5 rounded-md border shrink-0 font-medium transition-colors ${
+                          d.isUnit
+                            ? 'border-indigo-500 bg-indigo-50 text-indigo-600'
+                            : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                        }`}>
+                        {d.isUnit ? '🏢 Unidade ✓' : 'É unidade?'}
+                      </button>
                       <button onClick={() => removeDimension(d.id)}
                         className="text-xs px-2.5 py-1.5 rounded-md border border-red-200 text-red-500 hover:bg-red-50 shrink-0">
                         Remover

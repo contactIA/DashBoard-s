@@ -62,8 +62,22 @@ export default function App() {
   const [dateTo,    setDateTo]    = useState(todayStr())
   const [ticket,    setTicket]    = useState(10000)
   const [lastFetch, setLastFetch] = useState(null)
+  const [unit,      setUnit]      = useState(null)  // unidade selecionada (null = todas)
 
   const today = todayStr()
+
+  // Dimensão marcada como unidade (isUnit) — vira filtro global do dashboard
+  const unitDim = useMemo(() => {
+    const found = Object.entries(data?.dimensions ?? {}).find(([, d]) => d.isUnit)
+    return found ? { key: found[0], ...found[1] } : null
+  }, [data])
+
+  // Cards do escopo atual: todos, ou só os da unidade selecionada
+  const cards = useMemo(() => {
+    const all = data?.cards ?? []
+    if (!unit || !unitDim) return all
+    return all.filter(c => (c.dims?.[unitDim.key] ?? null) === unit)
+  }, [data, unit, unitDim])
 
   const load = () => {
     if (!clinicSlug) return
@@ -82,15 +96,17 @@ export default function App() {
   }
 
   useEffect(load, [clinicSlug])
+  useEffect(() => setUnit(null), [clinicSlug])  // troca de clínica zera o filtro de unidade
 
   // ── Derived state (all client-side, no re-fetch on date change) ────────────
+  // Todas as derivações usam `cards` (já escopado pela unidade selecionada).
   const kpis = useMemo(
-    () => computeKpis(data?.cards, dateFrom, dateTo),
-    [data, dateFrom, dateTo],
+    () => computeKpis(cards, dateFrom, dateTo),
+    [cards, dateFrom, dateTo],
   )
   const prevKpis = useMemo(
-    () => computePreviousKpis(data?.cards ?? [], dateFrom, dateTo),
-    [data, dateFrom, dateTo],
+    () => computePreviousKpis(cards, dateFrom, dateTo),
+    [cards, dateFrom, dateTo],
   )
   const deltas = useMemo(() => {
     if (!kpis || !prevKpis) return {}
@@ -104,12 +120,12 @@ export default function App() {
   }, [kpis, prevKpis])
 
   const revenue = useMemo(
-    () => computeRevenue(data?.cards ?? [], dateFrom, dateTo, ticket, today),
-    [data, dateFrom, dateTo, ticket, today],
+    () => computeRevenue(cards, dateFrom, dateTo, ticket, today),
+    [cards, dateFrom, dateTo, ticket, today],
   )
   const prevRevenue = useMemo(
-    () => computePreviousRevenue(data?.cards ?? [], dateFrom, dateTo, ticket, today),
-    [data, dateFrom, dateTo, ticket, today],
+    () => computePreviousRevenue(cards, dateFrom, dateTo, ticket, today),
+    [cards, dateFrom, dateTo, ticket, today],
   )
   const revenueDelta = useMemo(
     () => delta(revenue?.fechada, prevRevenue?.fechada),
@@ -117,37 +133,40 @@ export default function App() {
   )
 
   const { data: chartData, granularity } = useMemo(
-    () => data ? groupCardsByTime(data.cards, dateFrom, dateTo, data.steps) : { data: [], granularity: 'day' },
-    [data, dateFrom, dateTo],
+    () => data ? groupCardsByTime(cards, dateFrom, dateTo, data.steps) : { data: [], granularity: 'day' },
+    [data, cards, dateFrom, dateTo],
   )
 
-  const lost       = useMemo(() => getLost(data?.cards ?? [], dateFrom, dateTo), [data, dateFrom, dateTo])
-  const negotiating = useMemo(() => getNegotiating(data?.cards ?? [], dateFrom, dateTo), [data, dateFrom, dateTo])
-  const upcoming   = useMemo(() => getUpcoming(data?.cards ?? [], today), [data, today])
+  const lost       = useMemo(() => getLost(cards, dateFrom, dateTo), [cards, dateFrom, dateTo])
+  const negotiating = useMemo(() => getNegotiating(cards, dateFrom, dateTo), [cards, dateFrom, dateTo])
+  const upcoming   = useMemo(() => getUpcoming(cards, today), [cards, today])
 
   const funnel = useMemo(
-    () => computeFunnel(data?.cards ?? [], dateFrom, dateTo),
-    [data, dateFrom, dateTo],
+    () => computeFunnel(cards, dateFrom, dateTo),
+    [cards, dateFrom, dateTo],
   )
-  // Quebras do funil por cada dimensão configurada (origem, agendador, …)
+  // Quebras do funil por cada dimensão configurada (origem, agendador, …).
+  // Ao filtrar por uma unidade, a própria dimensão-unidade some (seria 1 só valor).
   const breakdowns = useMemo(() => {
     const dims = data?.dimensions ?? {}
-    return Object.entries(dims).map(([key, def]) => ({
-      key,
-      label: def.label,
-      rows: breakdownByDimension(data?.cards ?? [], key, def.values, dateFrom, dateTo),
-    })).filter(b => b.rows.length > 0)
-  }, [data, dateFrom, dateTo])
+    return Object.entries(dims)
+      .filter(([key]) => !(unit && key === unitDim?.key))
+      .map(([key, def]) => ({
+        key,
+        label: def.label,
+        rows: breakdownByDimension(cards, key, def.values, dateFrom, dateTo),
+      })).filter(b => b.rows.length > 0)
+  }, [data, cards, unit, unitDim, dateFrom, dateTo])
   // Receita fechada (R$) por dimensão — base das roscas
   const revenueBreakdowns = useMemo(() => {
     const dims = data?.dimensions ?? {}
     return Object.fromEntries(
       Object.entries(dims).map(([key, def]) => [
         key,
-        revenueByDimension(data?.cards ?? [], key, def.values, dateFrom, dateTo),
+        revenueByDimension(cards, key, def.values, dateFrom, dateTo),
       ])
     )
-  }, [data, dateFrom, dateTo])
+  }, [data, cards, dateFrom, dateTo])
 
   const applyRange = (days) => { setDateFrom(daysAgo(days)); setDateTo(todayStr()) }
   const isRange = (days) => dateFrom === daysAgo(days) && dateTo === todayStr()
@@ -184,6 +203,21 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-1.5 flex-wrap justify-end">
+            {/* Filtro de unidade — só quando há dimensão-unidade com 2+ valores */}
+            {unitDim && unitDim.values?.length > 1 && (
+              <>
+                <select
+                  value={unit ?? ''}
+                  onChange={e => setUnit(e.target.value || null)}
+                  title={unitDim.label}
+                  className="text-xs px-2.5 py-1.5 rounded-md border border-slate-200 bg-white text-slate-700 font-medium focus:outline-none focus:border-slate-400 cursor-pointer max-w-[170px]"
+                >
+                  <option value="">Todas as unidades</option>
+                  {unitDim.values.map(v => <option key={v} value={v}>{v}</option>)}
+                </select>
+                <div className="w-px h-4 bg-slate-200 mx-1 hidden sm:block" />
+              </>
+            )}
             {QUICK.map(r => (
               <button
                 key={r.label}
@@ -295,7 +329,7 @@ export default function App() {
             </div>
             <div className="p-5">
               <StepDistribution
-                cards={data.cards}
+                cards={cards}
                 steps={data.steps}
                 from={dateFrom}
                 to={dateTo}
@@ -316,7 +350,7 @@ export default function App() {
           <div className="px-5 py-3 border-t border-slate-200 bg-white flex justify-between text-[11px] text-slate-400">
             <span>
               {lastFetch
-                ? `Atualizado às ${lastFetch.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} · ${data.cards.length} cards`
+                ? `Atualizado às ${lastFetch.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} · ${cards.length} cards${unit ? ` · ${unit}` : ''}`
                 : 'Carregando...'}
             </span>
             <span>{data?.clinic} Performance v2</span>
