@@ -56,6 +56,68 @@ export function extractWith(rules, card, kind) {
   return null
 }
 
+// Padrões candidatos por campo — testados contra cards de amostra no /setup.
+// Cobrem os formatos vistos em produção (OBClinic "Nome:X - Telefone:Y" +
+// "Data de agendamento: AAAA-MM-DD"; Yamar "Nome, ..., HH:MM, AAAA-MM-DD").
+const EXTRACT_CANDIDATES = {
+  date: [
+    [{ from: 'description', regex: '(\\d{4}-\\d{2}-\\d{2})', format: 'YMD' }],
+    [{ from: 'title',       regex: '(\\d{4}-\\d{2}-\\d{2})', format: 'YMD' }],
+    [{ from: 'description', regex: '(\\d{2}/\\d{2}/\\d{4})', format: 'DMY' }],
+    [{ from: 'title',       regex: '(\\d{2}/\\d{2}/\\d{4})', format: 'DMY' }],
+  ],
+  time: [
+    [{ from: 'description', regex: '(\\d{1,2}:\\d{2})' }],
+    [{ from: 'title',       regex: '(\\d{1,2}:\\d{2})' }],
+  ],
+  name: [
+    [{ from: 'title', regex: 'Nome:?\\s*(.+?)\\s*-\\s*Telefone' }],
+    [{ from: 'title', regex: '^\\s*([^,\\n]+?)\\s*,' }],
+    [{ from: 'title', regex: 'Nome:?\\s*(.+)' }],
+  ],
+  phone: [
+    [{ from: 'title',       regex: 'Telefone:?\\s*(\\d{8,})' }],
+    [{ from: 'description', regex: 'Telefone:?\\s*(\\d{8,})' }],
+    [{ from: 'title',       regex: '(\\d{10,11})' }],
+    [{ from: 'description', regex: '(\\d{10,11})' }],
+  ],
+}
+
+const EXTRACT_FALLBACK = {
+  date:  [{ from: 'description', regex: '', format: 'YMD' }],
+  time:  [{ from: 'description', regex: '' }],
+  name:  [{ from: 'title', regex: '' }],
+  phone: [{ from: 'description', regex: '' }],
+}
+
+/** Conta em quantos cards uma lista de regras extrai algo (para o preview/auto-detecção). */
+export function countExtractHits(rules, cards, kind) {
+  if (!Array.isArray(cards) || !cards.length) return 0
+  return cards.reduce((n, c) => n + (extractWith(rules, c, kind) ? 1 : 0), 0)
+}
+
+/**
+ * Tenta descobrir as regras de extração a partir dos cards de amostra: para cada
+ * campo escolhe o padrão candidato que mais acerta. Sem acerto → regra vazia
+ * (o admin ajusta no modo avançado). Base do "modo rápido" do wizard.
+ */
+export function autoDetectExtract(sampleCards = []) {
+  const pick = (field, kind) => {
+    let best = null, bestHits = 0
+    for (const rules of EXTRACT_CANDIDATES[field]) {
+      const hits = countExtractHits(rules, sampleCards, kind)
+      if (hits > bestHits) { bestHits = hits; best = rules }
+    }
+    return best
+  }
+  return {
+    date:  pick('date',  'date') ?? EXTRACT_FALLBACK.date,
+    time:  pick('time',  'text') ?? EXTRACT_FALLBACK.time,
+    name:  pick('name',  'text') ?? EXTRACT_FALLBACK.name,
+    phone: pick('phone', 'text') ?? EXTRACT_FALLBACK.phone,
+  }
+}
+
 /** Extrai os 4 campos de um card segundo a config _extract. */
 export function extractCard(card, extractCfg) {
   if (!extractCfg) return { date: null, time: null, name: null, phone: null }

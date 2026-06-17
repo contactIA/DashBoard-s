@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { listPanels, getPanelSteps, createClinic, updateClinic } from './adminApi'
 import { METRIC_TYPES, guessType, typeColor, buildStepsConfig, kebabify } from './metricTypes'
-import { extractWith } from '../utils/extract.js'
+import { extractWith, autoDetectExtract, countExtractHits } from '../utils/extract.js'
 
 const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
@@ -198,6 +198,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
   const isEdit = Boolean(clinic)
 
   const [step,     setStep]     = useState(0)
+  const [quick,    setQuick]    = useState(false)  // modo rápido (confirmação) x avançado (passo-a-passo)
   const [error,    setError]    = useState(null)
   const [loading,  setLoading]  = useState(false)
 
@@ -266,8 +267,12 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
     setSampleCards(panel.sampleCards ?? [])
     setPanelTags(panel.tags ?? [])
 
-    // pré-carrega config existente (edição)
-    setExtract(hasAnyRule(clinic?.steps?._extract) ? clinic.steps._extract : emptyExtract())
+    // extração: config salva (edição) tem prioridade; senão tenta auto-detectar
+    setExtract(
+      hasAnyRule(clinic?.steps?._extract)
+        ? clinic.steps._extract
+        : autoDetectExtract(panel.sampleCards ?? [])
+    )
 
     // dimensões: config salva tem prioridade; senão usa a sugestão automática
     const existingDims = clinic?.steps?._dims
@@ -277,6 +282,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
         : seedFromSuggestions(panel.tags ?? [])
     )
 
+    setQuick(true)   // cai na tela de confirmação; "Ajustar manualmente" abre o passo-a-passo
     setStep(2)
   })
 
@@ -367,7 +373,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-base font-bold text-slate-900">{isEdit ? `Editar · ${clinic.name}` : 'Nova clínica'}</h2>
-          <div className="mt-2"><Stepper current={step} /></div>
+          {!quick && <div className="mt-2"><Stepper current={step} /></div>}
         </div>
         <button onClick={onCancel} className="text-xs text-slate-400 hover:text-slate-700">Cancelar</button>
       </div>
@@ -449,8 +455,105 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
         </div>
       )}
 
+      {/* ── Configuração rápida: detecta tudo, admin confirma ────────────── */}
+      {step === 2 && quick && (() => {
+        const usableSteps = mappedSteps.filter(s => s.type !== 'ignore')
+        const extractRows = EXTRACT_FIELDS.map(f => ({
+          ...f,
+          hits: countExtractHits(extract[f.key], sampleCards, f.kind === 'date' ? 'date' : 'text'),
+        }))
+        const dateRow = extractRows.find(r => r.key === 'date')
+        const total   = sampleCards.length
+        const unitLabel = dimensions.find(d => d.isUnit && d.label.trim() && d.tags.length)?.label.trim() ?? null
+        const Check = ({ ok }) => (
+          <span className={`shrink-0 text-sm ${ok ? 'text-emerald-600' : 'text-amber-500'}`}>{ok ? '✓' : '⚠'}</span>
+        )
+        return (
+          <div className="space-y-4">
+            <StepHeader title="Configuração rápida">
+              Detectamos tudo a partir do painel <strong>{selectedPanel.title}</strong>. Confira e ative —
+              ou abra o passo-a-passo para ajustar.
+            </StepHeader>
+
+            <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100">
+              {/* Métricas */}
+              <div className="flex items-start gap-3 px-4 py-3.5">
+                <Check ok={usableSteps.length > 0} />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium text-slate-800">{usableSteps.length} etapas mapeadas</div>
+                  <div className="text-xs text-slate-400 mt-0.5 truncate">
+                    {usableSteps.map(s => s.title).join(' · ') || 'Nenhuma etapa mapeada — ajuste manualmente.'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Extração */}
+              <div className="flex items-start gap-3 px-4 py-3.5">
+                <Check ok={!total || dateRow.hits > 0} />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium text-slate-800">Dados do paciente</div>
+                  <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-slate-400 mt-0.5">
+                    {extractRows.map(r => (
+                      <span key={r.key}>
+                        {r.label.replace(' de agendamento', '')}:{' '}
+                        <span className={`font-mono ${r.hits ? 'text-emerald-600' : 'text-slate-300'}`}>
+                          {total ? `${r.hits}/${total}` : '—'}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                  {total > 0 && dateRow.hits === 0 && (
+                    <div className="text-[11px] text-amber-600 mt-1">
+                      Não achamos a data nos cards — sem ela o dashboard fica vazio. Ajuste manualmente.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Dimensões */}
+              <div className="flex items-start gap-3 px-4 py-3.5">
+                <Check ok />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium text-slate-800">
+                    {reviewDims.length} {reviewDims.length === 1 ? 'dimensão' : 'dimensões'}
+                  </div>
+                  <div className="text-xs text-slate-400 mt-0.5 truncate">
+                    {reviewDims.length
+                      ? reviewDims.map(d => d.label + (d.label === unitLabel ? ' (unidade)' : '')).join(' · ')
+                      : 'Sem etiquetas para separar atendimentos.'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Ticket */}
+              <div className="flex items-start gap-3 px-4 py-3.5">
+                <Check ok />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium text-slate-800">Ticket médio · R$ {Number(ticket).toLocaleString('pt-BR')}</div>
+                  <div className="text-xs text-slate-400 mt-0.5">Usado quando o card não tem valor.</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 pt-2">
+              <button onClick={() => setStep(1)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setQuick(false)}
+                  className="px-4 py-2 text-sm font-medium rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50">
+                  Ajustar manualmente
+                </button>
+                <button onClick={save} disabled={loading}
+                  className="px-5 py-2 text-sm font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-40">
+                  {loading ? 'Salvando...' : isEdit ? 'Salvar e ativar' : 'Ativar dashboard'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
       {/* ── Etapa 3: mapeamento de métricas ──────────────────────────────── */}
-      {step === 2 && (
+      {step === 2 && !quick && (
         <div className="space-y-4">
           <StepHeader title="Mapeie as métricas">
             Defina o que cada etapa do painel <strong>{selectedPanel.title}</strong> representa no funil.
