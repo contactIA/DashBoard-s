@@ -3,6 +3,7 @@ import { fetchDashboard } from './api'
 import {
   computeKpis, computePreviousKpis, computeRevenue, computePreviousRevenue, delta,
   getLost, getNegotiating, getUpcoming, computeFunnel, breakdownByDimension,
+  revenueByDimension,
 } from './utils/parseCards'
 import { groupCardsByTime, getGranularity } from './utils/groupByTime'
 import DateRangePicker  from './components/DateRangePicker.jsx'
@@ -16,6 +17,7 @@ import StepDistribution from './components/StepDistribution.jsx'
 import UpcomingTable   from './components/UpcomingTable.jsx'
 import FunnelChart     from './components/FunnelChart.jsx'
 import DimensionBreakdown from './components/DimensionBreakdown.jsx'
+import RevenueDonut     from './components/RevenueDonut.jsx'
 import NotConfigured   from './components/NotConfigured.jsx'
 
 function todayStr() { return new Date().toISOString().slice(0, 10) }
@@ -135,6 +137,16 @@ export default function App() {
       label: def.label,
       rows: breakdownByDimension(data?.cards ?? [], key, def.values, dateFrom, dateTo),
     })).filter(b => b.rows.length > 0)
+  }, [data, dateFrom, dateTo])
+  // Receita fechada (R$) por dimensão — base das roscas
+  const revenueBreakdowns = useMemo(() => {
+    const dims = data?.dimensions ?? {}
+    return Object.fromEntries(
+      Object.entries(dims).map(([key, def]) => [
+        key,
+        revenueByDimension(data?.cards ?? [], key, def.values, dateFrom, dateTo),
+      ])
+    )
   }, [data, dateFrom, dateTo])
 
   const applyRange = (days) => { setDateFrom(daysAgo(days)); setDateTo(todayStr()) }
@@ -257,7 +269,10 @@ export default function App() {
             <div className="flex flex-col gap-5">
               {breakdowns.length > 0
                 ? breakdowns.map(b => (
-                    <DimensionBreakdown key={b.key} title={b.label} rows={b.rows} />
+                    <div key={b.key} className="flex flex-col gap-5">
+                      <RevenueDonut title={b.label} rows={revenueBreakdowns[b.key]} />
+                      <DimensionBreakdown title={b.label} rows={b.rows} />
+                    </div>
                   ))
                 : (
                   <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex items-center justify-center h-full">

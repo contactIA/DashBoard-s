@@ -246,6 +246,31 @@ export function breakdownByDimension(cards, dimKey, values, from, to) {
     .sort((a, b) => b.funnel.entrou - a.funnel.entrou)
 }
 
+/**
+ * Receita FECHADA (R$) por valor de uma dimensão (agendador, origem, …) no período.
+ * Mesmo critério da "Receita fechada" do herói: cards 'converted' com valor real,
+ * pela data efetiva. Retorna [{ value, fechada, count }] em ordem decrescente de R$,
+ * só com entradas que fecharam algum valor.
+ */
+export function revenueByDimension(cards, dimKey, values, from, to) {
+  if (!cards?.length || !dimKey) return []
+  const fechados = cards.filter(
+    c => c.stepType === 'converted' && c.value > 0 && inPeriod(c, from, to)
+  )
+  const labels = [...(values ?? []), null] // null = "sem" valor
+  return labels
+    .map(v => {
+      const arr = fechados.filter(c => (c.dims?.[dimKey] ?? null) === v)
+      return {
+        value: v,
+        fechada: arr.reduce((s, c) => s + c.value, 0),
+        count: arr.length,
+      }
+    })
+    .filter(r => r.fechada > 0)
+    .sort((a, b) => b.fechada - a.fechada)
+}
+
 /** Cards de "compareceu mas não fechou" dentro do período, com nome/telefone */
 export function getLost(cards, from, to) {
   if (!cards?.length) return []
