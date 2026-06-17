@@ -54,7 +54,11 @@ export default function HeroStrip({ revenue, kpis, deltas, revenueDelta }) {
         <HeroCard
           label="Comparecimento"
           value={pct(kpis?.attendanceRate)}
-          sub={`${kpis?.attended ?? 0} de ${kpis?.shouldAttend ?? 0} agendados`}
+          sub={
+            (kpis?.missed ?? 0) > 0
+              ? `${kpis.missed} faltaram${revenue?.perdidaFaltas > 0 ? ` · ${fmtBRL(revenue.perdidaFaltas, { short: true })} perdidos` : ''}`
+              : `${kpis?.attended ?? 0} de ${kpis?.shouldAttend ?? 0} agendados`
+          }
           delta={deltas?.attendanceRate} goodWhenUp accent="#F59E0B"
         />
       </div>

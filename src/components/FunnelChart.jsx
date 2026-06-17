@@ -51,6 +51,18 @@ export default function FunnelChart({ funnel, revenue }) {
               </div>
             </div>
 
+            {/* Faltaram = vazamento entre "Agendaram" e "Compareceram" */}
+            {i === 1 && f.missed > 0 && (
+              <div className="text-center pt-2">
+                <span className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full bg-orange-50 text-orange-600 border border-orange-100">
+                  ✕ {f.missed} faltaram
+                  {(f.compareceu + f.missed) > 0 && (
+                    <span className="font-semibold">· {fmtPct((f.missed / (f.compareceu + f.missed)) * 100)} de não comparecimento</span>
+                  )}
+                </span>
+              </div>
+            )}
+
             {/* Em negociação aparece como ramo logo após "Compareceram" */}
             {i === 2 && f.negotiating > 0 && (
               <div className="text-center pt-2">
