@@ -1,34 +1,18 @@
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
+import { useState } from 'react'
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import { fmtBRL } from '../utils/parseCards.js'
 
 // Paleta consistente com o restante do painel
 const PALETTE = ['#6366F1', '#0EA5E9', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444', '#14B8A6']
 
-const DonutTooltip = ({ active, payload, total }) => {
-  if (!active || !payload?.length) return null
-  const d = payload[0].payload
-  const pct = total > 0 ? (d.value / total) * 100 : 0
-  return (
-    <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-3 text-xs min-w-[150px]">
-      <div className="flex items-center gap-1.5 mb-1.5">
-        <span className="w-2 h-2 rounded-full inline-block" style={{ background: d.color }} />
-        <span className="font-semibold text-slate-700">{d.name}</span>
-      </div>
-      <div className="flex justify-between gap-4 text-slate-500">
-        <span>{fmtBRL(d.value)}</span>
-        <span className="font-semibold text-slate-800 font-mono">{pct.toFixed(1).replace('.', ',')}%</span>
-      </div>
-      <div className="text-slate-400 mt-0.5">{d.count} contrato{d.count === 1 ? '' : 's'}</div>
-    </div>
-  )
-}
-
 /**
  * Rosca de receita FECHADA (R$) por valor de uma dimensão (ex: agendador).
  * rows: [{ value, fechada, count }] vindo de revenueByDimension().
  * Responde "de onde vem o faturamento fechado?" de relance — não volume, dinheiro.
+ * No hover (fatia ou legenda), o centro sobrescreve o total com a fatia ativa.
  */
 export default function RevenueDonut({ title, rows }) {
+  const [active, setActive] = useState(null)
   if (!rows?.length) return null
   const total = rows.reduce((s, r) => s + r.fechada, 0)
   if (total <= 0) return null
@@ -39,6 +23,9 @@ export default function RevenueDonut({ title, rows }) {
     count: r.count,
     color: PALETTE[i % PALETTE.length],
   }))
+
+  const sel = active != null ? data[active] : null
+  const pct = (v) => ((v / total) * 100).toFixed(0)
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
@@ -59,28 +46,52 @@ export default function RevenueDonut({ title, rows }) {
                 stroke="none"
                 startAngle={90}
                 endAngle={-270}
+                onMouseEnter={(_, i) => setActive(i)}
+                onMouseLeave={() => setActive(null)}
               >
-                {data.map((d, i) => <Cell key={i} fill={d.color} />)}
+                {data.map((d, i) => (
+                  <Cell
+                    key={i}
+                    fill={d.color}
+                    fillOpacity={active == null || active === i ? 1 : 0.3}
+                    style={{ cursor: 'pointer', transition: 'fill-opacity 120ms' }}
+                  />
+                ))}
               </Pie>
-              <Tooltip content={<DonutTooltip total={total} />} />
             </PieChart>
           </ResponsiveContainer>
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-[10px] text-slate-400">Total</span>
-            <span className="text-sm font-bold font-mono text-slate-800">{fmtBRL(total, { short: true })}</span>
+          {/* Centro: total por padrão; sobrescreve com a fatia ativa no hover */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-5 text-center">
+            {sel ? (
+              <>
+                <span className="text-[10px] text-slate-400 truncate max-w-full leading-tight">{sel.name}</span>
+                <span className="text-lg font-bold font-mono leading-none mt-0.5" style={{ color: sel.color }}>{pct(sel.value)}%</span>
+                <span className="text-[10px] text-slate-400 font-mono mt-0.5">{fmtBRL(sel.value, { short: true })}</span>
+              </>
+            ) : (
+              <>
+                <span className="text-[10px] text-slate-400">Total</span>
+                <span className="text-sm font-bold font-mono text-slate-800">{fmtBRL(total, { short: true })}</span>
+              </>
+            )}
           </div>
         </div>
 
         <div className="flex-1 min-w-0 flex flex-col gap-2">
           {data.map((d, i) => (
-            <div key={i} className="flex items-center gap-2 text-xs">
+            <div
+              key={i}
+              className={`flex items-center gap-2 text-xs cursor-default rounded-md px-1 -mx-1 transition-colors ${active === i ? 'bg-slate-50' : ''}`}
+              onMouseEnter={() => setActive(i)}
+              onMouseLeave={() => setActive(null)}
+            >
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: d.color }} />
               <span className="text-slate-600 truncate flex-1">
                 {d.name}
                 <span className="text-slate-400"> · {d.count}</span>
               </span>
               <span className="font-mono font-semibold text-slate-800">{fmtBRL(d.value, { short: true })}</span>
-              <span className="font-mono text-slate-400 w-9 text-right">{((d.value / total) * 100).toFixed(0)}%</span>
+              <span className="font-mono text-slate-400 w-9 text-right">{pct(d.value)}%</span>
             </div>
           ))}
         </div>
