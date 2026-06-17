@@ -308,8 +308,8 @@ export default function App() {
             <UpcomingTable cards={upcoming} ticket={ticket} />
           </div>
           <div className="p-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <BudgetTable cards={negotiating} ticket={ticket} />
             <LostTable cards={lost} ticket={ticket} />
+            <BudgetTable cards={negotiating} ticket={ticket} />
           </div>
 
           {/* ── Footer ───────────────────────────────────────────────────── */}
