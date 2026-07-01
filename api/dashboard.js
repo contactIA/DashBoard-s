@@ -52,6 +52,13 @@ async function fetchPage(panelId, token, pageNumber) {
   return res.json()
 }
 
+// contactIds (array de UUIDs) sempre vem no card; contacts (array expandido com
+// nome, via IncludeDetails=Contacts) é o preferido, mas usamos contactIds como
+// fallback pra identificar o contato principal caso o expandido não venha.
+function primaryContactId(card) {
+  return card.contacts?.[0]?.id ?? card.contactIds?.[0] ?? null
+}
+
 // Telefone do contato não vem na listagem de cards — exige uma chamada por
 // contato. Falha de forma silenciosa (cai no telefone extraído do texto, se
 // configurado como fallback).
@@ -178,7 +185,8 @@ export default async function handler(req, res) {
       for (const item of items) {
         const effective = (item.dueDate ?? item.updatedAt ?? item.createdAt ?? '').slice(0, 10)
         if (effective < cutoff) continue
-        for (const c of item.contacts ?? []) recentContactIds.add(c.id)
+        const id = primaryContactId(item)
+        if (id) recentContactIds.add(id)
       }
       contactById = await fetchContactsByIds(recentContactIds, token)
     }
@@ -191,8 +199,9 @@ export default async function handler(req, res) {
     )
 
     const cards = items.map(card => {
-      const contactPhone = card.contacts?.[0]?.id
-        ? contactById[card.contacts[0].id]?.phoneNumberFormatted ?? contactById[card.contacts[0].id]?.phoneNumber ?? null
+      const cardContactId = primaryContactId(card)
+      const contactPhone = cardContactId
+        ? contactById[cardContactId]?.phoneNumberFormatted ?? contactById[cardContactId]?.phoneNumber ?? null
         : null
       const cardForExtract = extractCfg ? { ...card, contactPhone } : card
       const appt = extractCfg

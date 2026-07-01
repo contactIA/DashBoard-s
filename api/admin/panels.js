@@ -126,7 +126,10 @@ export default async function handler(req, res) {
       // um, pro preview mostrar o valor de verdade quando essa fonte for escolhida.
       const sample = cards.slice(0, 12)
       const contactsForPreview = await Promise.all(
-        sample.map(c => c.contacts?.[0]?.id ? fetchContactSafe(c.contacts[0].id, token) : Promise.resolve(null))
+        sample.map(c => {
+          const id = c.contacts?.[0]?.id ?? c.contactIds?.[0] ?? null
+          return id ? fetchContactSafe(id, token) : Promise.resolve(null)
+        })
       )
       const sampleCards = sample.map((c, i) => ({
         title:        c.title ?? null,
