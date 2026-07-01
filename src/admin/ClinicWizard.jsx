@@ -17,10 +17,10 @@ const FUNNEL_STAGE_DEFS = [
 ]
 
 const EXTRACT_FIELDS = [
-  { key: 'date',  label: 'Data de agendamento', kind: 'date', hint: 'A data que filtra o dashboard. Sem ela o card some das métricas por período.' },
-  { key: 'time',  label: 'Horário',             kind: 'text', hint: 'Opcional — usado na lista de agendamentos.' },
-  { key: 'name',  label: 'Nome do paciente',    kind: 'text', hint: 'Exibido nas tabelas.' },
-  { key: 'phone', label: 'Telefone',            kind: 'text', hint: 'Opcional.' },
+  { key: 'date',  label: 'Data de agendamento', kind: 'date', hint: 'A data que filtra o dashboard. Sem ela o card some das métricas por período.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)' },
+  { key: 'time',  label: 'Horário',             kind: 'text', hint: 'Opcional — usado na lista de agendamentos.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)' },
+  { key: 'name',  label: 'Nome do paciente',    kind: 'text', hint: 'Exibido nas tabelas.', helenaSource: 'contactName', helenaLabel: 'Contato vinculado ao card' },
+  { key: 'phone', label: 'Telefone',            kind: 'text', hint: 'Opcional.', helenaSource: 'contactPhone', helenaLabel: 'Contato vinculado ao card' },
 ]
 
 const emptyExtract = () => ({
@@ -164,26 +164,34 @@ function ExtractField({ field, rules, sampleCards, onChange }) {
       <p className="text-[11px] text-slate-400 mt-0.5 mb-3">{field.hint}</p>
 
       <div className="space-y-2">
-        {rules.map((r, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <select className={miniSelect} value={r.from} onChange={e => setRule(i, { from: e.target.value })}>
-              <option value="title">Título</option>
-              <option value="description">Descrição</option>
-            </select>
-            <input
-              className={`${miniInput} flex-1`} placeholder="regex (grupo 1 = valor)"
-              value={r.regex} onChange={e => setRule(i, { regex: e.target.value })}
-            />
-            {field.kind === 'date' && (
-              <select className={miniSelect} value={r.format ?? 'YMD'} onChange={e => setRule(i, { format: e.target.value })}>
-                <option value="YMD">AAAA-MM-DD</option>
-                <option value="DMY">DD/MM/AAAA</option>
+        {rules.map((r, i) => {
+          const isHelenaSource = r.from === field.helenaSource
+          return (
+            <div key={i} className="flex items-center gap-2">
+              <select className={miniSelect} value={r.from} onChange={e => setRule(i, { from: e.target.value })}>
+                <option value={field.helenaSource}>{field.helenaLabel}</option>
+                <option value="title">Título</option>
+                <option value="description">Descrição</option>
               </select>
-            )}
-            <button onClick={() => delRule(i)} disabled={rules.length === 1}
-              className="text-slate-300 hover:text-red-500 disabled:opacity-30 px-1" title="Remover regra">✕</button>
-          </div>
-        ))}
+              {isHelenaSource ? (
+                <span className="flex-1 text-[11px] text-slate-400 italic">campo real da Helena — sem regex necessária</span>
+              ) : (
+                <input
+                  className={`${miniInput} flex-1`} placeholder="regex (grupo 1 = valor)"
+                  value={r.regex} onChange={e => setRule(i, { regex: e.target.value })}
+                />
+              )}
+              {field.kind === 'date' && !isHelenaSource && (
+                <select className={miniSelect} value={r.format ?? 'YMD'} onChange={e => setRule(i, { format: e.target.value })}>
+                  <option value="YMD">AAAA-MM-DD</option>
+                  <option value="DMY">DD/MM/AAAA</option>
+                </select>
+              )}
+              <button onClick={() => delRule(i)} disabled={rules.length === 1}
+                className="text-slate-300 hover:text-red-500 disabled:opacity-30 px-1" title="Remover regra">✕</button>
+            </div>
+          )
+        })}
         <button onClick={addRule} className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium">+ adicionar regra (fallback)</button>
       </div>
 

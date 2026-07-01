@@ -33,6 +33,17 @@ async function helenaGet(path, token) {
   return JSON.parse(body)
 }
 
+// Telefone do contato pro preview do wizard — best-effort, sem lançar erro.
+async function fetchContactSafe(id, token) {
+  try {
+    const res = await fetch(`${HELENA_BASE}/core/v1/contact/${encodeURIComponent(id)}`, { headers: { Authorization: token } })
+    if (!res.ok) return null
+    return await res.json()
+  } catch {
+    return null
+  }
+}
+
 // Resolve o token da clínica já cadastrada (modo edição, sem re-digitar o token)
 async function tokenFromSupabase(accountId) {
   const url = `${process.env.SUPABASE_URL}/rest/v1/clinics?account_id=eq.${encodeURIComponent(accountId)}&select=token&limit=1`
@@ -74,7 +85,7 @@ export default async function handler(req, res) {
       let cards = []
       try {
         for (let pg = 1; pg <= 3; pg++) {
-          const page = await helenaGet(`/crm/v1/panel/card?PanelId=${encodeURIComponent(panelId)}&PageSize=100&PageNumber=${pg}`, token)
+          const page = await helenaGet(`/crm/v1/panel/card?PanelId=${encodeURIComponent(panelId)}&PageSize=100&PageNumber=${pg}&IncludeDetails=Contacts`, token)
           cards = cards.concat(page.items ?? [])
           if (!page.hasMorePages) break
         }
@@ -110,12 +121,21 @@ export default async function handler(req, res) {
         })
         .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
 
-      // Cards de amostra enxutos (só o necessário para o preview de extração)
-      const sampleCards = cards.slice(0, 12).map(c => ({
-        title:       c.title ?? null,
-        description: c.description ?? null,
-        tagIds:      c.tagIds ?? [],
-        metadata:    c.metadata ?? null,
+      // Cards de amostra enxutos (só o necessário para o preview de extração).
+      // N pequeno (até 12) — busca o telefone real do contato vinculado de cada
+      // um, pro preview mostrar o valor de verdade quando essa fonte for escolhida.
+      const sample = cards.slice(0, 12)
+      const contactsForPreview = await Promise.all(
+        sample.map(c => c.contacts?.[0]?.id ? fetchContactSafe(c.contacts[0].id, token) : Promise.resolve(null))
+      )
+      const sampleCards = sample.map((c, i) => ({
+        title:        c.title ?? null,
+        description:  c.description ?? null,
+        tagIds:       c.tagIds ?? [],
+        metadata:     c.metadata ?? null,
+        dueDate:      c.dueDate ?? null,
+        contacts:     c.contacts ?? [],
+        contactPhone: contactsForPreview[i]?.phoneNumberFormatted ?? contactsForPreview[i]?.phoneNumber ?? null,
       }))
 
       return res.status(200).json({

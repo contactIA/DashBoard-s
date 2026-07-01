@@ -14,8 +14,24 @@
 export function readField(card, from) {
   if (from === 'title')       return card.title ?? ''
   if (from === 'description') return card.description ?? ''
+  // Contato vinculado ao card na Helena — nome vem de graça na listagem
+  // (IncludeDetails=Contacts); telefone é anexado pelo backend antes da extração
+  // (ver api/dashboard.js), pois exige uma chamada separada à API.
+  if (from === 'contactName')  return card.contacts?.[0]?.name ?? ''
+  if (from === 'contactPhone') return card.contactPhone ?? ''
   if (from?.startsWith('metadata.')) return card.metadata?.[from.slice(9)] ?? ''
   return ''
+}
+
+const BR_OFFSET_MS = 3 * 60 * 60 * 1000 // UTC-3 fixo (Brasil não observa horário de verão desde 2019)
+
+/** Data/hora reais do agendamento a partir de card.dueDate (ISO, UTC), já em horário de Brasília. */
+export function dueDateParts(iso) {
+  if (!iso) return null
+  const utcMs = Date.parse(iso)
+  if (Number.isNaN(utcMs)) return null
+  const local = new Date(utcMs - BR_OFFSET_MS)
+  return { date: local.toISOString().slice(0, 10), time: local.toISOString().slice(11, 16) }
 }
 
 export function normalizeDate(raw, format) {
@@ -33,6 +49,11 @@ export function normalizeDate(raw, format) {
 export function extractWith(rules, card, kind) {
   if (!Array.isArray(rules)) return null
   for (const rule of rules) {
+    if (rule.from === 'dueDate') {
+      const parts = dueDateParts(card.dueDate)
+      if (!parts) continue
+      return kind === 'date' ? parts.date : parts.time
+    }
     const src = String(readField(card, rule.from) ?? '')
     if (!src) continue
     let value
@@ -57,25 +78,31 @@ export function extractWith(rules, card, kind) {
 }
 
 // Padrões candidatos por campo — testados contra cards de amostra no /setup.
-// Cobrem os formatos vistos em produção (OBClinic "Nome:X - Telefone:Y" +
+// dueDate/contato (campos reais da Helena) vêm primeiro: são mais confiáveis que
+// regex em texto livre quando os cards de amostra os têm preenchidos.
+// Os demais cobrem os formatos vistos em produção (OBClinic "Nome:X - Telefone:Y" +
 // "Data de agendamento: AAAA-MM-DD"; Yamar "Nome, ..., HH:MM, AAAA-MM-DD").
 const EXTRACT_CANDIDATES = {
   date: [
+    [{ from: 'dueDate' }],
     [{ from: 'description', regex: '(\\d{4}-\\d{2}-\\d{2})', format: 'YMD' }],
     [{ from: 'title',       regex: '(\\d{4}-\\d{2}-\\d{2})', format: 'YMD' }],
     [{ from: 'description', regex: '(\\d{2}/\\d{2}/\\d{4})', format: 'DMY' }],
     [{ from: 'title',       regex: '(\\d{2}/\\d{2}/\\d{4})', format: 'DMY' }],
   ],
   time: [
+    [{ from: 'dueDate' }],
     [{ from: 'description', regex: '(\\d{1,2}:\\d{2})' }],
     [{ from: 'title',       regex: '(\\d{1,2}:\\d{2})' }],
   ],
   name: [
+    [{ from: 'contactName' }],
     [{ from: 'title', regex: 'Nome:?\\s*(.+?)\\s*-\\s*Telefone' }],
     [{ from: 'title', regex: '^\\s*([^,\\n]+?)\\s*,' }],
     [{ from: 'title', regex: 'Nome:?\\s*(.+)' }],
   ],
   phone: [
+    [{ from: 'contactPhone' }],
     [{ from: 'title',       regex: 'Telefone:?\\s*(\\d{8,})' }],
     [{ from: 'description', regex: 'Telefone:?\\s*(\\d{8,})' }],
     [{ from: 'title',       regex: '(\\d{10,11})' }],

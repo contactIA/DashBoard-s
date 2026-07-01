@@ -40,6 +40,7 @@ async function fetchPage(panelId, token, pageNumber) {
     PanelId:    panelId,
     PageSize:   String(PAGE_SIZE),
     PageNumber: String(pageNumber),
+    IncludeDetails: 'Contacts', // traz card.contacts (id + nome do contato vinculado)
   })
   const res = await fetch(`${HELENA_BASE}/crm/v1/panel/card?${qs}`, {
     headers: { Authorization: token },
@@ -49,6 +50,35 @@ async function fetchPage(panelId, token, pageNumber) {
     throw new Error(`Helena API ${res.status}: ${body.slice(0, 300)}`)
   }
   return res.json()
+}
+
+// Telefone do contato não vem na listagem de cards — exige uma chamada por
+// contato. Falha de forma silenciosa (cai no telefone extraído do texto, se
+// configurado como fallback).
+async function fetchContact(id, token) {
+  try {
+    const res = await fetch(`${HELENA_BASE}/core/v1/contact/${encodeURIComponent(id)}`, {
+      headers: { Authorization: token },
+    })
+    if (!res.ok) return null
+    return await res.json()
+  } catch {
+    return null
+  }
+}
+
+const CONTACT_FETCH_CONCURRENCY = 15
+const CONTACT_LOOKBACK_DAYS = 90
+
+async function fetchContactsByIds(ids, token) {
+  const idList = [...ids]
+  const byId = {}
+  for (let i = 0; i < idList.length; i += CONTACT_FETCH_CONCURRENCY) {
+    const batch = idList.slice(i, i + CONTACT_FETCH_CONCURRENCY)
+    const results = await Promise.all(batch.map(id => fetchContact(id, token)))
+    batch.forEach((id, j) => { if (results[j]) byId[id] = results[j] })
+  }
+  return byId
 }
 
 // Resolve os títulos das etapas do painel — usado só para rotular cards em
@@ -137,6 +167,22 @@ export default async function handler(req, res) {
       for (const page of pages) items = items.concat(page.items ?? [])
     }
 
+    // Telefone do contato vinculado exige 1 chamada por contato — só vale a pena
+    // se a clínica realmente configurou essa fonte, e só para cards recentes
+    // (histórico mais antigo não precisa: dashboard novo, sem uso além disso).
+    const usesContactPhone = (extractCfg?.phone ?? []).some(r => r.from === 'contactPhone')
+    let contactById = {}
+    if (usesContactPhone) {
+      const cutoff = new Date(Date.now() - CONTACT_LOOKBACK_DAYS * 86_400_000).toISOString().slice(0, 10)
+      const recentContactIds = new Set()
+      for (const item of items) {
+        const effective = (item.dueDate ?? item.updatedAt ?? item.createdAt ?? '').slice(0, 10)
+        if (effective < cutoff) continue
+        for (const c of item.contacts ?? []) recentContactIds.add(c.id)
+      }
+      contactById = await fetchContactsByIds(recentContactIds, token)
+    }
+
     const stepLookup = Object.fromEntries(
       Object.entries(steps).map(([key, s]) => [
         s.id,
@@ -145,8 +191,12 @@ export default async function handler(req, res) {
     )
 
     const cards = items.map(card => {
+      const contactPhone = card.contacts?.[0]?.id
+        ? contactById[card.contacts[0].id]?.phoneNumberFormatted ?? contactById[card.contacts[0].id]?.phoneNumber ?? null
+        : null
+      const cardForExtract = extractCfg ? { ...card, contactPhone } : card
       const appt = extractCfg
-        ? extractCard(card, extractCfg)
+        ? extractCard(cardForExtract, extractCfg)
         : { ...(parseDescription(card.description) ?? parseTitleAppointment(card.title) ?? { date: null, time: null }), name: null, phone: null }
 
       const step = stepLookup[card.stepId] ?? null
