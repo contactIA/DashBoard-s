@@ -219,7 +219,9 @@ function ExtractField({ field, rules, sampleCards, customFields, onChange }) {
                 // card.customFields é indexado pelo id interno do campo (às vezes
                 // pela "key") — nunca pelo nome exibido. Testa os dois contra as
                 // amostras e usa o que realmente bate, sem o admin precisar saber.
-                const current = customFields.find(cf => cf.key === key || cf.id === key)
+                // Guarda contra key vazia: vários campos podem ter key "" na Helena,
+                // e sem essa checagem o primeiro deles "casava" por engano.
+                const current = key ? customFields.find(cf => cf.key === key || cf.id === key) : null
                 return (
                   <select className={miniSelect} value={current?.id ?? ''} onChange={e => {
                     const cf = customFields.find(f => f.id === e.target.value)
