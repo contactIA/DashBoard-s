@@ -68,8 +68,9 @@ export default function DateRangePicker({ from, to, onFromChange, onToChange }) 
     if (isAfter(day, today)) return
 
     if (!picking) {
-      // Primeiro clique — define início, aguarda fim
-      setDraft({ from: day, to: null })
+      // Primeiro clique — já vale como dia único (dá pra aplicar direto);
+      // clicar em outro dia depois estende para um intervalo.
+      setDraft({ from: day, to: day })
       setPicking(true)
     } else {
       // Segundo clique — define fim (inverte se necessário)
@@ -125,7 +126,7 @@ export default function DateRangePicker({ from, to, onFromChange, onToChange }) 
   const draftLabel = draft.from && draft.to && !isSameDay(draft.from, draft.to)
     ? `${format(draft.from, 'dd/MM/yy')} → ${format(draft.to, 'dd/MM/yy')}`
     : draft.from
-    ? `${format(draft.from, 'dd/MM/yy')} → ?`
+    ? format(draft.from, 'dd/MM/yy')
     : 'Selecione o início'
 
   const canApply = Boolean(draft.from && draft.to)

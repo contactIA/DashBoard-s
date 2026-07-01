@@ -9,7 +9,7 @@ const fmtPct = (v) => (v == null ? '—' : v.toFixed(0) + '%')
 export default function FunnelChart({ funnel, revenue }) {
   if (!funnel || funnel.entrou === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm h-full flex items-center justify-center">
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex items-center justify-center">
         <p className="text-sm text-slate-400">Sem cards no período.</p>
       </div>
     )
@@ -27,7 +27,7 @@ export default function FunnelChart({ funnel, revenue }) {
   ]
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm h-full">
+    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
       <h3 className="text-sm font-semibold text-slate-800">Funil de pipeline</h3>
       <p className="text-xs text-slate-400 mt-0.5 mb-5">Período selecionado · % = passagem de uma etapa à seguinte</p>
 

@@ -298,24 +298,30 @@ export default function App() {
           />
 
           {/* ── 3. Funil (herói visual) + quebras por dimensão ───────────── */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.6fr] gap-5 p-5 border-b border-slate-200">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.6fr] gap-5 p-5 border-b border-slate-200 items-start">
             <FunnelChart funnel={funnel} revenue={revenue} />
             <div className="flex flex-col gap-5">
-              {breakdowns.length > 0
-                ? breakdowns.map(b => (
-                    <div key={b.key} className="flex flex-col gap-5">
-                      <RevenueDonut title={b.label} rows={revenueBreakdowns[b.key]} />
-                      <DimensionBreakdown title={b.label} rows={b.rows} />
-                    </div>
-                  ))
-                : (
-                  <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex items-center justify-center h-full">
-                    <p className="text-sm text-slate-400 text-center max-w-xs">
-                      Esta clínica não tem dimensões configuradas (ex: origem, agendador).
-                      Configure as tags de card em <code className="font-mono">/setup</code>.
-                    </p>
+              {breakdowns.length > 0 ? (
+                breakdowns.map(b => (
+                  <div key={b.key} className="flex flex-col gap-5">
+                    <RevenueDonut title={b.label} rows={revenueBreakdowns[b.key]} />
+                    <DimensionBreakdown title={b.label} rows={b.rows} />
                   </div>
-                )}
+                ))
+              ) : Object.keys(data?.dimensions ?? {}).length === 0 ? (
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex items-center justify-center">
+                  <p className="text-sm text-slate-400 text-center max-w-xs">
+                    Esta clínica não tem dimensões configuradas (ex: origem, agendador).
+                    Configure as tags de card em <code className="font-mono">/setup</code>.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex items-center justify-center">
+                  <p className="text-sm text-slate-400 text-center max-w-xs">
+                    Nenhum card com dimensão preenchida nesse período — tente outra data ou confira as etiquetas em <code className="font-mono">/setup</code>.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
