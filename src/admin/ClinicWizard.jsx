@@ -232,13 +232,19 @@ function ExtractField({ field, rules, sampleCards, customFields, onChange }) {
                     }
                     setRule(i, { from: `customFields.${bestKey}` })
                   }}>
-                    <option value="">{customFields.length ? 'Selecione o campo…' : 'Nenhum campo personalizado encontrado'}</option>
+                    <option value="">{customFields.length ? 'Selecione o campo…' : 'Nenhum campo encontrado — digite a key ao lado'}</option>
                     {customFields.map(cf => (
                       <option key={cf.id} value={cf.id}>{cf.name}{cf.type ? ` (${cf.type})` : ''}</option>
                     ))}
                   </select>
                 )
               })()}
+              {isCustomField && (
+                <input
+                  className={miniInput} placeholder="ou digite a key (ex: data)"
+                  value={key} onChange={e => setRule(i, { from: `customFields.${e.target.value}` })}
+                />
+              )}
               {hidesRegex ? (
                 <span className="flex-1 text-[11px] text-slate-400 italic">
                   {isHelenaSource ? 'campo real da Helena' : 'pega o valor do campo direto'} — sem regex necessária

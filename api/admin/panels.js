@@ -44,16 +44,22 @@ async function fetchContactSafe(id, token) {
   }
 }
 
-// Campos personalizados de card (EntityType=PANEL) cadastrados na conta Helena —
-// pro wizard oferecer um dropdown em vez do admin ter que adivinhar/digitar a
-// chave interna do campo. Best-effort: sem isso o wizard ainda funciona.
+// Campos personalizados de card, cadastrados na conta Helena — pro wizard
+// oferecer um dropdown em vez do admin ter que adivinhar/digitar a chave
+// interna do campo. Busca os dois EntityType (PANEL e CONTACT) porque contas
+// diferentes cadastram os campos de agendamento em um ou outro. Best-effort:
+// sem isso o wizard ainda funciona (admin digita a key na mão).
 async function fetchCustomFieldsSafe(token) {
-  try {
-    const list = await helenaGet('/core/v1/custom-field?EntityType=PANEL', token)
-    return (list ?? []).map(f => ({ id: f.id, key: f.key ?? null, name: f.name ?? '(sem nome)', type: f.type ?? null }))
-  } catch {
-    return []
+  const oneType = async (entityType) => {
+    try {
+      const list = await helenaGet(`/core/v1/custom-field?EntityType=${entityType}`, token)
+      return (list ?? []).map(f => ({ id: f.id, key: f.key ?? null, name: f.name ?? '(sem nome)', type: f.type ?? null, entityType }))
+    } catch {
+      return []
+    }
   }
+  const [panel, contact] = await Promise.all([oneType('PANEL'), oneType('CONTACT')])
+  return [...panel, ...contact]
 }
 
 // Resolve o token da clínica já cadastrada (modo edição, sem re-digitar o token)
