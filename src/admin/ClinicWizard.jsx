@@ -8,9 +8,10 @@ const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
 const WIZARD_STEPS = ['Credenciais', 'Painel', 'Métricas', 'Funil', 'Extração', 'Dimensões', 'Revisão']
 
-// Estágios fixos do funil exibido no dashboard — o admin escolhe quais tipos somam em cada um.
+// As 3 barras configuráveis do funil (depois da 1ª, "Leads totais", que é
+// sempre o total de cards do período — não configurável, por isso fica fora
+// desta lista).
 const FUNNEL_STAGE_DEFS = [
-  { key: 'naoAgendou', label: 'Não agendou' },
   { key: 'agendou',    label: 'Agendaram' },
   { key: 'compareceu', label: 'Compareceram' },
   { key: 'fechou',     label: 'Fecharam' },
@@ -678,10 +679,17 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       {step === 3 && (
         <div className="space-y-4">
           <StepHeader title="Componha o funil de pipeline">
-            Escolha quais etapas somam em cada estágio do funil mostrado no dashboard —
+            Escolha quais etapas somam em cada barra do funil mostrado no dashboard —
             cada clínica organiza o painel Helena do seu jeito.
           </StepHeader>
+
           <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100">
+            <div className="px-4 py-3.5">
+              <div className="text-sm font-semibold text-slate-800">Leads totais</div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                1ª barra do funil — sempre o total de cards que entraram no período. Não é configurável.
+              </p>
+            </div>
             {FUNNEL_STAGE_DEFS.map(stage => (
               <div key={stage.key} className="px-4 py-3.5">
                 <div className="text-sm font-semibold text-slate-800 mb-2">{stage.label}</div>
@@ -705,6 +713,29 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
               </div>
             ))}
           </div>
+
+          <div className="bg-white border border-slate-200 rounded-xl p-4">
+            <div className="text-sm font-semibold text-slate-800 mb-0.5">Não agendou <span className="font-normal text-slate-400">(estatística ao lado do funil, não é uma das barras)</span></div>
+            <p className="text-xs text-slate-400 mb-2">Aparece junto com Faltaram/Cancelaram/Remarcaram, embaixo do funil.</p>
+            <div className="flex flex-wrap gap-1.5">
+              {usedTypes.length === 0 && (
+                <span className="text-xs text-slate-400">Mapeie etapas na tela anterior primeiro.</span>
+              )}
+              {usedTypes.map(type => {
+                const t = METRIC_TYPES.find(m => m.value === type)
+                const checked = (funnelStages.naoAgendou ?? []).includes(type)
+                return (
+                  <button type="button" key={type} onClick={() => toggleStageType('naoAgendou', type)}
+                    className={`text-xs px-2.5 py-1.5 rounded-md border font-medium transition-colors ${
+                      checked ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                    }`}>
+                    {t?.label ?? type}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
           <label className="flex items-center gap-2.5 text-sm text-slate-600 bg-white border border-slate-200 rounded-xl p-4 cursor-pointer">
             <input type="checkbox" checked={mergeCancelReagend} onChange={e => setMergeCancelReagend(e.target.checked)} />
             Unificar "Cancelou" e "Reagendamento" em uma única métrica no rodapé do funil
@@ -893,6 +924,12 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                     </span>
                   </div>
                 ))}
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xs font-semibold text-slate-700 shrink-0">Não agendou (estatística):</span>
+                  <span className="text-xs text-slate-500">
+                    {(funnelStages.naoAgendou ?? []).map(t => METRIC_TYPES.find(m => m.value === t)?.label ?? t).join(', ') || '—'}
+                  </span>
+                </div>
                 {mergeCancelReagend && (
                   <div className="text-xs text-slate-500">Cancelou e Reagendamento unificados no rodapé do funil</div>
                 )}
