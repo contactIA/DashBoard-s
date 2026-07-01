@@ -4,7 +4,8 @@
 // Config (vive em clinics.steps._extract e ._dims):
 //   _extract: { date:[rule], time:[rule], name:[rule], phone:[rule] }
 //     rule = { from, regex?, format? }
-//       from   : 'title' | 'description' | 'metadata.<campo>'
+//       from   : 'title' | 'description' | 'dueDate' | 'contactName' | 'contactPhone'
+//                | 'metadata.<campo>' | 'customFields.<campo>'
 //       regex  : captura grupo 1 (ou match inteiro); ausente = campo inteiro
 //       format : 'DMY' (DD/MM/AAAA) | 'YMD' (AAAA-MM-DD) — só para datas
 //   _dims: { <chave>: { label, source, values?, rules? } }
@@ -20,6 +21,9 @@ export function readField(card, from) {
   if (from === 'contactName')  return card.contacts?.[0]?.name ?? ''
   if (from === 'contactPhone') return card.contactPhone ?? ''
   if (from?.startsWith('metadata.')) return card.metadata?.[from.slice(9)] ?? ''
+  // customFields — diferente de metadata na API da Helena (campos personalizados
+  // configurados pelo usuário no painel, vs. metadados livres).
+  if (from?.startsWith('customFields.')) return card.customFields?.[from.slice(13)] ?? ''
   return ''
 }
 

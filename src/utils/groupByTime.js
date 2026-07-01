@@ -93,7 +93,7 @@ export function groupCardsByTime(cards, from, to, steps) {
   }
 
   // Séries por TIPO de métrica (normalizado) — independente dos slugs de cada clínica
-  const TYPE_KEYS = ['lead', 'scheduled', 'rescheduled', 'attended', 'negotiating', 'converted', 'missed', 'cancelled']
+  const TYPE_KEYS = ['lead', 'notScheduled', 'scheduled', 'rescheduled', 'attended', 'negotiating', 'converted', 'missed', 'cancelled']
 
   const data = [...allBuckets].sort().map(bucket => {
     const row = { label: formatBucketLabel(bucket, granularity) }

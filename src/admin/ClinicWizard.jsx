@@ -166,18 +166,33 @@ function ExtractField({ field, rules, sampleCards, onChange }) {
       <div className="space-y-2">
         {rules.map((r, i) => {
           const isHelenaSource = r.from === field.helenaSource
+          const isMetadata     = r.from?.startsWith('metadata.')
+          const isCustomField  = r.from?.startsWith('customFields.')
+          const kind = isMetadata ? 'metadata' : isCustomField ? 'customFields' : r.from
+          const key  = isMetadata ? r.from.slice(9) : isCustomField ? r.from.slice(13) : ''
           return (
-            <div key={i} className="flex items-center gap-2">
-              <select className={miniSelect} value={r.from} onChange={e => setRule(i, { from: e.target.value })}>
+            <div key={i} className="flex items-center gap-2 flex-wrap">
+              <select className={miniSelect} value={kind} onChange={e => {
+                const v = e.target.value
+                setRule(i, { from: v === 'metadata' || v === 'customFields' ? `${v}.` : v })
+              }}>
                 <option value={field.helenaSource}>{field.helenaLabel}</option>
                 <option value="title">Título</option>
                 <option value="description">Descrição</option>
+                <option value="metadata">Metadado (metadata)</option>
+                <option value="customFields">Campo personalizado (customFields)</option>
               </select>
+              {(isMetadata || isCustomField) && (
+                <input
+                  className={miniInput} placeholder="nome do campo"
+                  value={key} onChange={e => setRule(i, { from: `${kind}.${e.target.value}` })}
+                />
+              )}
               {isHelenaSource ? (
                 <span className="flex-1 text-[11px] text-slate-400 italic">campo real da Helena — sem regex necessária</span>
               ) : (
                 <input
-                  className={`${miniInput} flex-1`} placeholder="regex (grupo 1 = valor)"
+                  className={`${miniInput} flex-1`} placeholder="regex (grupo 1 = valor) — vazio usa o campo inteiro"
                   value={r.regex} onChange={e => setRule(i, { regex: e.target.value })}
                 />
               )}

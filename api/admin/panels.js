@@ -136,6 +136,7 @@ export default async function handler(req, res) {
         description:  c.description ?? null,
         tagIds:       c.tagIds ?? [],
         metadata:     c.metadata ?? null,
+        customFields: c.customFields ?? null,
         dueDate:      c.dueDate ?? null,
         contacts:     c.contacts ?? [],
         contactPhone: contactsForPreview[i]?.phoneNumberFormatted ?? contactsForPreview[i]?.phoneNumber ?? null,

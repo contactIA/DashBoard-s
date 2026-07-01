@@ -1,6 +1,7 @@
 // Tipos de métrica que o dashboard entende (ver utils/parseCards.js)
 export const METRIC_TYPES = [
-  { value: 'lead',       label: 'Lead (topo do funil)',   hint: 'Entrou, ainda não agendou',   color: '#0EA5E9' },
+  { value: 'lead',       label: 'Lead (topo do funil)',   hint: 'Entrou, ainda em aberto',     color: '#0EA5E9' },
+  { value: 'notScheduled', label: 'Não agendou',          hint: 'CRC/IA falou, mas não converteu em agendamento', color: '#EC4899' },
   { value: 'scheduled',  label: 'Agendamento',            hint: 'Agendou',                     color: '#6366F1' },
   { value: 'rescheduled', label: 'Reagendamento',         hint: 'Remarcou a consulta',          color: '#A855F7' },
   { value: 'attended',   label: 'Compareceu, não fechou', hint: 'Oportunidade recuperável',    color: '#F59E0B' },
@@ -30,6 +31,7 @@ export function guessType(title) {
   if (t.includes('falt')) return 'missed'
   if (t.includes('cancel')) return 'cancelled'
   if (t.includes('reagend') || t.includes('remarc')) return 'rescheduled'
+  if ((t.includes('nao') && t.includes('agend')) || t.includes('sem interesse') || t.includes('nao converteu')) return 'notScheduled'
   if (t.includes('agend')) return 'scheduled'
   if (t.includes('comparec')) return 'attended'
   return 'ignore'

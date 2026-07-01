@@ -49,8 +49,9 @@ export function inPeriod(c, from, to) {
 export function computeKpis(cards, from, to) {
   if (!cards?.length || !from || !to) return null
 
-  // Leads ficam fora dos KPIs de atendimento (vivem no funil, não na agenda)
-  const inRange     = cards.filter(c => c.stepType !== 'lead' && inPeriod(c, from, to))
+  // Leads e "não agendou" ficam fora dos KPIs de atendimento — nunca tiveram
+  // consulta, então vivem no funil/topo, não na agenda.
+  const inRange     = cards.filter(c => c.stepType !== 'lead' && c.stepType !== 'notScheduled' && inPeriod(c, from, to))
   const negotiating = inRange.filter(c => c.stepType === 'negotiating')   // orçamento em aberto
   const notClosed   = inRange.filter(c => c.stepType === 'attended')      // compareceu, não fechou
   const converted   = inRange.filter(c => c.stepType === 'converted')
@@ -189,7 +190,7 @@ export function computePreviousRevenue(cards, from, to, ticket, today) {
  */
 export const DEFAULT_FUNNEL_CFG = {
   stages: {
-    naoAgendou: ['lead'],
+    naoAgendou: ['lead', 'notScheduled'],
     agendou:    ['scheduled', 'rescheduled', 'attended', 'negotiating', 'converted', 'missed', 'cancelled'],
     compareceu: ['attended', 'negotiating', 'converted'],
     fechou:     ['converted'],
@@ -215,6 +216,7 @@ export function funnelOf(cards, funnelCfg) {
   // Contagens brutas por tipo — mantidas para compatibilidade com quem já lê
   // funil.attended/negotiating/converted diretamente (ex: DimensionBreakdown).
   const lead        = n('lead')
+  const notScheduled = n('notScheduled')
   const scheduled   = n('scheduled')
   const rescheduled = n('rescheduled')
   const attended    = n('attended')        // compareceu, não fechou
@@ -241,7 +243,7 @@ export function funnelOf(cards, funnelCfg) {
   }
 
   return {
-    entrou, lead, scheduled, rescheduled, attended, negotiating, converted, missed, cancelled,
+    entrou, lead, notScheduled, scheduled, rescheduled, attended, negotiating, converted, missed, cancelled,
     naoAgendou, agendou, compareceu, decididos, fechou, extraStats,
     taxaAgendamento: entrou > 0 ? (agendou / entrou) * 100 : null,
     // comparecimento entre os que tiveram desfecho de consulta (compareceu ou faltou)
