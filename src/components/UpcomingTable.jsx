@@ -65,7 +65,7 @@ export default function UpcomingTable({ cards, ticket }) {
                     color: c.stepColor,
                   }}
                 >
-                  {c.stepKey === 'reagendou' ? 'Reagendado' : 'Agendado'}
+                  {c.stepType === 'rescheduled' ? 'Reagendado' : 'Agendado'}
                 </span>
               </td>
               <td className="px-5 py-2.5 text-right font-semibold font-mono text-slate-700">

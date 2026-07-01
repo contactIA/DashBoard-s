@@ -8,7 +8,7 @@ const PAGE_SIZE     = 100
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 // Chaves reservadas dentro do JSONB `steps` — não são etapas, e sim config v2.
-const RESERVED_KEYS = new Set(['_extract', '_dims'])
+const RESERVED_KEYS = new Set(['_extract', '_dims', '_funnel'])
 
 // Garante o prefixo "Bearer " no token (o mesmo cuidado do admin/panels.js).
 function normalizeToken(raw) {
@@ -116,6 +116,7 @@ export default async function handler(req, res) {
   const rawSteps    = config.steps ?? {}             // JSONB do Supabase
   const extractCfg  = rawSteps._extract ?? null
   const dimsCfg     = rawSteps._dims ?? null
+  const funnelCfg   = rawSteps._funnel ?? null
   // Steps "de verdade" (sem as chaves reservadas de config)
   const steps = Object.fromEntries(
     Object.entries(rawSteps).filter(([k]) => !RESERVED_KEYS.has(k))
@@ -209,6 +210,7 @@ export default async function handler(req, res) {
       ticket:     computedTicket,
       steps,
       dimensions,
+      funnelConfig: funnelCfg,
       cards,
       diagnostics,
       fetchedAt:  new Date().toISOString(),

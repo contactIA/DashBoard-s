@@ -142,8 +142,8 @@ export default function App() {
   const upcoming   = useMemo(() => getUpcoming(cards, today), [cards, today])
 
   const funnel = useMemo(
-    () => computeFunnel(cards, dateFrom, dateTo),
-    [cards, dateFrom, dateTo],
+    () => computeFunnel(cards, dateFrom, dateTo, data?.funnelConfig),
+    [cards, dateFrom, dateTo, data],
   )
   // Quebras do funil por cada dimensão configurada (origem, agendador, …).
   // Ao filtrar por uma unidade, a própria dimensão-unidade some (seria 1 só valor).
@@ -154,7 +154,7 @@ export default function App() {
       .map(([key, def]) => ({
         key,
         label: def.label,
-        rows: breakdownByDimension(cards, key, def.values, dateFrom, dateTo),
+        rows: breakdownByDimension(cards, key, def.values, dateFrom, dateTo, data?.funnelConfig),
       })).filter(b => b.rows.length > 0)
   }, [data, cards, unit, unitDim, dateFrom, dateTo])
   // Receita fechada (R$) por dimensão — base das roscas

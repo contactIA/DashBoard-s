@@ -38,7 +38,7 @@ export default function KpiStrip({ kpis, prevKpis, delta: d, chartData, ticket, 
       <KpiCell
         label="Total no período"
         value={kpis?.total ?? '—'}
-        sub={`${kpis?.scheduled ?? 0} aguardando`}
+        sub={`${(kpis?.scheduled ?? 0) + (kpis?.rescheduled ?? 0)} aguardando`}
         spark={spark.total}
         sparkColor="#6366F1"
       />

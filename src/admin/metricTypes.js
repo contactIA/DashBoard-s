@@ -1,7 +1,8 @@
 // Tipos de métrica que o dashboard entende (ver utils/parseCards.js)
 export const METRIC_TYPES = [
   { value: 'lead',       label: 'Lead (topo do funil)',   hint: 'Entrou, ainda não agendou',   color: '#0EA5E9' },
-  { value: 'scheduled',  label: 'Agendamento',            hint: 'Agendou, Reagendou',          color: '#6366F1' },
+  { value: 'scheduled',  label: 'Agendamento',            hint: 'Agendou',                     color: '#6366F1' },
+  { value: 'rescheduled', label: 'Reagendamento',         hint: 'Remarcou a consulta',          color: '#A855F7' },
   { value: 'attended',   label: 'Compareceu, não fechou', hint: 'Oportunidade recuperável',    color: '#F59E0B' },
   { value: 'negotiating', label: 'Orçamento em aberto',   hint: 'Compareceu, em negociação',   color: '#8B5CF6' },
   { value: 'converted',  label: 'Fechou contrato',        hint: 'Conta como receita',          color: '#10B981' },
@@ -28,6 +29,7 @@ export function guessType(title) {
   if (t.includes('fechou') || t.includes('fechamento') || t.includes('converte')) return 'converted'
   if (t.includes('falt')) return 'missed'
   if (t.includes('cancel')) return 'cancelled'
+  if (t.includes('reagend') || t.includes('remarc')) return 'rescheduled'
   if (t.includes('agend')) return 'scheduled'
   if (t.includes('comparec')) return 'attended'
   return 'ignore'
@@ -55,8 +57,8 @@ export function slugify(title) {
 
 // Monta o JSONB `steps` no formato que o dashboard consome:
 // { slug: { id, label, color, type } } — steps "ignore" ficam de fora.
-// extract/dims (opcionais) entram como chaves reservadas _extract/_dims.
-export function buildStepsConfig(mappedSteps, extract, dims) {
+// extract/dims/funnel (opcionais) entram como chaves reservadas _extract/_dims/_funnel.
+export function buildStepsConfig(mappedSteps, extract, dims, funnel) {
   const config = {}
   for (const s of mappedSteps) {
     if (s.type === 'ignore') continue
@@ -65,6 +67,7 @@ export function buildStepsConfig(mappedSteps, extract, dims) {
     config[slug] = { id: s.id, label: s.title, color: s.color, type: s.type }
   }
   if (extract && Object.values(extract).some(rules => rules?.length)) config._extract = extract
+  if (funnel) config._funnel = funnel
   if (dims && Object.keys(dims).length) config._dims = dims
   return config
 }

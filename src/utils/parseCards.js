@@ -57,7 +57,7 @@ export function computeKpis(cards, from, to) {
   const missed      = inRange.filter(c => c.stepType === 'missed')
   const cancelled   = inRange.filter(c => c.stepType === 'cancelled')
   const scheduled   = inRange.filter(c => c.stepType === 'scheduled')
-  const rescheduled = inRange.filter(c => /reagend/i.test(c.stepLabel ?? c.stepKey ?? ''))
+  const rescheduled = inRange.filter(c => c.stepType === 'rescheduled')
 
   // Quem compareceu = não fechou + em negociação + fechou
   const showed       = notClosed.length + negotiating.length + converted.length
@@ -117,8 +117,8 @@ export function computeRevenue(cards, from, to, ticket, today) {
   const negociacao= inRange.filter(c => c.stepType === 'negotiating')   // orçamento em aberto
   const faltas    = inRange.filter(c => c.stepType === 'missed')
 
-  // Agendamentos futuros — base real para projeção
-  const agendados = cards.filter(c => c.date && c.date >= (today ?? from) && c.stepType === 'scheduled')
+  // Agendamentos futuros — base real para projeção (inclui remarcados: seguem tendo consulta futura)
+  const agendados = cards.filter(c => c.date && c.date >= (today ?? from) && (c.stepType === 'scheduled' || c.stepType === 'rescheduled'))
 
   // Só soma valores reais — nulo é ignorado
   const sumReal = (arr) => arr.filter(c => c.value > 0).reduce((s, c) => s + c.value, 0)
@@ -182,14 +182,41 @@ export function computePreviousRevenue(cards, from, to, ticket, today) {
 }
 
 /**
+ * Composição padrão do funil — soma explícita de stepTypes por estágio (não
+ * subtração). Usada quando a clínica não tem `_funnel` configurado no /setup.
+ * Cards em steps não mapeados/ignorados (stepType null) não entram em nenhum
+ * estágio, então não inflam mais os números (bug antigo do `entrou - lead`).
+ */
+export const DEFAULT_FUNNEL_CFG = {
+  stages: {
+    naoAgendou: ['lead'],
+    agendou:    ['scheduled', 'rescheduled', 'attended', 'negotiating', 'converted', 'missed', 'cancelled'],
+    compareceu: ['attended', 'negotiating', 'converted'],
+    fechou:     ['converted'],
+  },
+  mergeCancelledRescheduled: false,
+}
+
+/**
  * Funil de pipeline a partir de um conjunto de cards (estado atual de cada card).
  * Na Helena o card está em uma única etapa por vez, então isto é a foto da coorte:
  * de quem entrou, quantos hoje estão em cada estágio.
+ *
+ * `funnelCfg` (opcional, vem de clinics.steps._funnel) define quais stepTypes somam
+ * em cada estágio — cada clínica pode ter particularidades no seu painel Helena.
  */
-export function funnelOf(cards) {
+export function funnelOf(cards, funnelCfg) {
+  const stages = funnelCfg?.stages ?? DEFAULT_FUNNEL_CFG.stages
+  const mergeCancelledRescheduled = funnelCfg?.mergeCancelledRescheduled ?? DEFAULT_FUNNEL_CFG.mergeCancelledRescheduled
+
   const n = (t) => cards.filter(c => c.stepType === t).length
+  const sumTypes = (types) => cards.filter(c => (types ?? []).includes(c.stepType)).length
+
+  // Contagens brutas por tipo — mantidas para compatibilidade com quem já lê
+  // funil.attended/negotiating/converted diretamente (ex: DimensionBreakdown).
   const lead        = n('lead')
   const scheduled   = n('scheduled')
+  const rescheduled = n('rescheduled')
   const attended    = n('attended')        // compareceu, não fechou
   const negotiating = n('negotiating')     // orçamento em aberto
   const converted   = n('converted')
@@ -197,14 +224,25 @@ export function funnelOf(cards) {
   const cancelled   = n('cancelled')
 
   const entrou      = cards.length
-  const agendou     = entrou - lead                       // saiu do topo do funil
-  const compareceu  = attended + negotiating + converted  // todos que compareceram
-  const decididos   = attended + converted                // compareceram E decidiram (em aberto fora)
-  const fechou      = converted
+  const naoAgendou  = sumTypes(stages.naoAgendou)
+  const agendou     = sumTypes(stages.agendou)
+  const compareceu  = sumTypes(stages.compareceu)
+  const fechou      = sumTypes(stages.fechou)
+  const decididos   = compareceu - negotiating   // compareceram E decidiram (em aberto fora)
+
+  const extraStats = [
+    { key: 'missed', label: 'Faltaram', value: missed, color: 'text-orange-500' },
+  ]
+  if (mergeCancelledRescheduled) {
+    extraStats.push({ key: 'cancelledRescheduled', label: 'Cancel./Remarc.', value: cancelled + rescheduled, color: 'text-red-500' })
+  } else {
+    extraStats.push({ key: 'cancelled', label: 'Cancelaram', value: cancelled, color: 'text-red-500' })
+    if (rescheduled > 0) extraStats.push({ key: 'rescheduled', label: 'Remarcaram', value: rescheduled, color: 'text-violet-500' })
+  }
 
   return {
-    entrou, lead, scheduled, attended, negotiating, converted, missed, cancelled,
-    agendou, compareceu, decididos, fechou,
+    entrou, lead, scheduled, rescheduled, attended, negotiating, converted, missed, cancelled,
+    naoAgendou, agendou, compareceu, decididos, fechou, extraStats,
     taxaAgendamento: entrou > 0 ? (agendou / entrou) * 100 : null,
     // comparecimento entre os que tiveram desfecho de consulta (compareceu ou faltou)
     taxaComparecimento: (compareceu + missed) > 0 ? (compareceu / (compareceu + missed)) * 100 : null,
@@ -224,23 +262,23 @@ export function byEntryDate(cards, from, to) {
 }
 
 /** Funil da coorte que entrou em [from, to]. */
-export function computeFunnel(cards, from, to) {
+export function computeFunnel(cards, from, to, funnelCfg) {
   if (!cards?.length) return null
-  return funnelOf(byEntryDate(cards, from, to))
+  return funnelOf(byEntryDate(cards, from, to), funnelCfg)
 }
 
 /**
  * Quebra o funil por uma dimensão (origem, agendador, …).
  * Retorna [{ value, funnel }] em ordem de volume de entrada.
  */
-export function breakdownByDimension(cards, dimKey, values, from, to) {
+export function breakdownByDimension(cards, dimKey, values, from, to, funnelCfg) {
   if (!cards?.length || !dimKey) return []
   const inRange = byEntryDate(cards, from, to)
   const labels = [...(values ?? []), null] // null = "sem" valor
   return labels
     .map(v => ({
       value: v,
-      funnel: funnelOf(inRange.filter(c => (c.dims?.[dimKey] ?? null) === v)),
+      funnel: funnelOf(inRange.filter(c => (c.dims?.[dimKey] ?? null) === v), funnelCfg),
     }))
     .filter(r => r.funnel.entrou > 0)
     .sort((a, b) => b.funnel.entrou - a.funnel.entrou)
@@ -293,7 +331,7 @@ export function getNegotiating(cards, from, to) {
 export function getUpcoming(cards, today) {
   if (!cards?.length) return []
   return cards
-    .filter(c => c.date && c.date >= today && c.stepType === 'scheduled')
+    .filter(c => c.date && c.date >= today && (c.stepType === 'scheduled' || c.stepType === 'rescheduled'))
     .sort((a, b) => a.date !== b.date ? a.date.localeCompare(b.date) : (a.time ?? '').localeCompare(b.time ?? ''))
     .map(c => ({ ...c, ...parseTitle(c.title) }))
 }

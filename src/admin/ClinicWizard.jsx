@@ -2,10 +2,19 @@ import { useState } from 'react'
 import { listPanels, getPanelSteps, createClinic, updateClinic } from './adminApi'
 import { METRIC_TYPES, guessType, typeColor, buildStepsConfig, kebabify } from './metricTypes'
 import { extractWith, autoDetectExtract, countExtractHits } from '../utils/extract.js'
+import { DEFAULT_FUNNEL_CFG } from '../utils/parseCards.js'
 
 const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
-const WIZARD_STEPS = ['Credenciais', 'Painel', 'Métricas', 'Extração', 'Dimensões', 'Revisão']
+const WIZARD_STEPS = ['Credenciais', 'Painel', 'Métricas', 'Funil', 'Extração', 'Dimensões', 'Revisão']
+
+// Estágios fixos do funil exibido no dashboard — o admin escolhe quais tipos somam em cada um.
+const FUNNEL_STAGE_DEFS = [
+  { key: 'naoAgendou', label: 'Não agendou' },
+  { key: 'agendou',    label: 'Agendaram' },
+  { key: 'compareceu', label: 'Compareceram' },
+  { key: 'fechou',     label: 'Fecharam' },
+]
 
 const EXTRACT_FIELDS = [
   { key: 'date',  label: 'Data de agendamento', kind: 'date', hint: 'A data que filtra o dashboard. Sem ela o card some das métricas por período.' },
@@ -218,6 +227,9 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
   const [extract,     setExtract]     = useState(emptyExtract())
   const [dimensions,  setDimensions]  = useState([])
 
+  const [funnelStages,      setFunnelStages]      = useState({})
+  const [mergeCancelReagend, setMergeCancelReagend] = useState(false)
+
   const [savedUrl, setSavedUrl] = useState(null)
   const [copied,   setCopied]   = useState(false)
 
@@ -258,14 +270,31 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       existingById[cfg.id] = cfg
     }
 
-    setMappedSteps(panel.steps.map(s => {
+    const mapped = panel.steps.map(s => {
       const existing = existingById[s.id]
       const type = existing?.type ?? guessType(s.title)
       return { id: s.id, title: s.title, cardCount: s.cardCount, type, color: existing?.color ?? typeColor(type) }
-    }))
+    })
+    setMappedSteps(mapped)
 
     setSampleCards(panel.sampleCards ?? [])
     setPanelTags(panel.tags ?? [])
+
+    // funil: config salva tem prioridade; senão usa o default, restrito aos tipos
+    // realmente usados nesta clínica (evita oferecer checkbox de tipo inexistente)
+    const usedTypes = new Set(mapped.filter(s => s.type !== 'ignore').map(s => s.type))
+    const existingFunnel = clinic?.steps?._funnel
+    if (existingFunnel?.stages) {
+      setFunnelStages(existingFunnel.stages)
+      setMergeCancelReagend(Boolean(existingFunnel.mergeCancelledRescheduled))
+    } else {
+      const seeded = {}
+      for (const [stageKey, types] of Object.entries(DEFAULT_FUNNEL_CFG.stages)) {
+        seeded[stageKey] = types.filter(t => usedTypes.has(t))
+      }
+      setFunnelStages(seeded)
+      setMergeCancelReagend(false)
+    }
 
     // extração: config salva (edição) tem prioridade; senão tenta auto-detectar
     setExtract(
@@ -295,7 +324,10 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       token:     token.trim(),
       panelId:   selectedPanel.id,
       ticket:    Number(ticket) || null,
-      steps:     buildStepsConfig(mappedSteps, extract, stateToDims(dimensions, tagName)),
+      steps:     buildStepsConfig(mappedSteps, extract, stateToDims(dimensions, tagName), {
+        stages: funnelStages,
+        mergeCancelledRescheduled: mergeCancelReagend,
+      }),
     }
     if (isEdit) await updateClinic(payload)
     else        await createClinic(payload)
@@ -342,6 +374,15 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
   const addTagToDim      = (id, tid)       => setDimensions(ds => ds.map(d => d.id === id ? { ...d, tags: [...d.tags, { tid, label: tagName(tid) }] } : d))
   const removeTagFromDim = (id, tid)       => setDimensions(ds => ds.map(d => d.id === id ? { ...d, tags: d.tags.filter(t => t.tid !== tid) } : d))
   const renameTagLabel   = (id, tid, label) => setDimensions(ds => ds.map(d => d.id === id ? { ...d, tags: d.tags.map(t => t.tid === tid ? { ...t, label } : t) } : d))
+
+  // Tipos de métrica realmente em uso nesta clínica (exclui "Ignorar") — só eles
+  // aparecem como opção de checkbox no passo do funil.
+  const usedTypes = [...new Set(mappedSteps.filter(s => s.type !== 'ignore').map(s => s.type))]
+  const toggleStageType = (stageKey, type) =>
+    setFunnelStages(fs => {
+      const current = fs[stageKey] ?? []
+      return { ...fs, [stageKey]: current.includes(type) ? current.filter(t => t !== type) : [...current, type] }
+    })
 
   // dimensões válidas (com nome e ao menos uma tag) — para revisão
   const reviewDims = dimensions
@@ -604,14 +645,59 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
             <button onClick={() => setStep(1)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
             <button onClick={goMetrics}
               className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 text-white hover:bg-slate-700">
+              Funil →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Etapa 4: funil de pipeline ───────────────────────────────────── */}
+      {step === 3 && (
+        <div className="space-y-4">
+          <StepHeader title="Componha o funil de pipeline">
+            Escolha quais etapas somam em cada estágio do funil mostrado no dashboard —
+            cada clínica organiza o painel Helena do seu jeito.
+          </StepHeader>
+          <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100">
+            {FUNNEL_STAGE_DEFS.map(stage => (
+              <div key={stage.key} className="px-4 py-3.5">
+                <div className="text-sm font-semibold text-slate-800 mb-2">{stage.label}</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {usedTypes.length === 0 && (
+                    <span className="text-xs text-slate-400">Mapeie etapas na tela anterior primeiro.</span>
+                  )}
+                  {usedTypes.map(type => {
+                    const t = METRIC_TYPES.find(m => m.value === type)
+                    const checked = (funnelStages[stage.key] ?? []).includes(type)
+                    return (
+                      <button type="button" key={type} onClick={() => toggleStageType(stage.key, type)}
+                        className={`text-xs px-2.5 py-1.5 rounded-md border font-medium transition-colors ${
+                          checked ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                        }`}>
+                        {t?.label ?? type}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+          <label className="flex items-center gap-2.5 text-sm text-slate-600 bg-white border border-slate-200 rounded-xl p-4 cursor-pointer">
+            <input type="checkbox" checked={mergeCancelReagend} onChange={e => setMergeCancelReagend(e.target.checked)} />
+            Unificar "Cancelou" e "Reagendamento" em uma única métrica no rodapé do funil
+          </label>
+          <div className="flex justify-between pt-2">
+            <button onClick={() => setStep(2)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
+            <button onClick={() => setStep(4)}
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 text-white hover:bg-slate-700">
               Extração de dados →
             </button>
           </div>
         </div>
       )}
 
-      {/* ── Etapa 4: extração ────────────────────────────────────────────── */}
-      {step === 3 && (
+      {/* ── Etapa 5: extração ────────────────────────────────────────────── */}
+      {step === 4 && (
         <div className="space-y-4">
           <StepHeader title="Extração de dados">
             Cada chatbot escreve o card de um jeito. Defina como extrair os dados — o preview
@@ -631,8 +717,8 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
             ))}
           </div>
           <div className="flex justify-between pt-2">
-            <button onClick={() => setStep(2)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
-            <button onClick={() => setStep(4)}
+            <button onClick={() => setStep(3)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
+            <button onClick={() => setStep(5)}
               className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 text-white hover:bg-slate-700">
               Dimensões →
             </button>
@@ -640,8 +726,8 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
         </div>
       )}
 
-      {/* ── Etapa 5: dimensões (etiquetas de card) ───────────────────────── */}
-      {step === 4 && (
+      {/* ── Etapa 6: dimensões (etiquetas de card) ───────────────────────── */}
+      {step === 5 && (
         <div className="space-y-4">
           <StepHeader title="Dimensões do funil">
             As <strong>etiquetas de card</strong> viram cortes do funil. Agrupe-as em <strong>dimensões</strong>
@@ -734,8 +820,8 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
           )}
 
           <div className="flex justify-between pt-2">
-            <button onClick={() => setStep(3)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
-            <button onClick={() => setStep(5)}
+            <button onClick={() => setStep(4)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
+            <button onClick={() => setStep(6)}
               className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 text-white hover:bg-slate-700">
               Revisar →
             </button>
@@ -743,8 +829,8 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
         </div>
       )}
 
-      {/* ── Etapa 6: revisão ─────────────────────────────────────────────── */}
-      {step === 5 && (
+      {/* ── Etapa 7: revisão ─────────────────────────────────────────────── */}
+      {step === 6 && (
         <div className="space-y-4">
           <StepHeader title="Revisão">Confira a configuração antes de {isEdit ? 'salvar as alterações' : 'cadastrar a clínica'}.</StepHeader>
           <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100">
@@ -773,6 +859,22 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                 ))}
               </div>
             </div>
+            <div className="px-4 py-3">
+              <div className="text-sm text-slate-500 mb-2">Funil</div>
+              <div className="space-y-1.5">
+                {FUNNEL_STAGE_DEFS.map(stage => (
+                  <div key={stage.key} className="flex items-baseline gap-2">
+                    <span className="text-xs font-semibold text-slate-700 shrink-0">{stage.label}:</span>
+                    <span className="text-xs text-slate-500">
+                      {(funnelStages[stage.key] ?? []).map(t => METRIC_TYPES.find(m => m.value === t)?.label ?? t).join(', ') || '—'}
+                    </span>
+                  </div>
+                ))}
+                {mergeCancelReagend && (
+                  <div className="text-xs text-slate-500">Cancelou e Reagendamento unificados no rodapé do funil</div>
+                )}
+              </div>
+            </div>
             {reviewDims.length > 0 && (
               <div className="px-4 py-3">
                 <div className="text-sm text-slate-500 mb-2">Dimensões</div>
@@ -788,7 +890,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
             )}
           </div>
           <div className="flex justify-between pt-2">
-            <button onClick={() => setStep(4)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
+            <button onClick={() => setStep(5)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
             <button onClick={save} disabled={loading}
               className="px-5 py-2 text-sm font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-40">
               {loading ? 'Salvando...' : isEdit ? 'Salvar alterações' : 'Cadastrar clínica'}

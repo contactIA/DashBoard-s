@@ -76,13 +76,12 @@ export default function FunnelChart({ funnel, revenue }) {
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-2 mt-6 pt-4 border-t border-slate-100 text-center">
+      <div className="grid gap-2 mt-6 pt-4 border-t border-slate-100 text-center" style={{ gridTemplateColumns: `repeat(${1 + f.extraStats.length}, minmax(0, 1fr))` }}>
         {[
-          { label: 'Não agendaram', value: f.lead,      color: 'text-sky-600' },
-          { label: 'Faltaram',      value: f.missed,    color: 'text-orange-500' },
-          { label: 'Cancelaram',    value: f.cancelled, color: 'text-red-500' },
+          { key: 'naoAgendou', label: 'Não agendou', value: f.naoAgendou, color: 'text-sky-600' },
+          ...f.extraStats,
         ].map(s => (
-          <div key={s.label}>
+          <div key={s.key}>
             <div className={`text-lg font-semibold font-mono ${s.color}`}>{s.value}</div>
             <div className="text-[10px] text-slate-400">{s.label}</div>
           </div>
