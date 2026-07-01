@@ -30,13 +30,15 @@ export function fmtBRL(n, { short = false } = {}) {
 }
 
 /**
- * Data efetiva do card para "aconteceu no período":
- * data de agendamento quando existe; senão a data em que o card foi movido
- * (updatedAt); senão a criação. Resolve painéis cujos cards não trazem a data
- * de agendamento no texto (a maioria, fora do agendamento pela IA).
+ * Data efetiva do card para "aconteceu no período" — rastreia atividade no
+ * pipeline, não a data do agendamento em si (essa é só exibida, ver `date`):
+ *   - Lead (topo do funil, ainda não trabalhado): data de CRIAÇÃO.
+ *   - Qualquer outra etapa (agendou, reagendou, cancelou, faltou, etc.):
+ *     data da ÚLTIMA ATUALIZAÇÃO — aproxima quando o card entrou nesse estado.
  */
 export function effectiveDate(c) {
-  return c?.date || c?.updatedAt?.slice(0, 10) || c?.createdAt?.slice(0, 10) || null
+  if (c?.stepType === 'lead') return c?.createdAt?.slice(0, 10) ?? null
+  return c?.updatedAt?.slice(0, 10) ?? c?.createdAt?.slice(0, 10) ?? null
 }
 
 /** O card cai no período [from, to] pela data efetiva? */
