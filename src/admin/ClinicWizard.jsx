@@ -140,7 +140,7 @@ const miniSelect = 'px-2 py-1.5 text-xs border border-slate-200 rounded-md bg-wh
 const miniInput  = 'px-2 py-1.5 text-xs border border-slate-200 rounded-md bg-white font-mono focus:outline-none focus:border-slate-400'
 
 // ── Editor de regras de extração para um campo, com preview ao vivo ──────────
-function ExtractField({ field, rules, sampleCards, onChange }) {
+function ExtractField({ field, rules, sampleCards, customFields, onChange }) {
   const setRule = (i, patch) => onChange(rules.map((r, j) => j === i ? { ...r, ...patch } : r))
   const addRule = () => onChange([...rules, { from: 'description', regex: '', ...(field.kind === 'date' ? { format: 'YMD' } : {}) }])
   const delRule = (i) => onChange(rules.filter((_, j) => j !== i))
@@ -209,12 +209,36 @@ function ExtractField({ field, rules, sampleCards, onChange }) {
                 <option value="metadata">Metadado (metadata)</option>
                 <option value="customFields">Campo personalizado (customFields)</option>
               </select>
-              {(isMetadata || isCustomField) && (
+              {isMetadata && (
                 <input
                   className={miniInput} placeholder="nome do campo"
-                  value={key} onChange={e => setRule(i, { from: `${kind}.${e.target.value}` })}
+                  value={key} onChange={e => setRule(i, { from: `metadata.${e.target.value}` })}
                 />
               )}
+              {isCustomField && (() => {
+                // card.customFields é indexado pelo id interno do campo (às vezes
+                // pela "key") — nunca pelo nome exibido. Testa os dois contra as
+                // amostras e usa o que realmente bate, sem o admin precisar saber.
+                const current = customFields.find(cf => cf.key === key || cf.id === key)
+                return (
+                  <select className={miniSelect} value={current?.id ?? ''} onChange={e => {
+                    const cf = customFields.find(f => f.id === e.target.value)
+                    if (!cf) { setRule(i, { from: 'customFields.' }); return }
+                    const candidates = [cf.key, cf.id].filter(Boolean)
+                    let bestKey = candidates[0], bestHits = -1
+                    for (const k of candidates) {
+                      const hits = countExtractHits([{ from: `customFields.${k}` }], sampleCards, field.kind)
+                      if (hits > bestHits) { bestHits = hits; bestKey = k }
+                    }
+                    setRule(i, { from: `customFields.${bestKey}` })
+                  }}>
+                    <option value="">{customFields.length ? 'Selecione o campo…' : 'Nenhum campo personalizado encontrado'}</option>
+                    {customFields.map(cf => (
+                      <option key={cf.id} value={cf.id}>{cf.name}{cf.type ? ` (${cf.type})` : ''}</option>
+                    ))}
+                  </select>
+                )
+              })()}
               {hidesRegex ? (
                 <span className="flex-1 text-[11px] text-slate-400 italic">
                   {isHelenaSource ? 'campo real da Helena' : 'pega o valor do campo direto'} — sem regex necessária
@@ -276,6 +300,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
 
   const [sampleCards, setSampleCards] = useState([])
   const [panelTags,   setPanelTags]   = useState([])
+  const [panelCustomFields, setPanelCustomFields] = useState([])
   const [extract,     setExtract]     = useState(emptyExtract())
   const [dimensions,  setDimensions]  = useState([])
 
@@ -331,6 +356,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
 
     setSampleCards(panel.sampleCards ?? [])
     setPanelTags(panel.tags ?? [])
+    setPanelCustomFields(panel.customFields ?? [])
 
     // funil: config salva tem prioridade; senão usa o default, restrito aos tipos
     // realmente usados nesta clínica (evita oferecer checkbox de tipo inexistente)
@@ -794,6 +820,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
             {EXTRACT_FIELDS.map(f => (
               <ExtractField
                 key={f.key} field={f} rules={extract[f.key]} sampleCards={sampleCards}
+                customFields={panelCustomFields}
                 onChange={rules => setExtract(ex => ({ ...ex, [f.key]: rules }))}
               />
             ))}

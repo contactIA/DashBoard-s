@@ -44,6 +44,18 @@ async function fetchContactSafe(id, token) {
   }
 }
 
+// Campos personalizados de card (EntityType=PANEL) cadastrados na conta Helena —
+// pro wizard oferecer um dropdown em vez do admin ter que adivinhar/digitar a
+// chave interna do campo. Best-effort: sem isso o wizard ainda funciona.
+async function fetchCustomFieldsSafe(token) {
+  try {
+    const list = await helenaGet('/core/v1/custom-field?EntityType=PANEL', token)
+    return (list ?? []).map(f => ({ id: f.id, key: f.key ?? null, name: f.name ?? '(sem nome)', type: f.type ?? null }))
+  } catch {
+    return []
+  }
+}
+
 // Resolve o token da clínica já cadastrada (modo edição, sem re-digitar o token)
 async function tokenFromSupabase(accountId) {
   const url = `${process.env.SUPABASE_URL}/rest/v1/clinics?account_id=eq.${encodeURIComponent(accountId)}&select=token&limit=1`
@@ -75,10 +87,10 @@ export default async function handler(req, res) {
     if (panelId) {
       // IncludeDetails=Tags traz as etiquetas de CARD já nomeadas (com cor).
       // São um registro separado das etiquetas de contato (/core/v1/tag).
-      const panel = await helenaGet(
-        `/crm/v1/panel/${encodeURIComponent(panelId)}?IncludeDetails=Steps&IncludeDetails=Tags`,
-        token,
-      )
+      const [panel, customFields] = await Promise.all([
+        helenaGet(`/crm/v1/panel/${encodeURIComponent(panelId)}?IncludeDetails=Steps&IncludeDetails=Tags`, token),
+        fetchCustomFieldsSafe(token),
+      ])
 
       // Amostra de cards (até 3 páginas) para o wizard: preview de extração
       // e estatística de uso de cada tag de card.
@@ -152,6 +164,7 @@ export default async function handler(req, res) {
           .map(s => ({ id: s.id, title: s.title, position: s.position, cardCount: s.cardCount })),
         tags,
         sampleCards,
+        customFields,
       })
     }
 
