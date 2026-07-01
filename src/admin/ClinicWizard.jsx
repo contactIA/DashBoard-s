@@ -21,7 +21,7 @@ const EXTRACT_FIELDS = [
   { key: 'date',  label: 'Data de agendamento', kind: 'date', hint: 'A data que filtra o dashboard. Sem ela o card some das métricas por período.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)' },
   { key: 'time',  label: 'Horário',             kind: 'text', hint: 'Opcional — usado na lista de agendamentos.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)' },
   { key: 'name',  label: 'Nome do paciente',    kind: 'text', hint: 'Exibido nas tabelas.', helenaSource: 'contactName', helenaLabel: 'Contato vinculado ao card' },
-  { key: 'phone', label: 'Telefone',            kind: 'text', hint: 'Opcional.', helenaSource: 'contactPhone', helenaLabel: 'Contato vinculado ao card' },
+  { key: 'phone', label: 'Telefone',            kind: 'phone', hint: 'Opcional.', helenaSource: 'contactPhone', helenaLabel: 'Contato vinculado ao card' },
 ]
 
 const emptyExtract = () => ({
@@ -148,9 +148,16 @@ function ExtractField({ field, rules, sampleCards, onChange }) {
   // Preview: primeiro card de amostra cujo resultado não é nulo, senão os primeiros
   const previews = sampleCards.slice(0, 6).map(c => ({
     title: c.title ?? '(sem título)',
-    value: extractWith(rules, c, field.kind === 'date' ? 'date' : 'text'),
+    value: extractWith(rules, c, field.kind),
   }))
   const hits = previews.filter(p => p.value).length
+
+  // Sugestão: se o campo real da Helena bate em mais amostras do que a regra
+  // atual (comparando na amostra toda, não só no preview de 6), oferece trocar.
+  const usingHelena = rules.some(r => r.from === field.helenaSource)
+  const totalHits   = countExtractHits(rules, sampleCards, field.kind)
+  const helenaHits  = countExtractHits([{ from: field.helenaSource }], sampleCards, field.kind)
+  const suggestHelena = !usingHelena && sampleCards.length > 0 && helenaHits > totalHits
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-4">
@@ -164,6 +171,20 @@ function ExtractField({ field, rules, sampleCards, onChange }) {
       </div>
       <p className="text-[11px] text-slate-400 mt-0.5 mb-3">{field.hint}</p>
 
+      {suggestHelena && (
+        <div className="mb-3 flex items-center justify-between gap-2 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-2">
+          <span className="text-[11px] text-indigo-700">
+            💡 "{field.helenaLabel}" bate em {helenaHits}/{sampleCards.length} amostras (regra atual: {totalHits}/{sampleCards.length})
+          </span>
+          <button
+            onClick={() => onChange([{ from: field.helenaSource }, ...rules])}
+            className="text-[11px] px-2.5 py-1 rounded-md bg-indigo-600 text-white font-medium hover:bg-indigo-700 shrink-0"
+          >
+            Usar
+          </button>
+        </div>
+      )}
+
       <div className="space-y-2">
         {rules.map((r, i) => {
           const isHelenaSource = r.from === field.helenaSource
@@ -171,11 +192,16 @@ function ExtractField({ field, rules, sampleCards, onChange }) {
           const isCustomField  = r.from?.startsWith('customFields.')
           const kind = isMetadata ? 'metadata' : isCustomField ? 'customFields' : r.from
           const key  = isMetadata ? r.from.slice(9) : isCustomField ? r.from.slice(13) : ''
+          // Campo apontado por nome exato (Helena/metadata/customFields) já traz o
+          // valor certo — não precisa de regex. Só texto livre (título/descrição)
+          // exige recorte manual.
+          const hidesRegex = isHelenaSource || isMetadata || isCustomField
           return (
             <div key={i} className="flex items-center gap-2 flex-wrap">
               <select className={miniSelect} value={kind} onChange={e => {
                 const v = e.target.value
-                setRule(i, { from: v === 'metadata' || v === 'customFields' ? `${v}.` : v })
+                const isKeyed = v === 'metadata' || v === 'customFields'
+                setRule(i, { from: isKeyed ? `${v}.` : v, ...(isKeyed || v === field.helenaSource ? { regex: '' } : {}) })
               }}>
                 <option value={field.helenaSource}>{field.helenaLabel}</option>
                 <option value="title">Título</option>
@@ -189,8 +215,10 @@ function ExtractField({ field, rules, sampleCards, onChange }) {
                   value={key} onChange={e => setRule(i, { from: `${kind}.${e.target.value}` })}
                 />
               )}
-              {isHelenaSource ? (
-                <span className="flex-1 text-[11px] text-slate-400 italic">campo real da Helena — sem regex necessária</span>
+              {hidesRegex ? (
+                <span className="flex-1 text-[11px] text-slate-400 italic">
+                  {isHelenaSource ? 'campo real da Helena' : 'pega o valor do campo direto'} — sem regex necessária
+                </span>
               ) : (
                 <input
                   className={`${miniInput} flex-1`} placeholder="regex (grupo 1 = valor) — vazio usa o campo inteiro"
@@ -525,7 +553,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
         const usableSteps = mappedSteps.filter(s => s.type !== 'ignore')
         const extractRows = EXTRACT_FIELDS.map(f => ({
           ...f,
-          hits: countExtractHits(extract[f.key], sampleCards, f.kind === 'date' ? 'date' : 'text'),
+          hits: countExtractHits(extract[f.key], sampleCards, f.kind),
         }))
         const dateRow = extractRows.find(r => r.key === 'date')
         const total   = sampleCards.length

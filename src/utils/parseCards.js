@@ -253,20 +253,14 @@ export function funnelOf(cards, funnelCfg) {
   }
 }
 
-/** Filtra cards pela data de ENTRADA (createdAt) no período — base do funil/coorte. */
-export function byEntryDate(cards, from, to) {
-  if (!cards?.length) return []
-  if (!from || !to) return cards
-  return cards.filter(c => {
-    const d = (c.createdAt ?? '').slice(0, 10)
-    return d && d >= from && d <= to
-  })
-}
-
-/** Funil da coorte que entrou em [from, to]. */
+/**
+ * Funil do período [from, to] — mesma "data efetiva" usada pelos KPIs/Receita
+ * (data do agendamento; sem ela, cai no último toque do card), pra todo o
+ * dashboard responder ao filtro de data da mesma forma.
+ */
 export function computeFunnel(cards, from, to, funnelCfg) {
   if (!cards?.length) return null
-  return funnelOf(byEntryDate(cards, from, to), funnelCfg)
+  return funnelOf(cards.filter(c => inPeriod(c, from, to)), funnelCfg)
 }
 
 /**
@@ -275,7 +269,7 @@ export function computeFunnel(cards, from, to, funnelCfg) {
  */
 export function breakdownByDimension(cards, dimKey, values, from, to, funnelCfg) {
   if (!cards?.length || !dimKey) return []
-  const inRange = byEntryDate(cards, from, to)
+  const inRange = cards.filter(c => inPeriod(c, from, to))
   const labels = [...(values ?? []), null] // null = "sem" valor
   return labels
     .map(v => ({

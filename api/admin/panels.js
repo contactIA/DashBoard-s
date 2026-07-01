@@ -85,7 +85,7 @@ export default async function handler(req, res) {
       let cards = []
       try {
         for (let pg = 1; pg <= 3; pg++) {
-          const page = await helenaGet(`/crm/v1/panel/card?PanelId=${encodeURIComponent(panelId)}&PageSize=100&PageNumber=${pg}&IncludeDetails=Contacts`, token)
+          const page = await helenaGet(`/crm/v1/panel/card?PanelId=${encodeURIComponent(panelId)}&PageSize=100&PageNumber=${pg}&IncludeDetails=Contacts&IncludeDetails=CustomFields`, token)
           cards = cards.concat(page.items ?? [])
           if (!page.hasMorePages) break
         }

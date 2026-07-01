@@ -40,8 +40,11 @@ async function fetchPage(panelId, token, pageNumber) {
     PanelId:    panelId,
     PageSize:   String(PAGE_SIZE),
     PageNumber: String(pageNumber),
-    IncludeDetails: 'Contacts', // traz card.contacts (id + nome do contato vinculado)
   })
+  // Contacts: nome do contato vinculado. CustomFields: campos personalizados
+  // configurados no painel Helena — ambos vêm de fora se não pedidos.
+  qs.append('IncludeDetails', 'Contacts')
+  qs.append('IncludeDetails', 'CustomFields')
   const res = await fetch(`${HELENA_BASE}/crm/v1/panel/card?${qs}`, {
     headers: { Authorization: token },
   })

@@ -128,7 +128,7 @@ export default function DateRangePicker({ from, to, onFromChange, onToChange }) 
     ? `${format(draft.from, 'dd/MM/yy')} → ?`
     : 'Selecione o início'
 
-  const canApply = draft.from && draft.to && !isSameDay(draft.from, draft.to)
+  const canApply = Boolean(draft.from && draft.to)
 
   const grid = buildGrid(month)
 

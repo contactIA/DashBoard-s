@@ -38,6 +38,12 @@ export function dueDateParts(iso) {
   return { date: local.toISOString().slice(0, 10), time: local.toISOString().slice(11, 16) }
 }
 
+/** Um telefone BR plausível tem 10-13 dígitos (com/sem DDI e 9º dígito). */
+export function isPlausiblePhone(raw) {
+  const digits = String(raw ?? '').replace(/\D/g, '')
+  return digits.length >= 10 && digits.length <= 13
+}
+
 export function normalizeDate(raw, format) {
   if (!raw) return null
   if (format === 'DMY') {
@@ -75,6 +81,10 @@ export function extractWith(rules, card, kind) {
       const d = normalizeDate(value, rule.format)
       if (d) return d
       continue
+    }
+    if (kind === 'phone') {
+      if (!isPlausiblePhone(value)) continue // ex: descrição inteira sem regex — não é telefone
+      return value.trim()
     }
     return value.trim()
   }
@@ -145,7 +155,7 @@ export function autoDetectExtract(sampleCards = []) {
     date:  pick('date',  'date') ?? EXTRACT_FALLBACK.date,
     time:  pick('time',  'text') ?? EXTRACT_FALLBACK.time,
     name:  pick('name',  'text') ?? EXTRACT_FALLBACK.name,
-    phone: pick('phone', 'text') ?? EXTRACT_FALLBACK.phone,
+    phone: pick('phone', 'phone') ?? EXTRACT_FALLBACK.phone,
   }
 }
 
@@ -156,7 +166,7 @@ export function extractCard(card, extractCfg) {
     date:  extractWith(extractCfg.date,  card, 'date'),
     time:  extractWith(extractCfg.time,  card, 'text'),
     name:  extractWith(extractCfg.name,  card, 'text'),
-    phone: extractWith(extractCfg.phone, card, 'text'),
+    phone: extractWith(extractCfg.phone, card, 'phone'),
   }
 }
 

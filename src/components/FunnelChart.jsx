@@ -4,7 +4,7 @@ const fmtPct = (v) => (v == null ? '—' : v.toFixed(0) + '%')
 
 /**
  * Funil de pipeline em trapézio: barras centralizadas que estreitam de cima
- * para baixo, com a taxa de passagem entre etapas. Coorte que entrou no período.
+ * para baixo, com a taxa de passagem entre etapas. Mesmo período (data efetiva) dos KPIs.
  */
 export default function FunnelChart({ funnel, revenue }) {
   if (!funnel || funnel.entrou === 0) {
@@ -29,7 +29,7 @@ export default function FunnelChart({ funnel, revenue }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm h-full">
       <h3 className="text-sm font-semibold text-slate-800">Funil de pipeline</h3>
-      <p className="text-xs text-slate-400 mt-0.5 mb-5">Coorte que entrou no período · % = passagem de uma etapa à seguinte</p>
+      <p className="text-xs text-slate-400 mt-0.5 mb-5">Período selecionado · % = passagem de uma etapa à seguinte</p>
 
       <div className="flex flex-col">
         {stages.map((s, i) => (
