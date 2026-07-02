@@ -38,18 +38,38 @@ export function dueDateParts(iso) {
   return { date: local.toISOString().slice(0, 10), time: local.toISOString().slice(11, 16) }
 }
 
-/** Um telefone BR plausível tem 10-13 dígitos (com/sem DDI e 9º dígito). */
+/**
+ * Um telefone BR plausível tem 10-13 dígitos (com/sem DDI e 9º dígito) e o texto
+ * é só telefone — dígitos e separadores usuais. Sem a checagem de forma, uma
+ * descrição inteira com datas ("Entrada: 29/06/2026 às 20:05" = 12 dígitos)
+ * passava como telefone e vazava texto livre para a coluna de telefone.
+ */
 export function isPlausiblePhone(raw) {
-  const digits = String(raw ?? '').replace(/\D/g, '')
+  const s = String(raw ?? '').trim()
+  if (!/^\+?[\d\s().\/-]+$/.test(s)) return false
+  const digits = s.replace(/\D/g, '')
   return digits.length >= 10 && digits.length <= 13
 }
 
 export function normalizeDate(raw, format) {
   if (!raw) return null
   if (format === 'DMY') {
-    const m = String(raw).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/)
+    // Ano opcional: chatbots costumam preencher só "02/07" (e às vezes "24/06/26").
+    const m = String(raw).match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/)
     if (!m) return null
-    return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`
+    const dd = m[1].padStart(2, '0')
+    const mm = m[2].padStart(2, '0')
+    let year = m[3]
+    if (year && year.length === 2) year = `20${year}`
+    if (!year) {
+      // Sem ano → assume o corrente (BR); se cair a mais de ~6 meses no passado,
+      // é agendamento logo após a virada do ano (ex: "05/01" preenchido em dezembro).
+      const today = new Date(Date.now() - BR_OFFSET_MS).toISOString().slice(0, 10)
+      let y = Number(today.slice(0, 4))
+      if (Date.parse(today) - Date.parse(`${y}-${mm}-${dd}`) > 183 * 86_400_000) y += 1
+      year = String(y)
+    }
+    return `${year}-${mm}-${dd}`
   }
   const m = String(raw).match(/(\d{4})-(\d{2})-(\d{2})/)
   return m ? `${m[1]}-${m[2]}-${m[3]}` : null
@@ -101,7 +121,9 @@ const EXTRACT_CANDIDATES = {
     [{ from: 'dueDate' }],
     [{ from: 'description', regex: '(\\d{4}-\\d{2}-\\d{2})', format: 'YMD' }],
     [{ from: 'title',       regex: '(\\d{4}-\\d{2}-\\d{2})', format: 'YMD' }],
-    [{ from: 'description', regex: '(\\d{2}/\\d{2}/\\d{4})', format: 'DMY' }],
+    // "Entrada: DD/MM/AAAA" é a data de entrada do lead (cabeçalho padrão dos
+    // chatbots Helena), nunca a do agendamento — o lookbehind a pula.
+    [{ from: 'description', regex: '(?<!Entrada:\\s*)(\\d{2}/\\d{2}/\\d{4})', format: 'DMY' }],
     [{ from: 'title',       regex: '(\\d{2}/\\d{2}/\\d{4})', format: 'DMY' }],
   ],
   time: [
@@ -141,11 +163,37 @@ export function countExtractHits(rules, cards, kind) {
  * Tenta descobrir as regras de extração a partir dos cards de amostra: para cada
  * campo escolhe o padrão candidato que mais acerta. Sem acerto → regra vazia
  * (o admin ajusta no modo avançado). Base do "modo rápido" do wizard.
+ *
+ * Campos personalizados dos cards ("data", "hor-rio", …) viram candidatos
+ * dinâmicos com prioridade sobre regex em texto livre: em empate de acertos,
+ * vence quem aparece primeiro na lista.
  */
 export function autoDetectExtract(sampleCards = []) {
+  const cfKeys = new Set()
+  for (const c of sampleCards) {
+    for (const k of Object.keys(c.customFields ?? {})) cfKeys.add(k)
+  }
+  const dynDate = [], dynTime = [], dynPhone = []
+  for (const k of cfKeys) {
+    dynDate.push(
+      [{ from: `customFields.${k}`, format: 'DMY' }],
+      [{ from: `customFields.${k}`, format: 'YMD' }],
+    )
+    // regex exige forma de horário — evita um campo de data "ganhar" como horário
+    dynTime.push([{ from: `customFields.${k}`, regex: '(\\d{1,2}:\\d{2})' }])
+    dynPhone.push([{ from: `customFields.${k}` }])
+  }
+
+  const candidates = {
+    date:  [EXTRACT_CANDIDATES.date[0],  ...dynDate,  ...EXTRACT_CANDIDATES.date.slice(1)],
+    time:  [EXTRACT_CANDIDATES.time[0],  ...dynTime,  ...EXTRACT_CANDIDATES.time.slice(1)],
+    name:  EXTRACT_CANDIDATES.name,
+    phone: [EXTRACT_CANDIDATES.phone[0], ...dynPhone, ...EXTRACT_CANDIDATES.phone.slice(1)],
+  }
+
   const pick = (field, kind) => {
     let best = null, bestHits = 0
-    for (const rules of EXTRACT_CANDIDATES[field]) {
+    for (const rules of candidates[field]) {
       const hits = countExtractHits(rules, sampleCards, kind)
       if (hits > bestHits) { bestHits = hits; best = rules }
     }

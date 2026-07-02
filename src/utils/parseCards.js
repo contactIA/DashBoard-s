@@ -1,3 +1,13 @@
+/**
+ * Nome/telefone para exibição: prioriza o que o backend extraiu via _extract
+ * (inclui contato vinculado na Helena); o parse do título é só fallback para
+ * clínicas legadas sem extração configurada.
+ */
+export function withContact(c) {
+  const t = parseTitle(c.title)
+  return { ...c, name: c.name ?? t.name, phone: c.phone ?? t.phone }
+}
+
 /** Extrai nome e telefone do título do card: "Nome:X - Telefone: Y" */
 export function parseTitle(title) {
   if (!title) return { name: 'Sem nome', phone: null }
@@ -44,6 +54,12 @@ export function effectiveDate(c) {
 /** O card cai no período [from, to] pela data efetiva? */
 export function inPeriod(c, from, to) {
   const d = effectiveDate(c)
+  return Boolean(d && d >= from && d <= to)
+}
+
+/** O card foi CRIADO no período [from, to]? (usado no topo do funil: "entraram") */
+export function createdInPeriod(c, from, to) {
+  const d = c?.createdAt?.slice(0, 10) ?? null
   return Boolean(d && d >= from && d <= to)
 }
 
@@ -142,7 +158,7 @@ export function computeRevenue(cards, from, to, ticket, today) {
   const semValorCards = inRange.filter(
     c => ['converted', 'negotiating', 'attended'].includes(c.stepType) && !(c.value > 0)
   )
-  const semValor = semValorCards.map(c => ({ ...c, ...parseTitle(c.title) }))
+  const semValor = semValorCards.map(withContact)
 
   // Agrupado por etapa — "4 sem valor na etapa X, 5 na etapa Y"
   const byStep = {}
@@ -208,7 +224,7 @@ export const DEFAULT_FUNNEL_CFG = {
  * `funnelCfg` (opcional, vem de clinics.steps._funnel) define quais stepTypes somam
  * em cada estágio — cada clínica pode ter particularidades no seu painel Helena.
  */
-export function funnelOf(cards, funnelCfg) {
+export function funnelOf(cards, funnelCfg, opts = {}) {
   const stages = funnelCfg?.stages ?? DEFAULT_FUNNEL_CFG.stages
   const mergeCancelledRescheduled = funnelCfg?.mergeCancelledRescheduled ?? DEFAULT_FUNNEL_CFG.mergeCancelledRescheduled
 
@@ -227,7 +243,9 @@ export function funnelOf(cards, funnelCfg) {
   const missed      = n('missed')
   const cancelled   = n('cancelled')
 
-  const entrou      = cards.length
+  // "Entraram" pode vir de fora (contagem por data de CRIAÇÃO — ver computeFunnel);
+  // os demais estágios contam pela data efetiva (última movimentação no CRM).
+  const entrou      = opts.entrou ?? cards.length
   const naoAgendou  = sumTypes(stages.naoAgendou)
   const agendou     = sumTypes(stages.agendou)
   const compareceu  = sumTypes(stages.compareceu)
@@ -256,13 +274,18 @@ export function funnelOf(cards, funnelCfg) {
 }
 
 /**
- * Funil do período [from, to] — mesma "data efetiva" usada pelos KPIs/Receita
- * (data do agendamento; sem ela, cai no último toque do card), pra todo o
- * dashboard responder ao filtro de data da mesma forma.
+ * Funil do período [from, to]:
+ *   - "Entraram" (topo) = cards CRIADOS no período — quando o lead chegou.
+ *   - Demais estágios = data efetiva (última movimentação), como os KPIs.
+ * São coortes diferentes de propósito: "entraram X leads; no período, Y
+ * agendaram / Z compareceram / W fecharam" — inclusive leads antigos que
+ * andaram no funil agora.
  */
 export function computeFunnel(cards, from, to, funnelCfg) {
   if (!cards?.length) return null
-  return funnelOf(cards.filter(c => inPeriod(c, from, to)), funnelCfg)
+  const inRange = cards.filter(c => inPeriod(c, from, to))
+  const entrou  = cards.filter(c => createdInPeriod(c, from, to)).length
+  return funnelOf(inRange, funnelCfg, { entrou })
 }
 
 /**
@@ -272,14 +295,20 @@ export function computeFunnel(cards, from, to, funnelCfg) {
 export function breakdownByDimension(cards, dimKey, values, from, to, funnelCfg) {
   if (!cards?.length || !dimKey) return []
   const inRange = cards.filter(c => inPeriod(c, from, to))
+  const created = cards.filter(c => createdInPeriod(c, from, to))
   const labels = [...(values ?? []), null] // null = "sem" valor
   return labels
-    .map(v => ({
-      value: v,
-      funnel: funnelOf(inRange.filter(c => (c.dims?.[dimKey] ?? null) === v), funnelCfg),
-    }))
-    .filter(r => r.funnel.entrou > 0)
-    .sort((a, b) => b.funnel.entrou - a.funnel.entrou)
+    .map(v => {
+      const match = (c) => (c.dims?.[dimKey] ?? null) === v
+      return {
+        value: v,
+        funnel: funnelOf(inRange.filter(match), funnelCfg, { entrou: created.filter(match).length }),
+      }
+    })
+    // linha aparece se teve QUALQUER atividade: lead novo ou movimentação no período
+    .filter(r => r.funnel.entrou > 0 || r.funnel.agendou > 0 || r.funnel.compareceu > 0
+              || r.funnel.missed > 0 || r.funnel.cancelled > 0 || r.funnel.naoAgendou > 0)
+    .sort((a, b) => (b.funnel.entrou + b.funnel.agendou) - (a.funnel.entrou + a.funnel.agendou))
 }
 
 /**
@@ -313,7 +342,7 @@ export function getLost(cards, from, to) {
   return cards
     .filter(c => c.stepType === 'attended' && inPeriod(c, from, to))
     .sort((a, b) => (effectiveDate(b) ?? '').localeCompare(effectiveDate(a) ?? ''))
-    .map(c => ({ ...c, ...parseTitle(c.title) }))
+    .map(withContact)
 }
 
 /** Cards com orçamento em aberto (em negociação) no período, com nome/telefone/valor */
@@ -322,7 +351,7 @@ export function getNegotiating(cards, from, to) {
   return cards
     .filter(c => c.stepType === 'negotiating' && inPeriod(c, from, to))
     .sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
-    .map(c => ({ ...c, ...parseTitle(c.title) }))
+    .map(withContact)
 }
 
 /** Cards futuros agendados, com nome/telefone */
@@ -331,5 +360,5 @@ export function getUpcoming(cards, today) {
   return cards
     .filter(c => c.date && c.date >= today && (c.stepType === 'scheduled' || c.stepType === 'rescheduled'))
     .sort((a, b) => a.date !== b.date ? a.date.localeCompare(b.date) : (a.time ?? '').localeCompare(b.time ?? ''))
-    .map(c => ({ ...c, ...parseTitle(c.title) }))
+    .map(withContact)
 }

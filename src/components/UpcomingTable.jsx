@@ -1,4 +1,5 @@
 import { fmtBRL, fmtPhone } from '../utils/parseCards.js'
+import { todayBR, daysAgoBR } from '../utils/dates.js'
 
 function fmtDate(str) {
   if (!str) return '—'
@@ -6,11 +7,8 @@ function fmtDate(str) {
   return `${d}/${m}`
 }
 
-function isToday(str) { return str === new Date().toISOString().slice(0, 10) }
-function isTomorrow(str) {
-  const d = new Date(); d.setDate(d.getDate() + 1)
-  return str === d.toISOString().slice(0, 10)
-}
+function isToday(str) { return str === todayBR() }
+function isTomorrow(str) { return str === daysAgoBR(-1) }
 
 export default function UpcomingTable({ cards, ticket }) {
   if (!cards?.length) {
@@ -69,7 +67,9 @@ export default function UpcomingTable({ cards, ticket }) {
                 </span>
               </td>
               <td className="px-5 py-2.5 text-right font-semibold font-mono text-slate-700">
-                {ticket ? fmtBRL(ticket, { short: true }) : '—'}
+                {c.value > 0
+                  ? fmtBRL(c.value, { short: true })
+                  : ticket ? <span className="text-slate-400" title="Estimativa pelo ticket médio">{fmtBRL(ticket, { short: true })}</span> : '—'}
               </td>
             </tr>
           ))}

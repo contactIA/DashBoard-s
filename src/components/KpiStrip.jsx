@@ -4,7 +4,7 @@ const MONO = 'font-mono tabular-nums'
 
 function KpiCell({ label, value, sub, spark, sparkColor, last }) {
   return (
-    <div className={`flex-1 min-w-0 px-4 py-3.5 ${last ? '' : 'border-r border-slate-200'}`}>
+    <div className={`flex-1 min-w-[132px] px-4 py-3.5 ${last ? '' : 'border-r border-slate-200'}`}>
       <div className="text-[11px] text-slate-400 font-medium mb-1.5 truncate">{label}</div>
       <div className="flex items-baseline gap-2 mb-1">
         <span className={`text-[22px] font-semibold text-slate-900 leading-none ${MONO} tracking-tight`}>
@@ -64,7 +64,7 @@ export default function KpiStrip({ kpis, prevKpis, delta: d, chartData, ticket, 
         sparkColor="#8B5CF6"
       />
       {/* Ticket médio — editável */}
-      <div className="flex-1 min-w-0 px-4 py-3.5">
+      <div className="flex-1 min-w-[150px] px-4 py-3.5">
         <div className="text-[11px] text-slate-400 font-medium mb-1.5">Ticket médio</div>
         <div className="flex items-baseline gap-1 mb-1">
           <span className="text-[13px] text-slate-400 font-medium">R$</span>

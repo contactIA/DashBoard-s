@@ -139,10 +139,43 @@ export default async function handler(req, res) {
         })
         .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
 
+      // O endpoint de custom fields da conta não devolve os campos que vivem só
+      // nos CARDS (ex: "data", "hor-rio" preenchidos por chatbot). Descobre as
+      // keys direto nos cards e soma ao dropdown do wizard.
+      const knownCf = new Set(customFields.flatMap(f => [f.key, f.id].filter(Boolean)))
+      const cardCfKeys = new Set()
+      for (const c of cards) {
+        for (const k of Object.keys(c.customFields ?? {})) cardCfKeys.add(k)
+      }
+      for (const k of cardCfKeys) {
+        if (!knownCf.has(k)) customFields.push({ id: k, key: k, name: k, type: null, entityType: 'CARD' })
+      }
+
       // Cards de amostra enxutos (só o necessário para o preview de extração).
       // N pequeno (até 12) — busca o telefone real do contato vinculado de cada
       // um, pro preview mostrar o valor de verdade quando essa fonte for escolhida.
-      const sample = cards.slice(0, 12)
+      // Estratificada por step (round-robin): os primeiros N cards do painel
+      // costumam ser todos leads, com campos de agendamento vazios — sem a
+      // estratificação o preview mostraria 0 acertos para os campos que importam.
+      const byStep = new Map()
+      for (const c of cards) {
+        const arr = byStep.get(c.stepId) ?? []
+        arr.push(c)
+        byStep.set(c.stepId, arr)
+      }
+      const buckets = [...byStep.values()]
+      const sample = []
+      for (let i = 0; sample.length < 12; i++) {
+        let added = false
+        for (const b of buckets) {
+          if (b[i]) {
+            sample.push(b[i])
+            added = true
+            if (sample.length >= 12) break
+          }
+        }
+        if (!added) break
+      }
       const contactsForPreview = await Promise.all(
         sample.map(c => {
           const id = c.contacts?.[0]?.id ?? c.contactIds?.[0] ?? null

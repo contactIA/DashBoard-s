@@ -7,7 +7,8 @@ const fmtPct = (v) => (v == null ? '—' : v.toFixed(0) + '%')
  * para baixo, com a taxa de passagem entre etapas. Mesmo período (data efetiva) dos KPIs.
  */
 export default function FunnelChart({ funnel, revenue }) {
-  if (!funnel || funnel.entrou === 0) {
+  const hasActivity = funnel && (funnel.entrou > 0 || funnel.agendou > 0 || funnel.compareceu > 0 || funnel.fechou > 0)
+  if (!hasActivity) {
     return (
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex items-center justify-center">
         <p className="text-sm text-slate-400">Sem cards no período.</p>
@@ -16,7 +17,9 @@ export default function FunnelChart({ funnel, revenue }) {
   }
 
   const f = funnel
-  const max = f.entrou
+  // "Entraram" (criação) e os demais estágios (movimentação) são coortes
+  // distintas — qualquer barra pode ser a maior, a largura normaliza pelo pico.
+  const max = Math.max(f.entrou, f.agendou, f.compareceu, f.fechou, 1)
   const widthOf = (v) => `${Math.max(5, (v / max) * 100)}%`
 
   const stages = [

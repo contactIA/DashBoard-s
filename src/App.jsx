@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { Fragment, useState, useEffect, useMemo } from 'react'
 import { fetchDashboard } from './api'
 import {
   computeKpis, computePreviousKpis, computeRevenue, computePreviousRevenue, delta,
@@ -6,6 +6,7 @@ import {
   revenueByDimension,
 } from './utils/parseCards'
 import { groupCardsByTime, getGranularity } from './utils/groupByTime'
+import { todayBR, daysAgoBR } from './utils/dates'
 import DateRangePicker  from './components/DateRangePicker.jsx'
 import HeroStrip       from './components/HeroStrip.jsx'
 import KpiStrip        from './components/KpiStrip.jsx'
@@ -20,11 +21,8 @@ import DimensionBreakdown from './components/DimensionBreakdown.jsx'
 import RevenueDonut     from './components/RevenueDonut.jsx'
 import NotConfigured   from './components/NotConfigured.jsx'
 
-function todayStr() { return new Date().toISOString().slice(0, 10) }
-function daysAgo(n) {
-  const d = new Date(); d.setDate(d.getDate() - n)
-  return d.toISOString().slice(0, 10)
-}
+const todayStr = todayBR
+const daysAgo  = daysAgoBR
 
 const QUICK = [
   { label: '7d',   days: 7 },
@@ -195,7 +193,10 @@ export default function App() {
               </div>
               {lastFetch && (
                 <div className="text-[10px] text-slate-400">
-                  Últimos {Math.round((new Date(dateTo) - new Date(dateFrom)) / 86_400_000)} dias
+                  {(() => {
+                    const d = Math.round((new Date(dateTo) - new Date(dateFrom)) / 86_400_000)
+                    return d === 0 ? '1 dia' : `Últimos ${d} dias`
+                  })()}
                   · {dateFrom.split('-').reverse().join('/')} — {dateTo.split('-').reverse().join('/')}
                 </div>
               )}
@@ -309,32 +310,35 @@ export default function App() {
             onTicketChange={setTicket}
           />
 
-          {/* ── 3. Funil (herói visual) + quebras por dimensão ───────────── */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.6fr] gap-5 p-5 border-b border-slate-200 items-start">
-            <FunnelChart funnel={funnel} revenue={revenue} />
-            <div className="flex flex-col gap-5">
-              {breakdowns.length > 0 ? (
-                breakdowns.map(b => (
-                  <div key={b.key} className="flex flex-col gap-5">
-                    <RevenueDonut title={b.label} rows={revenueBreakdowns[b.key]} />
+          {/* ── 3. Funil (herói visual) + quebras por dimensão ───────────────
+               Masonry via CSS columns: os cards fluem preenchendo as colunas
+               por altura — sem "buraco" à esquerda quando a direita é longa. */}
+          <div className="p-5 pb-0 border-b border-slate-200 columns-1 lg:columns-2 gap-5">
+            <div className="break-inside-avoid mb-5">
+              <FunnelChart funnel={funnel} revenue={revenue} />
+            </div>
+            {breakdowns.length > 0 ? (
+              breakdowns.map(b => (
+                <Fragment key={b.key}>
+                  {revenueBreakdowns[b.key]?.length > 0 && (
+                    <div className="break-inside-avoid mb-5">
+                      <RevenueDonut title={b.label} rows={revenueBreakdowns[b.key]} />
+                    </div>
+                  )}
+                  <div className="break-inside-avoid mb-5">
                     <DimensionBreakdown title={b.label} rows={b.rows} />
                   </div>
-                ))
-              ) : Object.keys(data?.dimensions ?? {}).length === 0 ? (
-                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex items-center justify-center">
-                  <p className="text-sm text-slate-400 text-center max-w-xs">
-                    Esta clínica não tem dimensões configuradas (ex: origem, agendador).
-                    Configure as tags de card em <code className="font-mono">/setup</code>.
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex items-center justify-center">
-                  <p className="text-sm text-slate-400 text-center max-w-xs">
-                    Nenhum card com dimensão preenchida nesse período — tente outra data ou confira as etiquetas em <code className="font-mono">/setup</code>.
-                  </p>
-                </div>
-              )}
-            </div>
+                </Fragment>
+              ))
+            ) : (
+              <div className="break-inside-avoid mb-5 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex items-center justify-center">
+                <p className="text-sm text-slate-400 text-center max-w-xs">
+                  {Object.keys(data?.dimensions ?? {}).length === 0
+                    ? <>Esta clínica não tem dimensões configuradas (ex: origem, agendador). Configure as tags de card em <code className="font-mono">/setup</code>.</>
+                    : <>Nenhum card com dimensão preenchida nesse período — tente outra data ou confira as etiquetas em <code className="font-mono">/setup</code>.</>}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* ── 4. Receita (detalhe) + cards sem valor por etapa ─────────── */}

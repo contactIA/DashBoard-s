@@ -144,9 +144,13 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Variáveis de ambiente não configuradas no servidor.' })
   }
 
-  const config = await getClinicConfig(accountId).catch(err => {
-    throw new Error(`Supabase fetch falhou: ${err.message}`)
-  })
+  let config
+  try {
+    config = await getClinicConfig(accountId)
+  } catch (err) {
+    console.error('[dashboard] Supabase:', err)
+    return res.status(500).json({ error: `Falha ao buscar a configuração da clínica: ${err.message}` })
+  }
 
   if (!config) {
     return res.status(404).json({ error: `Clínica "${accountId}" não encontrada.` })
