@@ -164,10 +164,11 @@ export default function App() {
     const dims = data?.dimensions ?? {}
     return Object.entries(dims)
       .filter(([key]) => !(unit && key === unitDim?.key))
-      .map(([key, def]) => {
-        const { rows, untagged } = breakdownByDimension(cards, key, def.values, dateFrom, dateTo, data?.funnelConfig)
-        return { key, label: def.label, rows, untagged }
-      }).filter(b => b.rows.length > 0)
+      .map(([key, def]) => ({
+        key,
+        label: def.label,
+        rows: breakdownByDimension(cards, key, def.values, dateFrom, dateTo, data?.funnelConfig),
+      })).filter(b => b.rows.length > 0)
   }, [data, cards, unit, unitDim, dateFrom, dateTo])
   // Receita fechada (R$) por dimensão — base das roscas
   const revenueBreakdowns = useMemo(() => {
@@ -345,7 +346,7 @@ export default function App() {
                     </div>
                   )}
                   <div className="break-inside-avoid mb-5">
-                    <DimensionBreakdown title={b.label} rows={b.rows} untagged={b.untagged} typeLabels={typeLabels} />
+                    <DimensionBreakdown title={b.label} rows={b.rows} typeLabels={typeLabels} />
                   </div>
                 </Fragment>
               ))

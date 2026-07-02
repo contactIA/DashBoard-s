@@ -293,28 +293,19 @@ export function computeFunnel(cards, from, to, funnelCfg) {
  * Retorna [{ value, funnel }] em ordem de volume de entrada.
  */
 export function breakdownByDimension(cards, dimKey, values, from, to, funnelCfg) {
-  if (!cards?.length || !dimKey) return { rows: [], untagged: null }
-  // Cada COLUNA usa a mesma régua do funil principal, para os números baterem:
-  //   ENTROU  = criados no período com a etiqueta (soma → "Leads entraram")
-  //   AGENDOU/NÃO FECHOU/EM ABERTO/FECHOU = movimentação no período (somam →
-  //   barras do funil). Ex: funil "Agendaram 60" = AMANDA 50 + RECEPÇÃO 5 +
-  //   LANA 4 + 1 sem etiqueta (exibido como nota de reconciliação).
+  if (!cards?.length || !dimKey) return []
+  // Uma linha por etiqueta, com contas que o cliente confere de cabeça:
+  //   AGENDOU (movimentação no período) → desses, NÃO FECHOU / EM ABERTO /
+  //   FECHOU. Taxas na própria linha: comparecimento = compareceu ÷ agendou;
+  //   fechamento = fechou ÷ compareceu (mesma régua do funil de pipeline).
   const inRange = cards.filter(c => inPeriod(c, from, to))
-  const created = cards.filter(c => createdInPeriod(c, from, to))
-  const funnelFor = (match) =>
-    funnelOf(inRange.filter(match), funnelCfg, { entrou: created.filter(match).length })
-
-  const rows = (values ?? [])
+  return (values ?? [])
     .map(v => ({
       value: v,
-      funnel: funnelFor(c => (c.dims?.[dimKey] ?? null) === v),
+      funnel: funnelOf(inRange.filter(c => (c.dims?.[dimKey] ?? null) === v), funnelCfg),
     }))
-    .filter(r => r.funnel.entrou > 0 || r.funnel.agendou > 0 || r.funnel.compareceu > 0 || r.funnel.fechou > 0)
-    .sort((a, b) => b.funnel.agendou - a.funnel.agendou || b.funnel.entrou - a.funnel.entrou)
-
-  // Resto que fecha a conta com o funil principal (cards sem etiqueta da dimensão)
-  const untagged = funnelFor(c => (c.dims?.[dimKey] ?? null) === null)
-  return { rows, untagged }
+    .filter(r => r.funnel.agendou > 0 || r.funnel.compareceu > 0 || r.funnel.fechou > 0)
+    .sort((a, b) => b.funnel.agendou - a.funnel.agendou)
 }
 
 /**
