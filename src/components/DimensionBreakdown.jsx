@@ -21,7 +21,9 @@ export default function DimensionBreakdown({ title, rows }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
       <h3 className="text-sm font-semibold text-slate-800 mb-0.5">{title}</h3>
-      <p className="text-xs text-slate-400 mb-4">Funil por {title.toLowerCase()} · período selecionado</p>
+      <p className="text-xs text-slate-400 mb-4">
+        Leads que entraram no período, por {title.toLowerCase()} · e até onde chegaram
+      </p>
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">

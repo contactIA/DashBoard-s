@@ -30,7 +30,9 @@ export default function RevenueDonut({ title, rows }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
       <h3 className="text-sm font-semibold text-slate-800 mb-0.5">Receita fechada por {title.toLowerCase()}</h3>
-      <p className="text-xs text-slate-400 mb-4">Contratos fechados no período · só valor real preenchido</p>
+      <p className="text-xs text-slate-400 mb-4">
+        Fechamentos no período, mesmo de leads antigos · só valor real preenchido
+      </p>
 
       <div className="flex items-center gap-5">
         <div className="relative shrink-0" style={{ width: 148, height: 148 }}>

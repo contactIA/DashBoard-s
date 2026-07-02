@@ -294,21 +294,18 @@ export function computeFunnel(cards, from, to, funnelCfg) {
  */
 export function breakdownByDimension(cards, dimKey, values, from, to, funnelCfg) {
   if (!cards?.length || !dimKey) return []
-  const inRange = cards.filter(c => inPeriod(c, from, to))
-  const created = cards.filter(c => createdInPeriod(c, from, to))
-  const labels = [...(values ?? []), null] // null = "sem" valor
-  return labels
-    .map(v => {
-      const match = (c) => (c.dims?.[dimKey] ?? null) === v
-      return {
-        value: v,
-        funnel: funnelOf(inRange.filter(match), funnelCfg, { entrou: created.filter(match).length }),
-      }
-    })
-    // linha aparece se teve QUALQUER atividade: lead novo ou movimentação no período
-    .filter(r => r.funnel.entrou > 0 || r.funnel.agendou > 0 || r.funnel.compareceu > 0
-              || r.funnel.missed > 0 || r.funnel.cancelled > 0 || r.funnel.naoAgendou > 0)
-    .sort((a, b) => (b.funnel.entrou + b.funnel.agendou) - (a.funnel.entrou + a.funnel.agendou))
+  // Funil de COORTE: leads que ENTRARAM (criação) no período e até onde cada um
+  // chegou (estado atual). Assim "agendou" nunca excede "entrou" e a linha lê
+  // como frase: "entraram X com esta etiqueta; desses, Y agendaram, Z fecharam".
+  // Cards sem a etiqueta ficam de fora — o total já está no funil principal.
+  const cohort = cards.filter(c => createdInPeriod(c, from, to))
+  return (values ?? [])
+    .map(v => ({
+      value: v,
+      funnel: funnelOf(cohort.filter(c => (c.dims?.[dimKey] ?? null) === v), funnelCfg),
+    }))
+    .filter(r => r.funnel.entrou > 0)
+    .sort((a, b) => b.funnel.entrou - a.funnel.entrou)
 }
 
 /**
