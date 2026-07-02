@@ -3,8 +3,11 @@ const fmtPct = (v) => v == null ? '—' : v.toFixed(0) + '%'
 /**
  * Quebra do funil por uma dimensão (origem, agendador, …).
  * rows: [{ value, funnel }] vindo de breakdownByDimension().
+ * untagged: funil dos cards SEM etiqueta da dimensão — nota de reconciliação
+ * para os números baterem com o funil principal.
+ * typeLabels: rótulo exato dos steps da clínica por tipo (fala o vocabulário dela).
  */
-export default function DimensionBreakdown({ title, rows }) {
+export default function DimensionBreakdown({ title, rows, untagged, typeLabels }) {
   if (!rows?.length) return null
 
   // "Em aberto" só aparece se alguma linha tiver orçamento em negociação
@@ -13,10 +16,18 @@ export default function DimensionBreakdown({ title, rows }) {
   const cols = [
     { key: 'entrou',    label: 'Entrou' },
     { key: 'agendou',   label: 'Agendou' },
-    { key: 'attended',  label: 'Não fechou' },
-    ...(hasNegotiating ? [{ key: 'negotiating', label: 'Em aberto' }] : []),
-    { key: 'converted', label: 'Fechou' },
+    { key: 'attended',  label: typeLabels?.attended ?? 'Não fechou' },
+    ...(hasNegotiating ? [{ key: 'negotiating', label: typeLabels?.negotiating ?? 'Em aberto' }] : []),
+    { key: 'converted', label: typeLabels?.converted ?? 'Fechou' },
   ]
+
+  const restos = untagged
+    ? [
+        { label: 'entraram', v: untagged.entrou },
+        { label: 'agendaram', v: untagged.agendou },
+        { label: (typeLabels?.converted ?? 'fecharam').toLowerCase(), v: untagged.converted },
+      ].filter(x => x.v > 0)
+    : []
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
@@ -59,6 +70,13 @@ export default function DimensionBreakdown({ title, rows }) {
           </tbody>
         </table>
       </div>
+
+      {restos.length > 0 && (
+        <p className="text-[11px] text-slate-400 italic mt-3">
+          Sem etiqueta de {title.toLowerCase()} no período: {restos.map(x => `${x.v} ${x.label}`).join(' · ')}
+          {' '}— é a diferença para o funil de pipeline.
+        </p>
+      )}
     </div>
   )
 }

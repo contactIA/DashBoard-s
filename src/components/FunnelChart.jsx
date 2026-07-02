@@ -6,7 +6,10 @@ const fmtPct = (v) => (v == null ? '—' : v.toFixed(0) + '%')
  * Funil de pipeline em trapézio: barras centralizadas que estreitam de cima
  * para baixo, com a taxa de passagem entre etapas. Mesmo período (data efetiva) dos KPIs.
  */
-export default function FunnelChart({ funnel, revenue }) {
+// stat do rodapé → tipo de métrica, para renomear com o step exato da clínica
+const STAT_TYPE = { missed: 'missed', cancelled: 'cancelled', rescheduled: 'rescheduled', naoAgendou: 'notScheduled' }
+
+export default function FunnelChart({ funnel, revenue, typeLabels }) {
   const hasActivity = funnel && (funnel.entrou > 0 || funnel.agendou > 0 || funnel.compareceu > 0 || funnel.fechou > 0)
   if (!hasActivity) {
     return (
@@ -86,7 +89,9 @@ export default function FunnelChart({ funnel, revenue }) {
         ].map(s => (
           <div key={s.key}>
             <div className={`text-lg font-semibold font-mono ${s.color}`}>{s.value}</div>
-            <div className="text-[10px] text-slate-400">{s.label}</div>
+            <div className="text-[10px] text-slate-400">
+              {typeLabels?.[STAT_TYPE[s.key]] ?? s.label}
+            </div>
           </div>
         ))}
       </div>

@@ -17,6 +17,7 @@ import BudgetTable     from './components/BudgetTable.jsx'
 import StepDistribution from './components/StepDistribution.jsx'
 import UpcomingTable   from './components/UpcomingTable.jsx'
 import FunnelChart     from './components/FunnelChart.jsx'
+import ContractsCard   from './components/ContractsCard.jsx'
 import DimensionBreakdown from './components/DimensionBreakdown.jsx'
 import RevenueDonut     from './components/RevenueDonut.jsx'
 import NotConfigured   from './components/NotConfigured.jsx'
@@ -129,6 +130,20 @@ export default function App() {
     () => delta(revenue?.fechada, prevRevenue?.fechada),
     [revenue, prevRevenue],
   )
+  const lostDelta = useMemo(
+    () => delta(revenue?.perdidaNaoFechou, prevRevenue?.perdidaNaoFechou),
+    [revenue, prevRevenue],
+  )
+
+  // Rótulo EXATO dos steps da clínica por tipo de métrica (ex: cancelled →
+  // "DESMARCOU" na Lumine) — o dashboard fala o vocabulário do painel dela.
+  const typeLabels = useMemo(() => {
+    const by = {}
+    for (const s of Object.values(data?.steps ?? {})) {
+      if (s?.type && s?.label) (by[s.type] ??= []).push(s.label)
+    }
+    return Object.fromEntries(Object.entries(by).map(([t, ls]) => [t, ls.join(' / ')]))
+  }, [data])
 
   const { data: chartData, granularity } = useMemo(
     () => data ? groupCardsByTime(cards, dateFrom, dateTo, data.steps) : { data: [], granularity: 'day' },
@@ -149,11 +164,10 @@ export default function App() {
     const dims = data?.dimensions ?? {}
     return Object.entries(dims)
       .filter(([key]) => !(unit && key === unitDim?.key))
-      .map(([key, def]) => ({
-        key,
-        label: def.label,
-        rows: breakdownByDimension(cards, key, def.values, dateFrom, dateTo, data?.funnelConfig),
-      })).filter(b => b.rows.length > 0)
+      .map(([key, def]) => {
+        const { rows, untagged } = breakdownByDimension(cards, key, def.values, dateFrom, dateTo, data?.funnelConfig)
+        return { key, label: def.label, rows, untagged }
+      }).filter(b => b.rows.length > 0)
   }, [data, cards, unit, unitDim, dateFrom, dateTo])
   // Receita fechada (R$) por dimensão — base das roscas
   const revenueBreakdowns = useMemo(() => {
@@ -298,7 +312,7 @@ export default function App() {
       {data && (
         <>
           {/* ── 1. Faixa-herói: os 4 números que importam ────────────────── */}
-          <HeroStrip revenue={revenue} kpis={kpis} deltas={deltas} revenueDelta={revenueDelta} />
+          <HeroStrip revenue={revenue} kpis={kpis} deltas={deltas} revenueDelta={revenueDelta} lostDelta={lostDelta} />
 
           {/* ── 2. KPIs secundários (saúde operacional) ──────────────────── */}
           <KpiStrip
@@ -315,8 +329,13 @@ export default function App() {
                por altura — sem "buraco" à esquerda quando a direita é longa. */}
           <div className="p-5 pb-0 border-b border-slate-200 columns-1 lg:columns-2 gap-5">
             <div className="break-inside-avoid mb-5">
-              <FunnelChart funnel={funnel} revenue={revenue} />
+              <FunnelChart funnel={funnel} revenue={revenue} typeLabels={typeLabels} />
             </div>
+            {funnel && (funnel.attended + funnel.negotiating + funnel.converted) > 0 && (
+              <div className="break-inside-avoid mb-5">
+                <ContractsCard funnel={funnel} revenue={revenue} />
+              </div>
+            )}
             {breakdowns.length > 0 ? (
               breakdowns.map(b => (
                 <Fragment key={b.key}>
@@ -326,7 +345,7 @@ export default function App() {
                     </div>
                   )}
                   <div className="break-inside-avoid mb-5">
-                    <DimensionBreakdown title={b.label} rows={b.rows} />
+                    <DimensionBreakdown title={b.label} rows={b.rows} untagged={b.untagged} typeLabels={typeLabels} />
                   </div>
                 </Fragment>
               ))

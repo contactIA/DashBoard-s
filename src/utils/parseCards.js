@@ -293,19 +293,28 @@ export function computeFunnel(cards, from, to, funnelCfg) {
  * Retorna [{ value, funnel }] em ordem de volume de entrada.
  */
 export function breakdownByDimension(cards, dimKey, values, from, to, funnelCfg) {
-  if (!cards?.length || !dimKey) return []
-  // Funil de COORTE: leads que ENTRARAM (criação) no período e até onde cada um
-  // chegou (estado atual). Assim "agendou" nunca excede "entrou" e a linha lê
-  // como frase: "entraram X com esta etiqueta; desses, Y agendaram, Z fecharam".
-  // Cards sem a etiqueta ficam de fora — o total já está no funil principal.
-  const cohort = cards.filter(c => createdInPeriod(c, from, to))
-  return (values ?? [])
+  if (!cards?.length || !dimKey) return { rows: [], untagged: null }
+  // Cada COLUNA usa a mesma régua do funil principal, para os números baterem:
+  //   ENTROU  = criados no período com a etiqueta (soma → "Leads entraram")
+  //   AGENDOU/NÃO FECHOU/EM ABERTO/FECHOU = movimentação no período (somam →
+  //   barras do funil). Ex: funil "Agendaram 60" = AMANDA 50 + RECEPÇÃO 5 +
+  //   LANA 4 + 1 sem etiqueta (exibido como nota de reconciliação).
+  const inRange = cards.filter(c => inPeriod(c, from, to))
+  const created = cards.filter(c => createdInPeriod(c, from, to))
+  const funnelFor = (match) =>
+    funnelOf(inRange.filter(match), funnelCfg, { entrou: created.filter(match).length })
+
+  const rows = (values ?? [])
     .map(v => ({
       value: v,
-      funnel: funnelOf(cohort.filter(c => (c.dims?.[dimKey] ?? null) === v), funnelCfg),
+      funnel: funnelFor(c => (c.dims?.[dimKey] ?? null) === v),
     }))
-    .filter(r => r.funnel.entrou > 0)
-    .sort((a, b) => b.funnel.entrou - a.funnel.entrou)
+    .filter(r => r.funnel.entrou > 0 || r.funnel.agendou > 0 || r.funnel.compareceu > 0 || r.funnel.fechou > 0)
+    .sort((a, b) => b.funnel.agendou - a.funnel.agendou || b.funnel.entrou - a.funnel.entrou)
+
+  // Resto que fecha a conta com o funil principal (cards sem etiqueta da dimensão)
+  const untagged = funnelFor(c => (c.dims?.[dimKey] ?? null) === null)
+  return { rows, untagged }
 }
 
 /**

@@ -25,8 +25,8 @@ function HeroCard({ label, value, sub, delta, goodWhenUp = true, accent }) {
   )
 }
 
-/** Faixa-herói: os 4 números que respondem "como está o negócio?". */
-export default function HeroStrip({ revenue, kpis, deltas, revenueDelta }) {
+/** Faixa-herói: os números que respondem "como está o negócio?" (ganho × perdido × em aberto). */
+export default function HeroStrip({ revenue, kpis, deltas, revenueDelta, lostDelta }) {
   const pct = (v) => (v == null ? '—' : v.toFixed(1).replace('.', ',') + '%')
   const decididos = (kpis?.notClosed ?? 0) + (kpis?.converted ?? 0)
 
@@ -34,13 +34,19 @@ export default function HeroStrip({ revenue, kpis, deltas, revenueDelta }) {
     <div className="px-5 py-5 border-b border-slate-200">
       <div className="flex flex-wrap gap-3">
         <HeroCard
-          label="Receita fechada"
+          label="Ganho · receita fechada"
           value={fmtBRL(revenue?.fechada ?? 0, { short: true })}
           sub={`${kpis?.converted ?? 0} contrato${kpis?.converted === 1 ? '' : 's'} no período`}
           delta={revenueDelta} goodWhenUp accent="#10B981"
         />
         <HeroCard
-          label="Em negociação"
+          label="Perdido · não fechou"
+          value={fmtBRL(revenue?.perdidaNaoFechou ?? 0, { short: true })}
+          sub={`${kpis?.notClosed ?? 0} compareceram e não fecharam`}
+          delta={lostDelta} goodWhenUp={false} accent="#F59E0B"
+        />
+        <HeroCard
+          label="Em aberto · negociação"
           value={fmtBRL(revenue?.emNegociacao ?? 0, { short: true })}
           sub={`${revenue?.negociacaoCount ?? 0} orçamento${revenue?.negociacaoCount === 1 ? '' : 's'} a fechar`}
           accent="#8B5CF6"
