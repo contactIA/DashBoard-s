@@ -47,6 +47,10 @@ export function fmtBRL(n, { short = false } = {}) {
  *     data da ÚLTIMA ATUALIZAÇÃO — aproxima quando o card entrou nesse estado.
  */
 export function effectiveDate(c) {
+  // Data REAL do evento (ex: sync Clinicorp grava quando o paciente fechou/
+  // faltou/desmarcou) — sem ela, um card criado/movido hoje sobre um fato de
+  // junho contaria como receita de julho.
+  if (c?.eventDate) return c.eventDate
   if (c?.stepType === 'lead') return c?.createdAt?.slice(0, 10) ?? null
   return c?.updatedAt?.slice(0, 10) ?? c?.createdAt?.slice(0, 10) ?? null
 }
@@ -57,9 +61,13 @@ export function inPeriod(c, from, to) {
   return Boolean(d && d >= from && d <= to)
 }
 
-/** O card foi CRIADO no período [from, to]? (usado no topo do funil: "entraram") */
+/** O card foi CRIADO no período [from, to]? (usado no topo do funil: "entraram")
+ *  Card criado retroativamente pelo sync (fato antigo importado hoje) usa a
+ *  data do evento quando ela é anterior à criação — o menor dos dois vale. */
 export function createdInPeriod(c, from, to) {
-  const d = c?.createdAt?.slice(0, 10) ?? null
+  const created = c?.createdAt?.slice(0, 10) ?? null
+  const ev = c?.eventDate ?? null
+  const d = created && ev ? (ev < created ? ev : created) : (created ?? ev)
   return Boolean(d && d >= from && d <= to)
 }
 

@@ -231,6 +231,9 @@ export default async function handler(req, res) {
         value:     card.monetaryAmount ?? null,
         createdAt: card.createdAt ?? null,
         updatedAt: card.updatedAt ?? null,
+        // data real do evento (gravada pelo sync Clinicorp no metadata) —
+        // corrige a atribuição temporal de cards criados/movidos retroativamente
+        eventDate: card.metadata?.clinicorp_event_date ?? null,
         dims:      computeDims(card, dimsCfg),
       }
     })
