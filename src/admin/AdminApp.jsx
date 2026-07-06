@@ -130,6 +130,9 @@ function ClinicList({ clinics, onNew, onEdit, onDeleted, onError }) {
                         {dims.map(d => (
                           <span key={d} className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 border border-indigo-100">{d}</span>
                         ))}
+                        {c.steps?._clinicorp?.user && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100 font-medium">Clinicorp ✓</span>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right font-mono text-slate-600 hidden sm:table-cell">

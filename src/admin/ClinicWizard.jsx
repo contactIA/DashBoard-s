@@ -6,7 +6,7 @@ import { DEFAULT_FUNNEL_CFG } from '../utils/parseCards.js'
 
 const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
-const WIZARD_STEPS = ['Credenciais', 'Painel', 'Métricas', 'Funil', 'Extração', 'Dimensões', 'Revisão']
+const WIZARD_STEPS = ['Credenciais', 'Painel', 'Métricas', 'Funil', 'Extração', 'Dimensões', 'Clinicorp', 'Revisão']
 
 // As 3 barras configuráveis do funil (depois da 1ª, "Leads totais", que é
 // sempre o total de cards do período — não configurável, por isso fica fora
@@ -315,6 +315,12 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
   const [funnelStages,      setFunnelStages]      = useState({})
   const [mergeCancelReagend, setMergeCancelReagend] = useState(false)
 
+  // Integração Clinicorp (OPCIONAL — nem toda clínica usa)
+  const existingClinicorp = clinic?.steps?._clinicorp ?? null
+  const [ccUser,     setCcUser]     = useState(existingClinicorp?.user ?? '')
+  const [ccToken,    setCcToken]    = useState('')   // vazio na edição = mantém o atual
+  const [ccCodeLink, setCcCodeLink] = useState(existingClinicorp?.codeLink ?? '')
+
   const [savedUrl, setSavedUrl] = useState(null)
   const [copied,   setCopied]   = useState(false)
 
@@ -401,6 +407,20 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
     setStep(2)
   })
 
+  // Config Clinicorp a salvar: usuário + token preenchidos ativam a integração;
+  // token em branco na edição mantém o existente; tudo vazio = sem Clinicorp.
+  const clinicorpConfig = () => {
+    const user  = ccUser.trim()
+    const tok   = ccToken.trim() || existingClinicorp?.token || ''
+    if (!user || !tok) return null
+    return {
+      user,
+      token: tok,
+      subscriberId: user, // na Clinicorp o "Usuário API" é o subscriber_id
+      ...(ccCodeLink.trim() ? { codeLink: ccCodeLink.trim() } : {}),
+    }
+  }
+
   // ── Salvar ───────────────────────────────────────────────────────────────
   const save = () => run(async () => {
     const payload = {
@@ -413,7 +433,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       steps:     buildStepsConfig(mappedSteps, extract, stateToDims(dimensions, tagName), {
         stages: funnelStages,
         mergeCancelledRescheduled: mergeCancelReagend,
-      }),
+      }, clinicorpConfig()),
     }
     if (isEdit) await updateClinic(payload)
     else        await createClinic(payload)
@@ -658,6 +678,19 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium text-slate-800">Ticket médio · R$ {Number(ticket).toLocaleString('pt-BR')}</div>
                   <div className="text-xs text-slate-400 mt-0.5">Usado quando o card não tem valor.</div>
+                </div>
+              </div>
+
+              {/* Clinicorp (opcional) */}
+              <div className="flex items-start gap-3 px-4 py-3.5">
+                <Check ok />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium text-slate-800">
+                    Clinicorp · {clinicorpConfig() ? `vinculado (${clinicorpConfig().user})` : 'não vinculado'}
+                  </div>
+                  <div className="text-xs text-slate-400 mt-0.5">
+                    Opcional — para vincular, use "Ajustar manualmente" e informe Usuário API + Token na aba Clinicorp.
+                  </div>
                 </div>
               </div>
             </div>
@@ -940,14 +973,57 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
             <button onClick={() => setStep(4)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
             <button onClick={() => setStep(6)}
               className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 text-white hover:bg-slate-700">
+              Clinicorp →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Etapa 7: integração Clinicorp (OPCIONAL) ─────────────────────── */}
+      {step === 6 && (
+        <div className="space-y-4">
+          <StepHeader title="Integração Clinicorp (opcional)">
+            Clínicas que usam o Clinicorp têm o painel movimentado automaticamente
+            (compareceu, faltou, cancelou, orçamento aprovado com valor).
+            Sem Clinicorp? Só avance — nada muda para esta clínica.
+          </StepHeader>
+
+          <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
+            <Field label="Usuário API" hint='Em Gerenciar Assinatura → Acesso Externo e Integrações → "Integrações - Usuário API". Também é o subscriber_id.'>
+              <input className={`${inputCls} font-mono`} value={ccUser}
+                onChange={e => setCcUser(e.target.value)} placeholder="ex: lumineodonto" autoComplete="off" />
+            </Field>
+            <Field
+              label="Token API"
+              hint={existingClinicorp?.token
+                ? `Token atual: ${existingClinicorp.token.slice(0, 8)}…${existingClinicorp.token.slice(-4)} — deixe em branco para mantê-lo.`
+                : 'Campo "Token API" da mesma tela. Fica salvo apenas no servidor.'}
+            >
+              <input className={`${inputCls} font-mono`} type="password" value={ccToken}
+                onChange={e => setCcToken(e.target.value)}
+                placeholder={existingClinicorp?.token ? '(mantém o atual)' : 'ex: 3ca6bf45-db46-...'} autoComplete="off" />
+            </Field>
+            <Field label="Code Link da agenda (opcional)" hint="Só é usado para criar agendamento online via API — pode deixar vazio.">
+              <input className={`${inputCls} font-mono`} value={ccCodeLink}
+                onChange={e => setCcCodeLink(e.target.value)} placeholder="ex: 86816" autoComplete="off" />
+            </Field>
+            {ccUser.trim() && !ccToken.trim() && !existingClinicorp?.token && (
+              <p className="text-xs text-amber-600">Informe o Token API para ativar a integração — ou limpe o usuário para seguir sem Clinicorp.</p>
+            )}
+          </div>
+
+          <div className="flex justify-between pt-2">
+            <button onClick={() => setStep(5)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
+            <button onClick={() => setStep(7)}
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 text-white hover:bg-slate-700">
               Revisar →
             </button>
           </div>
         </div>
       )}
 
-      {/* ── Etapa 7: revisão ─────────────────────────────────────────────── */}
-      {step === 6 && (
+      {/* ── Etapa 8: revisão ─────────────────────────────────────────────── */}
+      {step === 7 && (
         <div className="space-y-4">
           <StepHeader title="Revisão">Confira a configuração antes de {isEdit ? 'salvar as alterações' : 'cadastrar a clínica'}.</StepHeader>
           <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100">
@@ -957,6 +1033,9 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
               ['Painel',      `${selectedPanel.title} (${selectedPanel.key})`],
               ['Account ID',  <code key="a" className="font-mono text-xs text-slate-500">{selectedPanel.companyId}</code>],
               ['Token',       token.trim() ? 'Novo token informado' : (isEdit ? `Mantém o atual (${clinic.tokenMasked})` : '—')],
+              ['Clinicorp',   clinicorpConfig()
+                ? <span key="cc" className="text-emerald-600 font-medium">Vinculado · {clinicorpConfig().user}{clinicorpConfig().codeLink ? ` · agenda ${clinicorpConfig().codeLink}` : ''}</span>
+                : <span key="cc" className="text-slate-400">Sem Clinicorp (opcional)</span>],
               ['Ticket médio', `R$ ${Number(ticket).toLocaleString('pt-BR')}`],
             ].map(([k, v]) => (
               <div key={k} className="flex items-center justify-between px-4 py-3 text-sm">
@@ -1013,7 +1092,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
             )}
           </div>
           <div className="flex justify-between pt-2">
-            <button onClick={() => setStep(5)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
+            <button onClick={() => setStep(6)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
             <button onClick={save} disabled={loading}
               className="px-5 py-2 text-sm font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-40">
               {loading ? 'Salvando...' : isEdit ? 'Salvar alterações' : 'Cadastrar clínica'}

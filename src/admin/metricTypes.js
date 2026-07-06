@@ -59,8 +59,9 @@ export function slugify(title) {
 
 // Monta o JSONB `steps` no formato que o dashboard consome:
 // { slug: { id, label, color, type } } — steps "ignore" ficam de fora.
-// extract/dims/funnel (opcionais) entram como chaves reservadas _extract/_dims/_funnel.
-export function buildStepsConfig(mappedSteps, extract, dims, funnel) {
+// extract/dims/funnel/clinicorp (opcionais) entram como chaves reservadas
+// _extract/_dims/_funnel/_clinicorp.
+export function buildStepsConfig(mappedSteps, extract, dims, funnel, clinicorp) {
   const config = {}
   for (const s of mappedSteps) {
     if (s.type === 'ignore') continue
@@ -71,5 +72,6 @@ export function buildStepsConfig(mappedSteps, extract, dims, funnel) {
   if (extract && Object.values(extract).some(rules => rules?.length)) config._extract = extract
   if (funnel) config._funnel = funnel
   if (dims && Object.keys(dims).length) config._dims = dims
+  if (clinicorp) config._clinicorp = clinicorp
   return config
 }

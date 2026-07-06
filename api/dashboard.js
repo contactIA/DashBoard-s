@@ -8,7 +8,7 @@ const PAGE_SIZE     = 100
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 // Chaves reservadas dentro do JSONB `steps` — não são etapas, e sim config v2.
-const RESERVED_KEYS = new Set(['_extract', '_dims', '_funnel'])
+const RESERVED_KEYS = new Set(['_extract', '_dims', '_funnel', '_clinicorp'])
 
 // Garante o prefixo "Bearer " no token (o mesmo cuidado do admin/panels.js).
 function normalizeToken(raw) {
