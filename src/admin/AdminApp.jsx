@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { getSecret, setSecret, clearSecret, listClinics, deleteClinic } from './adminApi'
 import { typeLabel } from './metricTypes'
 import ClinicWizard from './ClinicWizard.jsx'
+import ClinicorpImport from './ClinicorpImport.jsx'
 
 const ToothIcon = ({ className = '' }) => (
   <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -55,7 +56,7 @@ function LoginGate({ onAuthed }) {
   )
 }
 
-function ClinicList({ clinics, onNew, onEdit, onDeleted, onError }) {
+function ClinicList({ clinics, onNew, onEdit, onDeleted, onError, onImportClinicorp }) {
   const [copiedId, setCopiedId] = useState(null)
   const [deleting, setDeleting] = useState(null)
 
@@ -83,10 +84,16 @@ function ClinicList({ clinics, onNew, onEdit, onDeleted, onError }) {
           <h2 className="text-base font-bold text-slate-900">Clínicas cadastradas</h2>
           <p className="text-xs text-slate-400 mt-0.5">{clinics.length} clínica{clinics.length !== 1 ? 's' : ''} ativa{clinics.length !== 1 ? 's' : ''}</p>
         </div>
-        <button onClick={onNew}
+        <div className="flex items-center gap-2">
+          <button onClick={onImportClinicorp}
+            className="px-4 py-2 text-sm font-medium rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50">
+            Importar Clinicorp
+          </button>
+          <button onClick={onNew}
           className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-900 text-white hover:bg-slate-700">
           + Nova clínica
         </button>
+        </div>
       </div>
 
       {clinics.length === 0 ? (
@@ -168,7 +175,7 @@ function ClinicList({ clinics, onNew, onEdit, onDeleted, onError }) {
 export default function AdminApp() {
   const [authed,  setAuthed]  = useState(false)
   const [clinics, setClinics] = useState([])
-  const [view,    setView]    = useState('list')   // 'list' | 'wizard'
+  const [view,    setView]    = useState('list')   // 'list' | 'wizard' | 'clinicorp-import'
   const [editing, setEditing] = useState(null)
   const [error,   setError]   = useState(null)
 
@@ -228,6 +235,14 @@ export default function AdminApp() {
             onEdit={(c) => { setEditing(c); setView('wizard') }}
             onDeleted={refresh}
             onError={setError}
+            onImportClinicorp={() => setView('clinicorp-import')}
+          />
+        ) : view === 'clinicorp-import' ? (
+          <ClinicorpImport
+            clinics={clinics}
+            onDone={() => { setView('list'); refresh() }}
+            onError={setError}
+            onLinked={refresh}
           />
         ) : (
           <ClinicWizard

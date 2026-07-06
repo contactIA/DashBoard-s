@@ -47,3 +47,5 @@ export const getPanelSteps = ({ helenaToken, accountId } = {}, panelId) => {
   if (accountId) params.set('accountId', accountId)
   return call(`/api/admin/panels?${params}`, { helenaToken })
 }
+
+export const getClinicorpDirectory = () => call('/api/admin/clinicorp-directory')
