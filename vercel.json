@@ -4,11 +4,8 @@
     "api/admin/panels.js": { "maxDuration": 30 },
     "api/admin/clinics.js": { "maxDuration": 30 },
     "api/admin/clinicorp-directory.js": { "maxDuration": 30 },
-    "api/cron/sync-clinicorp.js": { "maxDuration": 300 }
+    "api/cron/sync-clinicorp.js": { "maxDuration": 60 }
   },
-  "crons": [
-    { "path": "/api/cron/sync-clinicorp", "schedule": "0 * * * *" }
-  ],
   "rewrites": [
     { "source": "/setup", "destination": "/index.html" }
   ]

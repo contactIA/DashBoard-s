@@ -27,14 +27,16 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Variáveis de ambiente do Supabase não configuradas.' })
   }
 
-  // Jitter: Vercel Cron só aceita horário fixo — espalha o início real do
-  // trabalho dentro da hora pra não bater sempre no mesmo segundo contra o
-  // rate limit da Clinicorp/Helena (não é "hora aleatória", é a execução
-  // dentro da hora que varia).
-  const jitterMs = Math.floor(Math.random() * 90_000) // até 90s
+  // Jitter pequeno: o orçamento de execução é curto (plano sem Cron nativo
+  // da Vercel, disparado por um scheduler externo — ver .github/workflows/
+  // sync-clinicorp.yml) — espalha o INÍCIO do trabalho em até 10s, só para
+  // não bater sempre no mesmo instante contra o rate limit por conta.
+  const jitterMs = Math.floor(Math.random() * 10_000)
   await sleep(jitterMs)
 
-  const res_ = await fetch(`${SUPABASE_URL}/rest/v1/clinics?select=account_id,name,panel_id,token,steps`, {
+  const accountId = req.query?.accountId ?? null
+  const filter = accountId ? `&account_id=eq.${encodeURIComponent(accountId)}` : ''
+  const res_ = await fetch(`${SUPABASE_URL}/rest/v1/clinics?select=account_id,name,panel_id,token,steps${filter}`, {
     headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
   })
   if (!res_.ok) {
@@ -45,6 +47,10 @@ export default async function handler(req, res) {
   const clinics = rows
     .filter((r) => (r.steps?._clinicorp?.units?.length ?? 0) > 0)
     .map((r) => ({ accountId: r.account_id, name: r.name, panelId: r.panel_id, token: r.token, steps: r.steps }))
+
+  if (accountId && !clinics.length) {
+    return res.status(404).json({ error: `Clínica "${accountId}" não encontrada ou sem Clinicorp vinculado.` })
+  }
 
   const results = []
   for (const clinic of clinics) {

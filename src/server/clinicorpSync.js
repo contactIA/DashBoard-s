@@ -71,6 +71,23 @@ const TARGET_STEP = {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
+// Helena/Clinicorp devolvem 429 quando o limite da CONTA é excedido (o limite
+// é por conta, não global — clínicas diferentes não competem entre si). Sem
+// isso, um 429 esporádico contava como falha; com retry, só atrasa a ação.
+async function withRetry429(fn, { attempts = 3, baseDelayMs = 2000 } = {}) {
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn()
+    } catch (err) {
+      if (err.status === 429 && i < attempts - 1) {
+        await sleep(baseDelayMs * (i + 1))
+        continue
+      }
+      throw err
+    }
+  }
+}
+
 /**
  * Sincroniza uma clínica (todas as suas unidades Clinicorp) com o painel
  * Helena. `clinic` = { accountId, name, panelId, token, steps } (linha crua
@@ -85,7 +102,7 @@ export async function syncClinicClinicorp(clinic) {
   const helenaAuth = { Authorization: normalizeHelenaToken(clinic.token) }
   const panelId = clinic.panelId
 
-  async function helena(method, path, body) {
+  async function helenaRaw(method, path, body) {
     const res = await fetch(`${HELENA}${path}`, {
       method, headers: { ...helenaAuth, 'Content-Type': 'application/json' },
       body: body ? JSON.stringify(body) : undefined,
@@ -98,6 +115,7 @@ export async function syncClinicClinicorp(clinic) {
     }
     try { return JSON.parse(text) } catch { return null }
   }
+  const helena = (method, path, body) => withRetry429(() => helenaRaw(method, path, body))
   const helenaGet = (path) => helena('GET', path)
 
   async function findOrCreateContact(nome, telefone) {
