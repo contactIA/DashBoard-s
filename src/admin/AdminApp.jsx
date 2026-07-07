@@ -137,8 +137,10 @@ function ClinicList({ clinics, onNew, onEdit, onDeleted, onError, onImportClinic
                         {dims.map(d => (
                           <span key={d} className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 border border-indigo-100">{d}</span>
                         ))}
-                        {c.steps?._clinicorp?.user && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100 font-medium">Clinicorp ✓</span>
+                        {c.steps?._clinicorp?.units?.length > 0 && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100 font-medium">
+                            Clinicorp ✓{c.steps._clinicorp.units.length > 1 ? ` (${c.steps._clinicorp.units.length})` : ''}
+                          </span>
                         )}
                       </div>
                     </td>
@@ -243,6 +245,7 @@ export default function AdminApp() {
             onDone={() => { setView('list'); refresh() }}
             onError={setError}
             onLinked={refresh}
+            onEditClinic={(c) => { setEditing(c); setView('wizard') }}
           />
         ) : (
           <ClinicWizard

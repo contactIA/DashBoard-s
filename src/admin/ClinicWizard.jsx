@@ -36,6 +36,23 @@ const hasAnyRule = (ex) => ex && Object.values(ex).some(rules => rules?.some(r =
 let _dimSeq = 0
 const newDimId = () => `d${++_dimSeq}`
 
+let _ccSeq = 0
+const newCcId = () => `cc${++_ccSeq}`
+
+// _clinicorp (config salva) → estado do editor: uma "unidade" por conta
+// Clinicorp. Clínicas com só 1 unidade não precisam de etiqueta (tagId null);
+// com 2+, a etiqueta do card decide qual conta consultar (ex: BUENO/ELDORADO
+// no mesmo painel Helena). Aceita o formato antigo (objeto único, sem
+// `units`) para não quebrar clínicas já vinculadas antes desta mudança.
+function clinicorpToUnits(cc) {
+  const list = cc?.units ?? (cc ? [cc] : [])
+  if (!list.length) return [{ id: newCcId(), label: '', tagId: '', user: '', token: '', existingToken: null, codeLink: '' }]
+  return list.map(u => ({
+    id: newCcId(), label: u.label ?? '', tagId: u.tagId ?? '',
+    user: u.user ?? '', token: '', existingToken: u.token ?? null, codeLink: u.codeLink ?? '',
+  }))
+}
+
 // _dims (config salva) → estado do editor: [{ id, label, tags: [{ tid, label }] }]
 // O label de cada tag é o rótulo exibido no funil (pode diferir do nome da etiqueta).
 function dimsToState(dims) {
@@ -315,11 +332,14 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
   const [funnelStages,      setFunnelStages]      = useState({})
   const [mergeCancelReagend, setMergeCancelReagend] = useState(false)
 
-  // Integração Clinicorp (OPCIONAL — nem toda clínica usa)
+  // Integração Clinicorp (OPCIONAL — nem toda clínica usa; suporta múltiplas
+  // unidades, cada uma com sua própria conta Clinicorp + etiqueta no painel)
   const existingClinicorp = clinic?.steps?._clinicorp ?? null
-  const [ccUser,     setCcUser]     = useState(existingClinicorp?.user ?? '')
-  const [ccToken,    setCcToken]    = useState('')   // vazio na edição = mantém o atual
-  const [ccCodeLink, setCcCodeLink] = useState(existingClinicorp?.codeLink ?? '')
+  const [ccUnits, setCcUnits] = useState(() => clinicorpToUnits(existingClinicorp))
+
+  const addCcUnit    = () => setCcUnits(us => [...us, { id: newCcId(), label: '', tagId: '', user: '', token: '', existingToken: null, codeLink: '' }])
+  const removeCcUnit = (id) => setCcUnits(us => us.length > 1 ? us.filter(u => u.id !== id) : us)
+  const updateCcUnit = (id, patch) => setCcUnits(us => us.map(u => u.id === id ? { ...u, ...patch } : u))
 
   const [savedUrl, setSavedUrl] = useState(null)
   const [copied,   setCopied]   = useState(false)
@@ -407,18 +427,20 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
     setStep(2)
   })
 
-  // Config Clinicorp a salvar: usuário + token preenchidos ativam a integração;
-  // token em branco na edição mantém o existente; tudo vazio = sem Clinicorp.
+  // Config Clinicorp a salvar: cada unidade com usuário + token preenchidos
+  // ativa a integração dela; token em branco na edição mantém o existente.
+  // subscriber_id da Clinicorp é sempre igual ao Usuário API — não duplica.
   const clinicorpConfig = () => {
-    const user  = ccUser.trim()
-    const tok   = ccToken.trim() || existingClinicorp?.token || ''
-    if (!user || !tok) return null
-    return {
-      user,
-      token: tok,
-      subscriberId: user, // na Clinicorp o "Usuário API" é o subscriber_id
-      ...(ccCodeLink.trim() ? { codeLink: ccCodeLink.trim() } : {}),
-    }
+    const units = ccUnits
+      .map(u => ({
+        label: u.label.trim(),
+        tagId: u.tagId || null,
+        user:  u.user.trim(),
+        token: u.token.trim() || u.existingToken || '',
+        ...(u.codeLink.trim() ? { codeLink: u.codeLink.trim() } : {}),
+      }))
+      .filter(u => u.user && u.token)
+    return units.length ? { units } : null
   }
 
   // ── Salvar ───────────────────────────────────────────────────────────────
@@ -686,7 +708,9 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                 <Check ok />
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium text-slate-800">
-                    Clinicorp · {clinicorpConfig() ? `vinculado (${clinicorpConfig().user})` : 'não vinculado'}
+                    Clinicorp · {clinicorpConfig()
+                      ? `vinculado (${clinicorpConfig().units.map(u => u.user).join(', ')})`
+                      : 'não vinculado'}
                   </div>
                   <div className="text-xs text-slate-400 mt-0.5">
                     Opcional — para vincular, use "Ajustar manualmente" e informe Usuário API + Token na aba Clinicorp.
@@ -979,38 +1003,87 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
         </div>
       )}
 
-      {/* ── Etapa 7: integração Clinicorp (OPCIONAL) ─────────────────────── */}
-      {step === 6 && (
+      {/* ── Etapa 7: integração Clinicorp (OPCIONAL, N unidades) ─────────── */}
+      {step === 6 && (() => {
+        const multiUnit = ccUnits.length > 1
+        return (
         <div className="space-y-4">
           <StepHeader title="Integração Clinicorp (opcional)">
             Clínicas que usam o Clinicorp têm o painel movimentado automaticamente
             (compareceu, faltou, cancelou, orçamento aprovado com valor).
             Sem Clinicorp? Só avance — nada muda para esta clínica.
+            {' '}Clínica com mais de uma unidade (ex: dois endereços, uma conta
+            Clinicorp cada) que compartilham o mesmo painel Helena? Adicione uma
+            unidade para cada e escolha a etiqueta que identifica os cards dela.
           </StepHeader>
 
-          <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
-            <Field label="Usuário API" hint='Em Gerenciar Assinatura → Acesso Externo e Integrações → "Integrações - Usuário API". Também é o subscriber_id.'>
-              <input className={`${inputCls} font-mono`} value={ccUser}
-                onChange={e => setCcUser(e.target.value)} placeholder="ex: lumineodonto" autoComplete="off" />
-            </Field>
-            <Field
-              label="Token API"
-              hint={existingClinicorp?.token
-                ? `Token atual: ${existingClinicorp.token.slice(0, 8)}…${existingClinicorp.token.slice(-4)} — deixe em branco para mantê-lo.`
-                : 'Campo "Token API" da mesma tela. Fica salvo apenas no servidor.'}
-            >
-              <input className={`${inputCls} font-mono`} type="password" value={ccToken}
-                onChange={e => setCcToken(e.target.value)}
-                placeholder={existingClinicorp?.token ? '(mantém o atual)' : 'ex: 3ca6bf45-db46-...'} autoComplete="off" />
-            </Field>
-            <Field label="Code Link da agenda (opcional)" hint="Só é usado para criar agendamento online via API — pode deixar vazio.">
-              <input className={`${inputCls} font-mono`} value={ccCodeLink}
-                onChange={e => setCcCodeLink(e.target.value)} placeholder="ex: 86816" autoComplete="off" />
-            </Field>
-            {ccUser.trim() && !ccToken.trim() && !existingClinicorp?.token && (
-              <p className="text-xs text-amber-600">Informe o Token API para ativar a integração — ou limpe o usuário para seguir sem Clinicorp.</p>
-            )}
+          <div className="space-y-3">
+            {ccUnits.map((u, i) => (
+              <div key={u.id} className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-semibold text-slate-800">
+                    {multiUnit ? `Unidade ${i + 1}` : 'Credenciais Clinicorp'}
+                  </h4>
+                  {ccUnits.length > 1 && (
+                    <button onClick={() => removeCcUnit(u.id)}
+                      className="text-xs px-2.5 py-1.5 rounded-md border border-red-200 text-red-500 hover:bg-red-50">
+                      Remover
+                    </button>
+                  )}
+                </div>
+
+                {multiUnit && (
+                  <Field label="Rótulo da unidade" hint="Só para você identificar nesta tela (ex: Bueno, Eldorado).">
+                    <input className={inputCls} value={u.label}
+                      onChange={e => updateCcUnit(u.id, { label: e.target.value })} placeholder="ex: Bueno" />
+                  </Field>
+                )}
+
+                <Field label="Usuário API" hint='Em Gerenciar Assinatura → Acesso Externo e Integrações → "Integrações - Usuário API". Também é o subscriber_id.'>
+                  <input className={`${inputCls} font-mono`} value={u.user}
+                    onChange={e => updateCcUnit(u.id, { user: e.target.value })} placeholder="ex: lumineodonto" autoComplete="off" />
+                </Field>
+                <Field
+                  label="Token API"
+                  hint={u.existingToken
+                    ? `Token atual: ${u.existingToken.slice(0, 8)}…${u.existingToken.slice(-4)} — deixe em branco para mantê-lo.`
+                    : 'Campo "Token API" da mesma tela. Fica salvo apenas no servidor.'}
+                >
+                  <input className={`${inputCls} font-mono`} type="password" value={u.token}
+                    onChange={e => updateCcUnit(u.id, { token: e.target.value })}
+                    placeholder={u.existingToken ? '(mantém o atual)' : 'ex: 3ca6bf45-db46-...'} autoComplete="off" />
+                </Field>
+                <Field label="Code Link da agenda (opcional)" hint="Só é usado para criar agendamento online via API — pode deixar vazio.">
+                  <input className={`${inputCls} font-mono`} value={u.codeLink}
+                    onChange={e => updateCcUnit(u.id, { codeLink: e.target.value })} placeholder="ex: 86816" autoComplete="off" />
+                </Field>
+
+                {multiUnit && (
+                  <Field label="Etiqueta que identifica esta unidade" hint="O sync usa a etiqueta do card para saber em qual conta Clinicorp buscar o paciente.">
+                    {panelTags.length === 0 ? (
+                      <p className="mt-1 text-xs text-amber-600">
+                        Este painel não tem etiquetas — sem elas o sync não sabe separar as unidades. Crie uma etiqueta por unidade na Helena antes de vincular.
+                      </p>
+                    ) : (
+                      <select className={inputCls} value={u.tagId} onChange={e => updateCcUnit(u.id, { tagId: e.target.value })}>
+                        <option value="">Selecione a etiqueta…</option>
+                        {panelTags.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                      </select>
+                    )}
+                  </Field>
+                )}
+
+                {u.user.trim() && !u.token.trim() && !u.existingToken && (
+                  <p className="text-xs text-amber-600">Informe o Token API para ativar esta unidade — ou remova-a para seguir sem Clinicorp.</p>
+                )}
+              </div>
+            ))}
           </div>
+
+          <button onClick={addCcUnit}
+            className="w-full py-2.5 text-sm font-medium rounded-xl border border-dashed border-slate-300 text-slate-500 hover:border-slate-400 hover:text-slate-700">
+            + Adicionar unidade (outra conta Clinicorp no mesmo painel)
+          </button>
 
           <div className="flex justify-between pt-2">
             <button onClick={() => setStep(5)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
@@ -1020,7 +1093,8 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
             </button>
           </div>
         </div>
-      )}
+        )
+      })()}
 
       {/* ── Etapa 8: revisão ─────────────────────────────────────────────── */}
       {step === 7 && (
@@ -1034,7 +1108,9 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
               ['Account ID',  <code key="a" className="font-mono text-xs text-slate-500">{selectedPanel.companyId}</code>],
               ['Token',       token.trim() ? 'Novo token informado' : (isEdit ? `Mantém o atual (${clinic.tokenMasked})` : '—')],
               ['Clinicorp',   clinicorpConfig()
-                ? <span key="cc" className="text-emerald-600 font-medium">Vinculado · {clinicorpConfig().user}{clinicorpConfig().codeLink ? ` · agenda ${clinicorpConfig().codeLink}` : ''}</span>
+                ? <span key="cc" className="text-emerald-600 font-medium">
+                    Vinculado · {clinicorpConfig().units.map(u => u.label ? `${u.label} (${u.user})` : u.user).join(' · ')}
+                  </span>
                 : <span key="cc" className="text-slate-400">Sem Clinicorp (opcional)</span>],
               ['Ticket médio', `R$ ${Number(ticket).toLocaleString('pt-BR')}`],
             ].map(([k, v]) => (
