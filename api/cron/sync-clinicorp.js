@@ -48,6 +48,13 @@ export default async function handler(req, res) {
     .filter((r) => (r.steps?._clinicorp?.units?.length ?? 0) > 0)
     .map((r) => ({ accountId: r.account_id, name: r.name, panelId: r.panel_id, token: r.token, steps: r.steps }))
 
+  // Modo leve: só lista quem tem Clinicorp vinculado (sem sincronizar nada) —
+  // o workflow usa isso pra saber quais accountId chamar, um por vez, cada
+  // um em sua própria chamada (evita estourar o maxDuration somando todas).
+  if (req.query?.list === '1') {
+    return res.status(200).json({ accountIds: clinics.map((c) => c.accountId) })
+  }
+
   if (accountId && !clinics.length) {
     return res.status(404).json({ error: `Clínica "${accountId}" não encontrada ou sem Clinicorp vinculado.` })
   }

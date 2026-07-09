@@ -74,6 +74,7 @@ export default function ClinicorpImport({ clinics, onDone, onError, onLinked, on
           _clinicorp: {
             units: [{
               label: '', tagId: null, user: row.apiUser, token: row.token,
+              syncSince: new Date().toISOString().slice(0, 10),
               ...(row.agenda && row.agenda !== '-' ? { codeLink: row.agenda } : {}),
             }],
           },

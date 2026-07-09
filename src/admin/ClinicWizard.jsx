@@ -44,12 +44,16 @@ const newCcId = () => `cc${++_ccSeq}`
 // com 2+, a etiqueta do card decide qual conta consultar (ex: BUENO/ELDORADO
 // no mesmo painel Helena). Aceita o formato antigo (objeto único, sem
 // `units`) para não quebrar clínicas já vinculadas antes desta mudança.
+// `syncSince` (gravado na 1ª vinculação, nunca recalculado depois) trava o
+// corte de histórico na data real da vinculação — sem isso o sync usaria
+// "início do mês corrente" e um fato antigo demais nunca mais criaria card.
 function clinicorpToUnits(cc) {
   const list = cc?.units ?? (cc ? [cc] : [])
-  if (!list.length) return [{ id: newCcId(), label: '', tagId: '', user: '', token: '', existingToken: null, codeLink: '' }]
+  if (!list.length) return [{ id: newCcId(), label: '', tagId: '', user: '', token: '', existingToken: null, codeLink: '', syncSince: null }]
   return list.map(u => ({
     id: newCcId(), label: u.label ?? '', tagId: u.tagId ?? '',
     user: u.user ?? '', token: '', existingToken: u.token ?? null, codeLink: u.codeLink ?? '',
+    syncSince: u.syncSince ?? null,
   }))
 }
 
@@ -337,7 +341,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
   const existingClinicorp = clinic?.steps?._clinicorp ?? null
   const [ccUnits, setCcUnits] = useState(() => clinicorpToUnits(existingClinicorp))
 
-  const addCcUnit    = () => setCcUnits(us => [...us, { id: newCcId(), label: '', tagId: '', user: '', token: '', existingToken: null, codeLink: '' }])
+  const addCcUnit    = () => setCcUnits(us => [...us, { id: newCcId(), label: '', tagId: '', user: '', token: '', existingToken: null, codeLink: '', syncSince: null }])
   const removeCcUnit = (id) => setCcUnits(us => us.length > 1 ? us.filter(u => u.id !== id) : us)
   const updateCcUnit = (id, patch) => setCcUnits(us => us.map(u => u.id === id ? { ...u, ...patch } : u))
 
@@ -437,6 +441,10 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
         tagId: u.tagId || null,
         user:  u.user.trim(),
         token: u.token.trim() || u.existingToken || '',
+        // Grava a data de HOJE só na 1ª vinculação desta unidade; edições
+        // depois preservam o valor original — o corte de histórico do sync
+        // fica travado na vinculação real, nunca recalculado.
+        syncSince: u.syncSince || new Date().toISOString().slice(0, 10),
         ...(u.codeLink.trim() ? { codeLink: u.codeLink.trim() } : {}),
       }))
       .filter(u => u.user && u.token)

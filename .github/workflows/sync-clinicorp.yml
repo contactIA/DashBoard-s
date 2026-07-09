@@ -1,8 +1,11 @@
 # Dispara o sync Clinicorp -> Helena a cada hora via HTTP — usamos o GitHub
 # Actions em vez do Cron nativo da Vercel porque o plano Hobby só libera
-# cron 1x/dia (o schedule aqui não tem essa restrição). O horário exato do
-# GitHub Actions já varia alguns minutos por natureza (fila do runner), o
-# que também ajuda a não bater sempre no mesmo segundo contra o rate limit.
+# cron 1x/dia (o schedule aqui não tem essa restrição).
+#
+# Uma chamada só "sincroniza todas as clínicas" estourava o maxDuration (60s)
+# já com 2 clínicas — cada clínica agora roda em seu próprio job (matrix),
+# em paralelo, isolada. Rate limit é por conta na Helena/Clinicorp, então
+# clínicas diferentes rodando ao mesmo tempo não competem entre si.
 name: Sync Clinicorp
 
 on:
@@ -11,18 +14,38 @@ on:
   workflow_dispatch: {}     # permite disparar manualmente na aba Actions do GitHub
 
 jobs:
-  sync:
+  listar-clinicas:
     runs-on: ubuntu-latest
+    outputs:
+      account_ids: ${{ steps.listar.outputs.account_ids }}
     steps:
-      - name: Chamar o endpoint de sync
+      - name: Listar clínicas com Clinicorp vinculado
+        id: listar
+        run: |
+          resp=$(curl -s --max-time 20 -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" "${{ secrets.SYNC_URL }}?list=1")
+          echo "Resposta: $resp"
+          ids=$(echo "$resp" | jq -c '.accountIds // []')
+          echo "account_ids=$ids" >> "$GITHUB_OUTPUT"
+
+  sincronizar:
+    needs: listar-clinicas
+    if: needs.listar-clinicas.outputs.account_ids != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        accountId: ${{ fromJson(needs.listar-clinicas.outputs.account_ids) }}
+    steps:
+      - name: Sincronizar clínica ${{ matrix.accountId }}
         run: |
           status=$(curl -s -o response.json -w "%{http_code}" \
             --max-time 55 \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            "${{ secrets.SYNC_URL }}")
+            "${{ secrets.SYNC_URL }}?accountId=${{ matrix.accountId }}")
           echo "HTTP $status"
           cat response.json
           if [ "$status" -ge 300 ]; then
-            echo "::error::Sync falhou com HTTP $status"
+            echo "::error::Sync de ${{ matrix.accountId }} falhou com HTTP $status"
             exit 1
           fi

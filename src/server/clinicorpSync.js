@@ -187,12 +187,18 @@ export async function syncClinicClinicorp(clinic) {
 
   const today = new Date()
   const hoje = iso(today)
-  const CUTOFF = hoje.slice(0, 7) + '-01' // histórico anterior ao mês corrente não é importado
 
   const allMoves = [], allCreates = []
 
   for (const unit of units) {
     if (!unit.user || !unit.token) continue
+    // Corte FIXO por unidade — a data em que ela foi vinculada no setup
+    // (unit.syncSince). Sem isso, um corte recalculado a cada rodada ("início
+    // do mês corrente") avança sozinho: um fato de julho que só aparece no
+    // Clinicorp em agosto (ex: orçamento aprovado com atraso) seria perdido
+    // porque o corte já teria virado para agosto. Unidades antigas sem o
+    // campo (vinculadas antes desta correção) caem no fallback por mês.
+    const CUTOFF = unit.syncSince || (hoje.slice(0, 7) + '-01')
     const clinicorp = makeClinicorpClient({ user: unit.user, token: unit.token, subscriberId: unit.user })
 
     const apptFrom = iso(new Date(today.getTime() - 60 * 86_400_000))
