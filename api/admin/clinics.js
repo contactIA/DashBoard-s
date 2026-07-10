@@ -30,6 +30,42 @@ function maskToken(token) {
   return `${raw.slice(0, 8)}…${raw.slice(-4)}`
 }
 
+// ── Token Clinicorp: mascarado na leitura, restaurado na escrita ─────────────
+// O GET admin nunca devolve o token real das unidades Clinicorp (mesmo modelo
+// do token Helena). Como o wizard reenvia o `steps` inteiro no PUT, o servidor
+// detecta o token mascarado (contém "…" — tokens reais são UUIDs) ou vazio e
+// restaura o valor real da unidade correspondente (casada pelo Usuário API).
+const isMaskedToken = (t) => !t || String(t).includes('…')
+
+function maskClinicorpUnits(steps) {
+  const cc = steps?._clinicorp
+  if (!cc?.units?.length) return steps
+  return {
+    ...steps,
+    _clinicorp: { ...cc, units: cc.units.map(u => ({ ...u, token: maskToken(u.token) })) },
+  }
+}
+
+// Retorna { steps, errors[] } — erro quando um token mascarado não tem unidade
+// anterior para restaurar (ex: admin trocou o Usuário API sem redigitar o token).
+function restoreClinicorpTokens(incomingSteps, currentSteps) {
+  const incoming = incomingSteps?._clinicorp?.units
+  if (!incoming?.length) return { steps: incomingSteps, errors: [] }
+
+  const prevByUser = Object.fromEntries(
+    (currentSteps?._clinicorp?.units ?? []).map(u => [u.user, u])
+  )
+  const errors = []
+  const units = incoming.map(u => {
+    if (!isMaskedToken(u.token)) return u
+    const prev = prevByUser[u.user]
+    if (prev?.token) return { ...u, token: prev.token }
+    errors.push(`Unidade "${u.label || u.user}": informe o Token API (não há token salvo para restaurar).`)
+    return u
+  })
+  return { steps: { ...incomingSteps, _clinicorp: { ...incomingSteps._clinicorp, units } }, errors }
+}
+
 const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
 function validatePayload(body, { requireToken }) {
@@ -70,7 +106,7 @@ export default async function handler(req, res) {
           tokenMasked: maskToken(r.token),
           panelId:     r.panel_id,
           ticket:      r.ticket,
-          steps:       r.steps,
+          steps:       maskClinicorpUnits(r.steps),
         })),
       })
     }
@@ -79,6 +115,10 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const body = req.body ?? {}
       const errors = validatePayload(body, { requireToken: true })
+      // No cadastro não existe token salvo para restaurar — mascarado é erro
+      for (const u of body.steps?._clinicorp?.units ?? []) {
+        if (isMaskedToken(u.token)) errors.push(`Unidade Clinicorp "${u.label || u.user}": informe o Token API completo.`)
+      }
       if (errors.length) return res.status(400).json({ error: errors.join('; ') })
 
       const conflictFilter = `or=(account_id.eq.${encodeURIComponent(body.accountId)},slug.eq.${encodeURIComponent(body.slug)})`
@@ -119,12 +159,18 @@ export default async function handler(req, res) {
         return res.status(409).json({ error: `O slug "${body.slug}" já está em uso por outra clínica.` })
       }
 
+      // Tokens Clinicorp mascarados/vazios voltam do wizard — restaura os reais
+      const [current] = await sb(`/clinics?account_id=eq.${encodeURIComponent(body.accountId)}&select=steps&limit=1`)
+      if (!current) return res.status(404).json({ error: 'Clínica não encontrada.' })
+      const restored = restoreClinicorpTokens(body.steps, current.steps)
+      if (restored.errors.length) return res.status(400).json({ error: restored.errors.join('; ') })
+
       const patch = {
         name:     body.name.trim(),
         slug:     body.slug,
         panel_id: body.panelId,
         ticket:   body.ticket ?? null,
-        steps:    body.steps,
+        steps:    restored.steps,
       }
       const token = normalizeToken(body.token)
       if (token) patch.token = token // token vazio = manter o atual

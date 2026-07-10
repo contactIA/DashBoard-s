@@ -19,6 +19,35 @@ function isAuthorizedCronRequest(req) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
+// Grava o resultado de cada clínica na tabela `sync_log` do Supabase —
+// auditoria consultável (o log do GitHub Actions expira e não é pesquisável).
+// Best-effort: se a tabela ainda não existir ou o insert falhar, só loga no
+// console; o sync em si nunca é afetado.
+async function logSyncRun(summary) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sync_log`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json', Prefer: 'return=minimal',
+      },
+      body: JSON.stringify({
+        account_id:    summary.accountId,
+        clinic_name:   summary.clinic,
+        moved:         summary.moved,
+        created:       summary.created,
+        failed:        summary.failed,
+        errors:        summary.errors?.length ? summary.errors : null,
+        unmatched_crc: summary.unmatchedCrc?.length ? summary.unmatchedCrc : null,
+        duration_ms:   summary.durationMs ?? null,
+      }),
+    })
+    if (!res.ok) console.error('[sync_log] insert falhou:', res.status, (await res.text()).slice(0, 200))
+  } catch (err) {
+    console.error('[sync_log] insert falhou:', err.message)
+  }
+}
+
 export default async function handler(req, res) {
   if (!isAuthorizedCronRequest(req)) {
     return res.status(401).json({ error: 'Não autorizado.' })
@@ -61,10 +90,13 @@ export default async function handler(req, res) {
 
   const results = []
   for (const clinic of clinics) {
+    const startedAt = Date.now()
     const summary = await syncClinicClinicorp(clinic).catch((err) => ({
       clinic: clinic.name, accountId: clinic.accountId, moved: 0, created: 0, failed: 1, errors: [err.message], unmatchedCrc: [],
     }))
+    summary.durationMs = Date.now() - startedAt
     results.push(summary)
+    await logSyncRun(summary) // auditoria persistente — best-effort, nunca derruba o sync
     await sleep(500) // respiro entre clínicas
   }
 

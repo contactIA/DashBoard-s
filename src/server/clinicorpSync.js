@@ -50,17 +50,30 @@ function findAgendadorTag(createUserName, panelTags) {
   return null
 }
 
-const RANK = {
-  'LEADS TRAFEGO': 0, 'LEADS FRIOS': 0, 'LEAD': 0, 'NÃO AGENDADO': 0,
-  'AGENDADO': 1, 'AGENDOU': 1,
-  'DESMARCOU': 2, 'CANCELOU': 2, 'FALTOU': 2, 'NÃO COMPARECEU': 2,
-  'NÃO FECHOU': 3, 'COMPARECEU E NÃO FECHOU': 3,
-  'ORÇAMENTO EM ABERTO': 4,
-  'FECHOU': 5, 'COMPARECEU E FECHOU': 5,
+// A fonte da verdade para "qual etapa do painel significa o quê" é o
+// mapeamento de MÉTRICAS feito no wizard do /setup (obrigatório no cadastro):
+// clinic.steps.<slug> = { id, label, type } — funciona para QUALQUER clínica,
+// independente de como ela nomeou as etapas do painel.
+const TARGET_TYPE = {
+  'AGENDADO': 'scheduled',
+  'DESMARCOU': 'cancelled',
+  'FALTOU': 'missed',
+  'NÃO FECHOU': 'attended',
+  'ORÇAMENTO EM ABERTO': 'negotiating',
+  'FECHOU': 'converted',
 }
-const rankOf = (title) => RANK[(title ?? '').toUpperCase().trim()] ?? 0
 
-const TARGET_STEP = {
+// Ranking do funil por TYPE — card nunca anda "para trás" automaticamente.
+const TYPE_RANK = {
+  lead: 0, notScheduled: 0,
+  scheduled: 1, rescheduled: 1,
+  cancelled: 2, missed: 2,
+  attended: 3, negotiating: 4, converted: 5,
+}
+
+// Fallback por título para clínicas antigas cujo mapeamento não cubra um tipo
+// (nunca deveria acontecer — o wizard exige mapear as etapas).
+const TARGET_STEP_FALLBACK = {
   'AGENDADO': ['AGENDOU', 'AGENDADO'],
   'DESMARCOU': ['DESMARCOU', 'CANCELOU'],
   'FALTOU': ['FALTOU', 'NÃO COMPARECEU'],
@@ -146,9 +159,39 @@ export async function syncClinicClinicorp(clinic) {
   const stepByTitle = {}
   for (const s of panel.steps ?? []) stepByTitle[s.title.toUpperCase().trim()] = s
   const stepTitleById = Object.fromEntries((panel.steps ?? []).map((s) => [s.id, s.title]))
+  const stepById = Object.fromEntries((panel.steps ?? []).map((s) => [s.id, s]))
+
+  // Mapeamento do setup: type → stepId e stepId → type (fonte da verdade)
+  const stepIdByType = {}
+  const typeByStepId = {}
+  for (const [key, s] of Object.entries(clinic.steps ?? {})) {
+    if (key.startsWith('_') || !s?.type || !s?.id) continue
+    if (!stepIdByType[s.type]) stepIdByType[s.type] = s.id
+    typeByStepId[s.id] = s.type
+  }
+
   const resolveStep = (target) => {
-    for (const cand of TARGET_STEP[target] ?? []) if (stepByTitle[cand]) return stepByTitle[cand]
+    // 1º: pelo tipo mapeado no setup (funciona com qualquer nome de etapa)
+    const mappedId = stepIdByType[TARGET_TYPE[target]]
+    if (mappedId && stepById[mappedId]) return stepById[mappedId]
+    // 2º: fallback por títulos conhecidos (clínicas antigas/mapeamento incompleto)
+    for (const cand of TARGET_STEP_FALLBACK[target] ?? []) if (stepByTitle[cand]) return stepByTitle[cand]
     return null
+  }
+
+  // Ranking anti-regressão pelo TYPE do setup; título conhecido como fallback
+  const TITLE_RANK_FALLBACK = {
+    'LEADS TRAFEGO': 0, 'LEADS FRIOS': 0, 'LEAD': 0, 'NÃO AGENDADO': 0,
+    'AGENDADO': 1, 'AGENDOU': 1,
+    'DESMARCOU': 2, 'CANCELOU': 2, 'FALTOU': 2, 'NÃO COMPARECEU': 2,
+    'NÃO FECHOU': 3, 'COMPARECEU E NÃO FECHOU': 3,
+    'ORÇAMENTO EM ABERTO': 4,
+    'FECHOU': 5, 'COMPARECEU E FECHOU': 5,
+  }
+  const rankOfStep = (stepId) => {
+    const type = typeByStepId[stepId]
+    if (type in TYPE_RANK) return TYPE_RANK[type]
+    return TITLE_RANK_FALLBACK[(stepTitleById[stepId] ?? '').toUpperCase().trim()] ?? 0
   }
 
   let cards = []
@@ -269,10 +312,9 @@ export async function syncClinicClinicorp(clinic) {
         continue
       }
 
-      const stepAtual = stepTitleById[card.stepId] ?? '?'
-      const ehRegressao = rankOf(stepAlvo.title) < rankOf(stepAtual)
-      const reativacao = want.futura && want.target === 'AGENDADO' && rankOf(stepAtual) < 5
-      const fechouTerminal = rankOf(stepAtual) === 5 && want.target !== 'FECHOU'
+      const ehRegressao = rankOfStep(stepAlvo.id) < rankOfStep(card.stepId)
+      const reativacao = want.futura && want.target === 'AGENDADO' && rankOfStep(card.stepId) < 5
+      const fechouTerminal = rankOfStep(card.stepId) === 5 && want.target !== 'FECHOU'
       const precisaValor = want.valor > 0 && !(card.monetaryAmount > 0)
 
       if (fechouTerminal || (ehRegressao && !reativacao)) {
