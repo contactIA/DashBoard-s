@@ -30,5 +30,8 @@ export function makeClinicorpClient({ user, token, subscriberId }) {
     statusList:   ()                => get('/appointment/status_list'),
     appointments: (from, to, extra) => get('/appointment/list', { from, to, ...extra }),
     estimates:    (from, to, extra) => get('/estimates/list', { from, to, ...extra }),
+    // Usuários (CRCs) cadastrados na conta — usado pelo /setup para sugerir o
+    // nome completo ao vincular a etiqueta da Helena ao usuário do Clinicorp.
+    users:        ()                => get('/security/list_users'),
   }
 }

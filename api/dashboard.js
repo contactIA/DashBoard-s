@@ -234,6 +234,9 @@ export default async function handler(req, res) {
         // data real do evento (gravada pelo sync Clinicorp no metadata) —
         // corrige a atribuição temporal de cards criados/movidos retroativamente
         eventDate: card.metadata?.clinicorp_event_date ?? null,
+        // "Agendado em" — dia em que a CRC/IA/sync agendou (campo do card via
+        // _extract.scheduledAt); usado no funil para a barra "Agendaram"
+        scheduledAt: appt?.scheduledAt ?? null,
         dims:      computeDims(card, dimsCfg),
       }
     })

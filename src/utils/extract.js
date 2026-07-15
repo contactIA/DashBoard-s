@@ -2,7 +2,10 @@
 // e o preview do wizard (/setup). Mantenha sem dependências de browser ou de Node.
 //
 // Config (vive em clinics.steps._extract e ._dims):
-//   _extract: { date:[rule], time:[rule], name:[rule], phone:[rule] }
+//   _extract: { date:[rule], time:[rule], name:[rule], phone:[rule], scheduledAt:[rule] }
+//     scheduledAt = "Agendado em" (dia em que a CRC/IA/sync agendou o lead) —
+//     independente de `date` ("Agendado Para", dia da consulta). Sem regra
+//     configurada, extractCard devolve null (clínica legada, sem esse campo).
 //     rule = { from, regex?, format? }
 //       from   : 'title' | 'description' | 'dueDate' | 'contactName' | 'contactPhone'
 //                | 'metadata.<campo>' | 'customFields.<campo>'
@@ -207,14 +210,17 @@ export function autoDetectExtract(sampleCards = []) {
   }
 }
 
-/** Extrai os 4 campos de um card segundo a config _extract. */
+/** Extrai os campos de um card segundo a config _extract.
+ *  scheduledAt ("Agendado em") só é calculado quando a clínica configurou a
+ *  regra — ausente vira null, sem afetar clínicas legadas. */
 export function extractCard(card, extractCfg) {
-  if (!extractCfg) return { date: null, time: null, name: null, phone: null }
+  if (!extractCfg) return { date: null, time: null, name: null, phone: null, scheduledAt: null }
   return {
-    date:  extractWith(extractCfg.date,  card, 'date'),
-    time:  extractWith(extractCfg.time,  card, 'text'),
-    name:  extractWith(extractCfg.name,  card, 'text'),
-    phone: extractWith(extractCfg.phone, card, 'phone'),
+    date:        extractWith(extractCfg.date,        card, 'date'),
+    time:        extractWith(extractCfg.time,        card, 'text'),
+    name:        extractWith(extractCfg.name,        card, 'text'),
+    phone:       extractWith(extractCfg.phone,       card, 'phone'),
+    scheduledAt: extractCfg.scheduledAt ? extractWith(extractCfg.scheduledAt, card, 'date') : null,
   }
 }
 

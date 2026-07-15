@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { listPanels, getPanelSteps, createClinic, updateClinic } from './adminApi'
+import { listPanels, getPanelSteps, createClinic, updateClinic, getClinicorpUsers } from './adminApi'
 import { METRIC_TYPES, guessType, typeColor, buildStepsConfig, kebabify } from './metricTypes'
 import { extractWith, autoDetectExtract, countExtractHits } from '../utils/extract.js'
 import { DEFAULT_FUNNEL_CFG } from '../utils/parseCards.js'
@@ -18,8 +18,9 @@ const FUNNEL_STAGE_DEFS = [
 ]
 
 const EXTRACT_FIELDS = [
-  { key: 'date',  label: 'Data de agendamento', kind: 'date', hint: 'A data que filtra o dashboard. Sem ela o card some das métricas por período.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)' },
-  { key: 'time',  label: 'Horário',             kind: 'text', hint: 'Opcional — usado na lista de agendamentos.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)' },
+  { key: 'date',  label: 'Agendado Para (data/hora da consulta)', kind: 'date', hint: 'A data que filtra o dashboard e alimenta "agendamentos futuros". Sem ela o card some das métricas por período.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)' },
+  { key: 'time',  label: 'Horário',             kind: 'text', hint: 'Opcional — usado na lista de agendamentos. Ignorado quando "Agendado Para" já é um campo único data+hora.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)' },
+  { key: 'scheduledAt', label: 'Agendado em (dia que a CRC agendou)', kind: 'date', hint: 'Opcional — alimenta a barra "Agendaram" do funil. Diferente da data da consulta.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)' },
   { key: 'name',  label: 'Nome do paciente',    kind: 'text', hint: 'Exibido nas tabelas.', helenaSource: 'contactName', helenaLabel: 'Contato vinculado ao card' },
   { key: 'phone', label: 'Telefone',            kind: 'phone', hint: 'Opcional.', helenaSource: 'contactPhone', helenaLabel: 'Contato vinculado ao card' },
 ]
@@ -27,11 +28,32 @@ const EXTRACT_FIELDS = [
 const emptyExtract = () => ({
   date:  [{ from: 'description', regex: '', format: 'YMD' }],
   time:  [{ from: 'description', regex: '' }],
+  scheduledAt: [],
   name:  [{ from: 'title', regex: '' }],
   phone: [{ from: 'description', regex: '' }],
 })
 
 const hasAnyRule = (ex) => ex && Object.values(ex).some(rules => rules?.some(r => r.regex || r.from))
+
+// _dates (steps._dates) diz ao SYNC do Clinicorp em qual customField escrever
+// "Agendado Para"/"Agendado em" — deriva do MESMO campo já escolhido no passo
+// de Extração (1ª regra, quando aponta para customFields.<key>), em vez de
+// pedir a mesma escolha duas vezes: uma única fonte de verdade por clínica,
+// sem risco de a leitura (_extract) e a escrita (_dates) apontarem pra keys
+// diferentes por engano.
+function customFieldKeyOf(rules) {
+  const first = rules?.[0]
+  return first?.from?.startsWith('customFields.') ? first.from.slice(13) || null : null
+}
+function deriveDatesConfig(extract) {
+  const scheduledForKey = customFieldKeyOf(extract.date)
+  const createdAtKey    = customFieldKeyOf(extract.scheduledAt)
+  if (!scheduledForKey && !createdAtKey) return null
+  return {
+    ...(scheduledForKey ? { scheduledFor: { key: scheduledForKey } } : {}),
+    ...(createdAtKey    ? { createdAt:    { key: createdAtKey } }    : {}),
+  }
+}
 
 let _dimSeq = 0
 const newDimId = () => `d${++_dimSeq}`
@@ -49,11 +71,16 @@ const newCcId = () => `cc${++_ccSeq}`
 // "início do mês corrente" e um fato antigo demais nunca mais criaria card.
 function clinicorpToUnits(cc) {
   const list = cc?.units ?? (cc ? [cc] : [])
-  if (!list.length) return [{ id: newCcId(), label: '', tagId: '', user: '', token: '', existingToken: null, codeLink: '', syncSince: null }]
+  if (!list.length) return [{ id: newCcId(), label: '', tagId: '', user: '', token: '', existingToken: null, codeLink: '', syncSince: null, crcNames: {} }]
   return list.map(u => ({
     id: newCcId(), label: u.label ?? '', tagId: u.tagId ?? '',
     user: u.user ?? '', token: '', existingToken: u.token ?? null, codeLink: u.codeLink ?? '',
     syncSince: u.syncSince ?? null,
+    // Mapa CRC desta unidade (unit.crcMap salvo) → estado do editor por tagId.
+    // Por unidade porque a MESMA pessoa pode ter usuário diferente cadastrado
+    // em cada conta Clinicorp (ex: "Gabriela Vieira Da Silva" no Bueno vs.
+    // "Gabriela Vieira" no Eldorado).
+    crcNames: Object.fromEntries((u.crcMap ?? []).filter(m => m.tagId).map(m => [m.tagId, m.clinicorpName ?? ''])),
   }))
 }
 
@@ -333,6 +360,13 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
   const [extract,     setExtract]     = useState(emptyExtract())
   const [dimensions,  setDimensions]  = useState([])
 
+  // Usuários (CRCs) cadastrados nas contas Clinicorp — alimenta o autocomplete
+  // do mapa de CRC (digitar "gabriela" sugere "GABRIELA RONCATO" em vez do
+  // admin ter que descobrir/digitar o nome completo de cabeça).
+  const [ccUsers,        setCcUsers]        = useState([])
+  const [ccUsersLoading, setCcUsersLoading] = useState(false)
+  const [ccUsersError,   setCcUsersError]   = useState(null)
+
   const [funnelStages,      setFunnelStages]      = useState({})
   const [mergeCancelReagend, setMergeCancelReagend] = useState(false)
 
@@ -341,7 +375,12 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
   const existingClinicorp = clinic?.steps?._clinicorp ?? null
   const [ccUnits, setCcUnits] = useState(() => clinicorpToUnits(existingClinicorp))
 
-  const addCcUnit    = () => setCcUnits(us => [...us, { id: newCcId(), label: '', tagId: '', user: '', token: '', existingToken: null, codeLink: '', syncSince: null }])
+  // Mapa CRC é POR UNIDADE (unit.crcNames, ver clinicorpToUnits) — a mesma
+  // pessoa pode ter usuário diferente cadastrado em cada conta Clinicorp.
+  const setCrcName = (unitId, tagId, value) =>
+    setCcUnits(us => us.map(u => u.id === unitId ? { ...u, crcNames: { ...u.crcNames, [tagId]: value } } : u))
+
+  const addCcUnit    = () => setCcUnits(us => [...us, { id: newCcId(), label: '', tagId: '', user: '', token: '', existingToken: null, codeLink: '', syncSince: null, crcNames: {} }])
   const removeCcUnit = (id) => setCcUnits(us => us.length > 1 ? us.filter(u => u.id !== id) : us)
   const updateCcUnit = (id, patch) => setCcUnits(us => us.map(u => u.id === id ? { ...u, ...patch } : u))
 
@@ -434,6 +473,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
   // Config Clinicorp a salvar: cada unidade com usuário + token preenchidos
   // ativa a integração dela; token em branco na edição mantém o existente.
   // subscriber_id da Clinicorp é sempre igual ao Usuário API — não duplica.
+  // crcMap vai POR UNIDADE (u.crcNames): só as linhas com nome preenchido.
   const clinicorpConfig = () => {
     const units = ccUnits
       .map(u => ({
@@ -446,6 +486,9 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
         // fica travado na vinculação real, nunca recalculado.
         syncSince: u.syncSince || new Date().toISOString().slice(0, 10),
         ...(u.codeLink.trim() ? { codeLink: u.codeLink.trim() } : {}),
+        crcMap: Object.entries(u.crcNames ?? {})
+          .filter(([, name]) => name.trim())
+          .map(([tagId, name]) => ({ tagId, tagName: tagName(tagId), clinicorpName: name.trim() })),
       }))
       .filter(u => u.user && u.token)
     return units.length ? { units } : null
@@ -463,7 +506,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       steps:     buildStepsConfig(mappedSteps, extract, stateToDims(dimensions, tagName), {
         stages: funnelStages,
         mergeCancelledRescheduled: mergeCancelReagend,
-      }, clinicorpConfig()),
+      }, clinicorpConfig(), deriveDatesConfig(extract)),
     }
     if (isEdit) await updateClinic(payload)
     else        await createClinic(payload)
@@ -998,6 +1041,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                   </div>
                 </div>
               )}
+
             </>
           )}
 
@@ -1084,6 +1128,53 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                 {u.user.trim() && !u.token.trim() && !u.existingToken && (
                   <p className="text-xs text-amber-600">Informe o Token API para ativar esta unidade — ou remova-a para seguir sem Clinicorp.</p>
                 )}
+
+                {panelTags.length > 0 && u.user.trim() && (u.token.trim() || u.existingToken) && (() => {
+                  const unitKey = u.label || u.user
+                  const unitUsers = ccUsers.filter(cu => cu.unit === unitKey)
+                  const datalistId = `cc-users-list-${u.id}`
+                  return (
+                    <div className="pt-3 border-t border-slate-100">
+                      <div className="flex items-center justify-between gap-3">
+                        <h5 className="text-xs font-semibold text-slate-700">Mapa de CRC desta unidade (quem agendou)</h5>
+                        <button
+                          onClick={() => run(async () => {
+                            setCcUsersLoading(true); setCcUsersError(null)
+                            try {
+                              const { users, errors } = await getClinicorpUsers(clinicorpConfig().units)
+                              setCcUsers(users)
+                              if (errors?.length) setCcUsersError(errors.join(' · '))
+                            } finally { setCcUsersLoading(false) }
+                          })}
+                          disabled={ccUsersLoading}
+                          className="text-[11px] px-2 py-1 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 shrink-0">
+                          {ccUsersLoading ? 'Buscando...' : ccUsers.length ? 'Recarregar usuários ↻' : 'Buscar usuários do Clinicorp'}
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-0.5 mb-2">
+                        Por unidade: a mesma pessoa pode ter usuário diferente cadastrado em cada conta
+                        Clinicorp. Sem vínculo aqui, o card desta unidade é criado sem etiqueta de CRC.
+                      </p>
+                      {ccUsersError && <p className="text-[11px] text-amber-600 mb-2">{ccUsersError}</p>}
+                      <datalist id={datalistId}>
+                        {unitUsers.map(cu => <option key={cu.fullName} value={cu.fullName} />)}
+                      </datalist>
+                      <div className="space-y-1.5">
+                        {panelTags.map(t => (
+                          <div key={t.id} className="flex items-center gap-2">
+                            <div className="w-28 shrink-0"><TagChip tag={t} /></div>
+                            <span className="text-slate-300 text-xs shrink-0">→</span>
+                            <input
+                              list={datalistId}
+                              className="flex-1 min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-md bg-white focus:outline-none focus:border-slate-400"
+                              placeholder="Nome no Clinicorp — comece a digitar para sugerir"
+                              value={u.crcNames?.[t.id] ?? ''} onChange={e => setCrcName(u.id, t.id, e.target.value)} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
             ))}
           </div>

@@ -49,3 +49,8 @@ export const getPanelSteps = ({ helenaToken, accountId } = {}, panelId) => {
 }
 
 export const getClinicorpDirectory = () => call('/api/admin/clinicorp-directory')
+
+// Usuários (CRCs) cadastrados nas contas Clinicorp já configuradas no wizard —
+// para o autocomplete do mapa CRC (etiqueta Helena → nome no Clinicorp).
+export const getClinicorpUsers = (units) =>
+  call('/api/admin/clinicorp-users', { method: 'POST', body: { units } })

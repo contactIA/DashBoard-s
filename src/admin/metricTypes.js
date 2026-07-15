@@ -59,9 +59,12 @@ export function slugify(title) {
 
 // Monta o JSONB `steps` no formato que o dashboard consome:
 // { slug: { id, label, color, type } } — steps "ignore" ficam de fora.
-// extract/dims/funnel/clinicorp (opcionais) entram como chaves reservadas
-// _extract/_dims/_funnel/_clinicorp.
-export function buildStepsConfig(mappedSteps, extract, dims, funnel, clinicorp) {
+// extract/dims/funnel/clinicorp/dates (opcionais) entram como chaves
+// reservadas _extract/_dims/_funnel/_clinicorp/_dates. O mapa de CRC vive
+// DENTRO de cada unidade Clinicorp (clinicorp.units[i].crcMap) — não é
+// clínica-level, porque a mesma pessoa pode ter usuário diferente cadastrado
+// em cada conta Clinicorp (ex: unidades Bueno/Eldorado da IBS).
+export function buildStepsConfig(mappedSteps, extract, dims, funnel, clinicorp, dates) {
   const config = {}
   for (const s of mappedSteps) {
     if (s.type === 'ignore') continue
@@ -73,5 +76,6 @@ export function buildStepsConfig(mappedSteps, extract, dims, funnel, clinicorp) 
   if (funnel) config._funnel = funnel
   if (dims && Object.keys(dims).length) config._dims = dims
   if (clinicorp) config._clinicorp = clinicorp
+  if (dates && (dates.scheduledFor?.key || dates.createdAt?.key)) config._dates = dates
   return config
 }

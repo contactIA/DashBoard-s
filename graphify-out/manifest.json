@@ -1,0 +1,242 @@
+{
+  "api/admin/clinicorp-directory.js": {
+    "mtime": 1783358895.6945302,
+    "ast_hash": "0d9b9c033cfdf753f53549710c9a1276",
+    "semantic_hash": "0d9b9c033cfdf753f53549710c9a1276"
+  },
+  "api/admin/clinics.js": {
+    "mtime": 1783684914.1312037,
+    "ast_hash": "01c5ed4c80ff6a5b60f96778112cf17c",
+    "semantic_hash": "01c5ed4c80ff6a5b60f96778112cf17c"
+  },
+  "api/admin/panels.js": {
+    "mtime": 1782995115.0039814,
+    "ast_hash": "2112a8bb656bd6c77b356695322d3fff",
+    "semantic_hash": "2112a8bb656bd6c77b356695322d3fff"
+  },
+  "api/cron/sync-clinicorp.js": {
+    "mtime": 1783685056.9558663,
+    "ast_hash": "f8e5f49f960095cd2f20276a6a80fbb2",
+    "semantic_hash": "f8e5f49f960095cd2f20276a6a80fbb2"
+  },
+  "api/dashboard.js": {
+    "mtime": 1783335192.2619488,
+    "ast_hash": "84bfa289a14b0617a7ca993ac8e58801",
+    "semantic_hash": "84bfa289a14b0617a7ca993ac8e58801"
+  },
+  "package.json": {
+    "mtime": 1782911163.107552,
+    "ast_hash": "d3407aa290edc5293ce34662953eeb1e",
+    "semantic_hash": "d3407aa290edc5293ce34662953eeb1e"
+  },
+  "postcss.config.js": {
+    "mtime": 1782911163.107552,
+    "ast_hash": "5b84f4567208c7c747079c0477373231",
+    "semantic_hash": "5b84f4567208c7c747079c0477373231"
+  },
+  "src/App.jsx": {
+    "mtime": 1783018052.829589,
+    "ast_hash": "eb908a8941ed77e4486799e03a7dc274",
+    "semantic_hash": "eb908a8941ed77e4486799e03a7dc274"
+  },
+  "src/admin/AdminApp.jsx": {
+    "mtime": 1783451317.8117042,
+    "ast_hash": "6a3bdfae5de6c8672a6744e4b5e72b79",
+    "semantic_hash": "6a3bdfae5de6c8672a6744e4b5e72b79"
+  },
+  "src/admin/ClinicWizard.jsx": {
+    "mtime": 1783621141.9960139,
+    "ast_hash": "2c154cf85183db1f05e27f0f9f25de1c",
+    "semantic_hash": "2c154cf85183db1f05e27f0f9f25de1c"
+  },
+  "src/admin/ClinicorpImport.jsx": {
+    "mtime": 1783621164.1217368,
+    "ast_hash": "d7d9f93cf89f73584330edec571de5d2",
+    "semantic_hash": "d7d9f93cf89f73584330edec571de5d2"
+  },
+  "src/admin/adminApi.js": {
+    "mtime": 1783358903.9032457,
+    "ast_hash": "ec6b3166be40f967d4bdd13716e5b2dc",
+    "semantic_hash": "ec6b3166be40f967d4bdd13716e5b2dc"
+  },
+  "src/admin/clinicorpDirectory.js": {
+    "mtime": 1783358886.1147952,
+    "ast_hash": "daaa46516ae55ca649581efe57738e64",
+    "semantic_hash": "daaa46516ae55ca649581efe57738e64"
+  },
+  "src/admin/metricTypes.js": {
+    "mtime": 1783334829.1741922,
+    "ast_hash": "a995c751fa033ded5e8e1dc65a3c9ae4",
+    "semantic_hash": "a995c751fa033ded5e8e1dc65a3c9ae4"
+  },
+  "src/api.js": {
+    "mtime": 1782911163.1216455,
+    "ast_hash": "a93f705f5fabdcc3f55026c507a8344b",
+    "semantic_hash": "a93f705f5fabdcc3f55026c507a8344b"
+  },
+  "src/components/BudgetTable.jsx": {
+    "mtime": 1782911163.1235895,
+    "ast_hash": "247bf59743278fc465eda0eb3b30f173",
+    "semantic_hash": "247bf59743278fc465eda0eb3b30f173"
+  },
+  "src/components/ContractsCard.jsx": {
+    "mtime": 1783016114.6954327,
+    "ast_hash": "9012675f7febe2256c570de39bd88b54",
+    "semantic_hash": "9012675f7febe2256c570de39bd88b54"
+  },
+  "src/components/ConversionFunnel.jsx": {
+    "mtime": 1782911163.1246772,
+    "ast_hash": "3b472d2e4bea78c28987cb5a980b3881",
+    "semantic_hash": "3b472d2e4bea78c28987cb5a980b3881"
+  },
+  "src/components/DateRangePicker.jsx": {
+    "mtime": 1782944513.88676,
+    "ast_hash": "8be053c8a7ee8ef61c17c291a6725fce",
+    "semantic_hash": "8be053c8a7ee8ef61c17c291a6725fce"
+  },
+  "src/components/DimensionBreakdown.jsx": {
+    "mtime": 1783018041.553265,
+    "ast_hash": "54e1c43752388048b09b41e43f1ae3fd",
+    "semantic_hash": "54e1c43752388048b09b41e43f1ae3fd"
+  },
+  "src/components/FunnelBar.jsx": {
+    "mtime": 1782911163.1266742,
+    "ast_hash": "0081e3a679c158c5ce296a5378364996",
+    "semantic_hash": "0081e3a679c158c5ce296a5378364996"
+  },
+  "src/components/FunnelChart.jsx": {
+    "mtime": 1783016206.8043244,
+    "ast_hash": "2e52d0e22ec3a589f0fc6c409887bdcc",
+    "semantic_hash": "2e52d0e22ec3a589f0fc6c409887bdcc"
+  },
+  "src/components/HeroStrip.jsx": {
+    "mtime": 1783016088.8701646,
+    "ast_hash": "0205c70f7759e5dea98391fbeec3cb86",
+    "semantic_hash": "0205c70f7759e5dea98391fbeec3cb86"
+  },
+  "src/components/KpiCard.jsx": {
+    "mtime": 1782911163.128682,
+    "ast_hash": "f53ef0d7f324a40b97b94f84565491ad",
+    "semantic_hash": "f53ef0d7f324a40b97b94f84565491ad"
+  },
+  "src/components/KpiStrip.jsx": {
+    "mtime": 1782993953.2295656,
+    "ast_hash": "fd0c9ba635fcdb238f897bdac82e78a1",
+    "semantic_hash": "fd0c9ba635fcdb238f897bdac82e78a1"
+  },
+  "src/components/LostTable.jsx": {
+    "mtime": 1782911163.128682,
+    "ast_hash": "3a09c7cc69aaf4eb0936a3770298fe28",
+    "semantic_hash": "3a09c7cc69aaf4eb0936a3770298fe28"
+  },
+  "src/components/NotConfigured.jsx": {
+    "mtime": 1782911163.1296751,
+    "ast_hash": "d8df459c0ad1420f477344bb42c1f810",
+    "semantic_hash": "d8df459c0ad1420f477344bb42c1f810"
+  },
+  "src/components/RevenueDonut.jsx": {
+    "mtime": 1783015365.7925494,
+    "ast_hash": "cbd003e675aee9d5f214302d13dbdd96",
+    "semantic_hash": "cbd003e675aee9d5f214302d13dbdd96"
+  },
+  "src/components/RevenueRow.jsx": {
+    "mtime": 1782911163.1306784,
+    "ast_hash": "b278e07a3fc2d52de5d02f1a72ee861e",
+    "semantic_hash": "b278e07a3fc2d52de5d02f1a72ee861e"
+  },
+  "src/components/Sparkline.jsx": {
+    "mtime": 1782911163.1306784,
+    "ast_hash": "8a0759da0f6702b0ea84bde7c2af2723",
+    "semantic_hash": "8a0759da0f6702b0ea84bde7c2af2723"
+  },
+  "src/components/StepDistribution.jsx": {
+    "mtime": 1782911163.1316798,
+    "ast_hash": "ab3f0ab64911b708e325b37ef12fcbe9",
+    "semantic_hash": "ab3f0ab64911b708e325b37ef12fcbe9"
+  },
+  "src/components/TrendChart.jsx": {
+    "mtime": 1782911163.1316798,
+    "ast_hash": "ee19ba453f74fdc9955a92800aa93c2a",
+    "semantic_hash": "ee19ba453f74fdc9955a92800aa93c2a"
+  },
+  "src/components/UpcomingList.jsx": {
+    "mtime": 1782911163.1316798,
+    "ast_hash": "39595ef6d5094448a3aa18b6d8622c6a",
+    "semantic_hash": "39595ef6d5094448a3aa18b6d8622c6a"
+  },
+  "src/components/UpcomingTable.jsx": {
+    "mtime": 1782993930.867533,
+    "ast_hash": "07cc32e5f215d4c2df53fb13b1f46711",
+    "semantic_hash": "07cc32e5f215d4c2df53fb13b1f46711"
+  },
+  "src/main.jsx": {
+    "mtime": 1782911163.1336772,
+    "ast_hash": "6233972d6569514b57d3b30b26661943",
+    "semantic_hash": "6233972d6569514b57d3b30b26661943"
+  },
+  "src/server/clinicorp.js": {
+    "mtime": 1783456292.2335427,
+    "ast_hash": "555d49996d4e58d2788f3d08e44f79f5",
+    "semantic_hash": "555d49996d4e58d2788f3d08e44f79f5"
+  },
+  "src/server/clinicorpSync.js": {
+    "mtime": 1783684999.5611856,
+    "ast_hash": "9c269b4d88f4d13e821fddee8481034d",
+    "semantic_hash": "9c269b4d88f4d13e821fddee8481034d"
+  },
+  "src/utils/dates.js": {
+    "mtime": 1782993888.6916366,
+    "ast_hash": "c4de21122d9180ad86a35b1d3af4686b",
+    "semantic_hash": "c4de21122d9180ad86a35b1d3af4686b"
+  },
+  "src/utils/extract.js": {
+    "mtime": 1782995097.1347432,
+    "ast_hash": "77ea0242734829fcd0e7c44acd9b3708",
+    "semantic_hash": "77ea0242734829fcd0e7c44acd9b3708"
+  },
+  "src/utils/groupByTime.js": {
+    "mtime": 1782932360.1285424,
+    "ast_hash": "0f970934f80ed8a170ad7bfdbf800359",
+    "semantic_hash": "0f970934f80ed8a170ad7bfdbf800359"
+  },
+  "src/utils/parseCards.js": {
+    "mtime": 1783335181.1648388,
+    "ast_hash": "3afe286ba3d2d30ecbbfcdd3e6d438fd",
+    "semantic_hash": "3afe286ba3d2d30ecbbfcdd3e6d438fd"
+  },
+  "supabase/sync_log.sql": {
+    "mtime": 1783685196.8714201,
+    "ast_hash": "68e75087ea0a073d1c58e682bdaf1b10",
+    "semantic_hash": "68e75087ea0a073d1c58e682bdaf1b10"
+  },
+  "tailwind.config.js": {
+    "mtime": 1782911163.1356776,
+    "ast_hash": "bd9e6ed9b5c1368c07135aed4a42db4b",
+    "semantic_hash": "bd9e6ed9b5c1368c07135aed4a42db4b"
+  },
+  "vercel.json": {
+    "mtime": 1783456252.0311534,
+    "ast_hash": "b61d0749d7560c2706e5d3b1b86cf8ca",
+    "semantic_hash": "b61d0749d7560c2706e5d3b1b86cf8ca"
+  },
+  "vite.config.js": {
+    "mtime": 1782911163.13668,
+    "ast_hash": "d746ae772f7085723a68c04f1a99e997",
+    "semantic_hash": "d746ae772f7085723a68c04f1a99e997"
+  },
+  ".github/workflows/sync-clinicorp.yml": {
+    "mtime": 1783621004.5453906,
+    "ast_hash": "79ac08e05273d9a8af8468da876ebdc8",
+    "semantic_hash": "79ac08e05273d9a8af8468da876ebdc8"
+  },
+  "README.md": {
+    "mtime": 1782911163.107552,
+    "ast_hash": "c38a0a86b4343e198b73c83b46e01aa0",
+    "semantic_hash": "c38a0a86b4343e198b73c83b46e01aa0"
+  },
+  "index.html": {
+    "mtime": 1782911163.107552,
+    "ast_hash": "8c2ed4a105b06fa702ddadb63385617e",
+    "semantic_hash": "8c2ed4a105b06fa702ddadb63385617e"
+  }
+}

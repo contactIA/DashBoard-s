@@ -61,6 +61,15 @@ export function inPeriod(c, from, to) {
   return Boolean(d && d >= from && d <= to)
 }
 
+/** O lead foi AGENDADO no período? (barra "Agendaram" do funil)
+ *  Usa a data "Agendado em" (c.scheduledAt — dia em que a CRC/IA/sync marcou o
+ *  agendamento), distinta da data da consulta (c.date, "Agendado Para").
+ *  Fallback: data efetiva, para cards sem esse campo (legado/sem extração). */
+export function scheduledInPeriod(c, from, to) {
+  const d = c?.scheduledAt ?? effectiveDate(c)
+  return Boolean(d && d >= from && d <= to)
+}
+
 /** O card foi CRIADO no período [from, to]? (usado no topo do funil: "entraram")
  *  Card criado retroativamente pelo sync (fato antigo importado hoje) usa a
  *  data do evento quando ela é anterior à criação — o menor dos dois vale. */
@@ -255,7 +264,12 @@ export function funnelOf(cards, funnelCfg, opts = {}) {
   // os demais estágios contam pela data efetiva (última movimentação no CRM).
   const entrou      = opts.entrou ?? cards.length
   const naoAgendou  = sumTypes(stages.naoAgendou)
-  const agendou     = sumTypes(stages.agendou)
+  // "Agendaram" conta pela data "Agendado em" (opts.agendouCards, ver computeFunnel)
+  // quando disponível — cai para a data efetiva quando não vier de fora (ex:
+  // breakdownByDimension, que ainda soma por movimentação no período).
+  const agendou     = opts.agendouCards
+    ? opts.agendouCards.filter(c => (stages.agendou ?? []).includes(c.stepType)).length
+    : sumTypes(stages.agendou)
   const compareceu  = sumTypes(stages.compareceu)
   const fechou      = sumTypes(stages.fechou)
   const decididos   = compareceu - negotiating   // compareceram E decidiram (em aberto fora)
@@ -284,6 +298,8 @@ export function funnelOf(cards, funnelCfg, opts = {}) {
 /**
  * Funil do período [from, to]:
  *   - "Entraram" (topo) = cards CRIADOS no período — quando o lead chegou.
+ *   - "Agendaram" = cards cuja data "Agendado em" caiu no período — quando a
+ *     CRC/IA/sync marcou o agendamento (distinto da data da consulta em si).
  *   - Demais estágios = data efetiva (última movimentação), como os KPIs.
  * São coortes diferentes de propósito: "entraram X leads; no período, Y
  * agendaram / Z compareceram / W fecharam" — inclusive leads antigos que
@@ -291,9 +307,10 @@ export function funnelOf(cards, funnelCfg, opts = {}) {
  */
 export function computeFunnel(cards, from, to, funnelCfg) {
   if (!cards?.length) return null
-  const inRange = cards.filter(c => inPeriod(c, from, to))
-  const entrou  = cards.filter(c => createdInPeriod(c, from, to)).length
-  return funnelOf(inRange, funnelCfg, { entrou })
+  const inRange      = cards.filter(c => inPeriod(c, from, to))
+  const entrou       = cards.filter(c => createdInPeriod(c, from, to)).length
+  const agendouCards = cards.filter(c => scheduledInPeriod(c, from, to))
+  return funnelOf(inRange, funnelCfg, { entrou, agendouCards })
 }
 
 /**
