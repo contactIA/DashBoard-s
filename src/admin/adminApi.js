@@ -52,5 +52,7 @@ export const getClinicorpDirectory = () => call('/api/admin/clinicorp-directory'
 
 // Usuários (CRCs) cadastrados nas contas Clinicorp já configuradas no wizard —
 // para o autocomplete do mapa CRC (etiqueta Helena → nome no Clinicorp).
-export const getClinicorpUsers = (units) =>
-  call('/api/admin/clinicorp-users', { method: 'POST', body: { units } })
+// accountId (edição): permite o servidor restaurar o token real quando o
+// wizard só tem a versão mascarada das unidades já salvas.
+export const getClinicorpUsers = (units, accountId) =>
+  call('/api/admin/clinicorp-users', { method: 'POST', body: { units, accountId } })

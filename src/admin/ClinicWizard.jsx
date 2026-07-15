@@ -20,7 +20,7 @@ const FUNNEL_STAGE_DEFS = [
 const EXTRACT_FIELDS = [
   { key: 'date',  label: 'Agendado Para (data/hora da consulta)', kind: 'date', hint: 'A data que filtra o dashboard e alimenta "agendamentos futuros". Sem ela o card some das métricas por período.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)' },
   { key: 'time',  label: 'Horário',             kind: 'text', hint: 'Opcional — usado na lista de agendamentos. Ignorado quando "Agendado Para" já é um campo único data+hora.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)' },
-  { key: 'scheduledAt', label: 'Agendado em (dia que a CRC agendou)', kind: 'date', hint: 'Opcional — alimenta a barra "Agendaram" do funil. Diferente da data da consulta.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)' },
+  { key: 'scheduledAt', label: 'Agendado em (dia que a CRC agendou)', kind: 'date', hint: 'Opcional — alimenta a barra "Agendaram" do funil. Diferente da data da consulta.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)', noSuggest: true },
   { key: 'name',  label: 'Nome do paciente',    kind: 'text', hint: 'Exibido nas tabelas.', helenaSource: 'contactName', helenaLabel: 'Contato vinculado ao card' },
   { key: 'phone', label: 'Telefone',            kind: 'phone', hint: 'Opcional.', helenaSource: 'contactPhone', helenaLabel: 'Contato vinculado ao card' },
 ]
@@ -42,8 +42,10 @@ const hasAnyRule = (ex) => ex && Object.values(ex).some(rules => rules?.some(r =
 // sem risco de a leitura (_extract) e a escrita (_dates) apontarem pra keys
 // diferentes por engano.
 function customFieldKeyOf(rules) {
-  const first = rules?.[0]
-  return first?.from?.startsWith('customFields.') ? first.from.slice(13) || null : null
+  for (const r of rules ?? []) {
+    if (r?.from?.startsWith('customFields.')) return r.from.slice(13) || null
+  }
+  return null
 }
 function deriveDatesConfig(extract) {
   const scheduledForKey = customFieldKeyOf(extract.date)
@@ -53,6 +55,16 @@ function deriveDatesConfig(extract) {
     ...(scheduledForKey ? { scheduledFor: { key: scheduledForKey } } : {}),
     ...(createdAtKey    ? { createdAt:    { key: createdAtKey } }    : {}),
   }
+}
+
+// Quando "Agendado Para" é um customField único data+hora, o campo Horário
+// fica oculto na UI (ver filtro em EXTRACT_FIELDS) — gera a regra de extração
+// da hora automaticamente a partir da MESMA key, via regex sobre a mesma
+// string (ex: "2026-07-08T12:00:00.0000000" → "12:00").
+function withAutoTime(extract) {
+  const dateKey = customFieldKeyOf(extract.date)
+  if (!dateKey) return extract
+  return { ...extract, time: [{ from: `customFields.${dateKey}`, regex: '(\\d{1,2}:\\d{2})' }] }
 }
 
 let _dimSeq = 0
@@ -202,10 +214,12 @@ function ExtractField({ field, rules = [], sampleCards, customFields, onChange }
 
   // Sugestão: se o campo real da Helena bate em mais amostras do que a regra
   // atual (comparando na amostra toda, não só no preview de 6), oferece trocar.
+  // noSuggest: dueDate é a data da CONSULTA, não a de agendamento — sugerir
+  // aqui (ex: no campo "Agendado em") induziria a semântica errada do funil.
   const usingHelena = rules.some(r => r.from === field.helenaSource)
   const totalHits   = countExtractHits(rules, sampleCards, field.kind)
   const helenaHits  = countExtractHits([{ from: field.helenaSource }], sampleCards, field.kind)
-  const suggestHelena = !usingHelena && sampleCards.length > 0 && helenaHits > totalHits
+  const suggestHelena = !field.noSuggest && !usingHelena && sampleCards.length > 0 && helenaHits > totalHits
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-4">
@@ -497,6 +511,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
 
   // ── Salvar ───────────────────────────────────────────────────────────────
   const save = () => run(async () => {
+    const finalExtract = withAutoTime(extract)
     const payload = {
       accountId: selectedPanel.companyId,
       name:      name.trim(),
@@ -504,10 +519,10 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       token:     token.trim(),
       panelId:   selectedPanel.id,
       ticket:    Number(ticket) || null,
-      steps:     buildStepsConfig(mappedSteps, extract, stateToDims(dimensions, tagName), {
+      steps:     buildStepsConfig(mappedSteps, finalExtract, stateToDims(dimensions, tagName), {
         stages: funnelStages,
         mergeCancelledRescheduled: mergeCancelReagend,
-      }, clinicorpConfig(), deriveDatesConfig(extract)),
+      }, clinicorpConfig(), deriveDatesConfig(finalExtract)),
     }
     if (isEdit) await updateClinic(payload)
     else        await createClinic(payload)
@@ -934,13 +949,18 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
             </div>
           )}
           <div className="grid grid-cols-1 gap-3">
-            {EXTRACT_FIELDS.map(f => (
-              <ExtractField
-                key={f.key} field={f} rules={extract[f.key]} sampleCards={sampleCards}
-                customFields={panelCustomFields}
-                onChange={rules => setExtract(ex => ({ ...ex, [f.key]: rules }))}
-              />
-            ))}
+            {EXTRACT_FIELDS
+              // "Agendado Para" é campo único data+hora (customField) → o campo
+              // Horário é redundante (a hora já vem embutida na mesma string) e
+              // seria sobrescrito automaticamente ao salvar, ver deriveDatesConfig.
+              .filter(f => f.key !== 'time' || !customFieldKeyOf(extract.date))
+              .map(f => (
+                <ExtractField
+                  key={f.key} field={f} rules={extract[f.key]} sampleCards={sampleCards}
+                  customFields={panelCustomFields}
+                  onChange={rules => setExtract(ex => ({ ...ex, [f.key]: rules }))}
+                />
+              ))}
           </div>
           <div className="flex justify-between pt-2">
             <button onClick={() => setStep(3)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
@@ -1059,6 +1079,15 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       {/* ── Etapa 7: integração Clinicorp (OPCIONAL, N unidades) ─────────── */}
       {step === 6 && (() => {
         const multiUnit = ccUnits.length > 1
+        // Etiquetas candidatas ao mapa CRC: exclui as usadas para IDENTIFICAR
+        // unidade (BUENO/ELDORADO) — essas nunca são "quem agendou". Se existir
+        // uma dimensão de agendador (label contém "agendador"/"crc"), restringe
+        // a essas tags; senão, mostra todas as não-unidade.
+        const unitTagIds = new Set(ccUnits.map(u => u.tagId).filter(Boolean))
+        const agendadorDim = dimensions.find(d => /agendador|crc/i.test(d.label))
+        const crcTags = agendadorDim
+          ? panelTags.filter(t => agendadorDim.tags.some(dt => dt.tid === t.id))
+          : panelTags.filter(t => !unitTagIds.has(t.id))
         return (
         <div className="space-y-4">
           <StepHeader title="Integração Clinicorp (opcional)">
@@ -1130,7 +1159,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                   <p className="text-xs text-amber-600">Informe o Token API para ativar esta unidade — ou remova-a para seguir sem Clinicorp.</p>
                 )}
 
-                {panelTags.length > 0 && u.user.trim() && (u.token.trim() || u.existingToken) && (() => {
+                {crcTags.length > 0 && u.user.trim() && (u.token.trim() || u.existingToken) && (() => {
                   const unitKey = u.label || u.user
                   const unitUsers = ccUsers.filter(cu => cu.unit === unitKey)
                   const datalistId = `cc-users-list-${u.id}`
@@ -1142,7 +1171,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                           onClick={() => run(async () => {
                             setCcUsersLoading(true); setCcUsersError(null)
                             try {
-                              const { users, errors } = await getClinicorpUsers(clinicorpConfig().units)
+                              const { users, errors } = await getClinicorpUsers(clinicorpConfig().units, clinic?.accountId)
                               setCcUsers(users)
                               if (errors?.length) setCcUsersError(errors.join(' · '))
                             } finally { setCcUsersLoading(false) }
@@ -1161,7 +1190,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                         {unitUsers.map(cu => <option key={cu.fullName} value={cu.fullName} />)}
                       </datalist>
                       <div className="space-y-1.5">
-                        {panelTags.map(t => (
+                        {crcTags.map(t => (
                           <div key={t.id} className="flex items-center gap-2">
                             <div className="w-28 shrink-0"><TagChip tag={t} /></div>
                             <span className="text-slate-300 text-xs shrink-0">→</span>
@@ -1197,7 +1226,10 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       })()}
 
       {/* ── Etapa 8: revisão ─────────────────────────────────────────────── */}
-      {step === 7 && (
+      {step === 7 && (() => {
+        const finalExtractReview = withAutoTime(extract)
+        const datesCfg = deriveDatesConfig(finalExtractReview)
+        return (
         <div className="space-y-4">
           <StepHeader title="Revisão">Confira a configuração antes de {isEdit ? 'salvar as alterações' : 'cadastrar a clínica'}.</StepHeader>
           <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100">
@@ -1207,6 +1239,12 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
               ['Painel',      `${selectedPanel.title} (${selectedPanel.key})`],
               ['Account ID',  <code key="a" className="font-mono text-xs text-slate-500">{selectedPanel.companyId}</code>],
               ['Token',       token.trim() ? 'Novo token informado' : (isEdit ? `Mantém o atual (${clinic.tokenMasked})` : '—')],
+              ['Agendado Para', datesCfg?.scheduledFor?.key
+                ? <code key="sf" className="font-mono text-xs text-emerald-600">customFields.{datesCfg.scheduledFor.key}</code>
+                : <span key="sf" className="text-slate-400">— não configurado (legado)</span>],
+              ['Agendado em', datesCfg?.createdAt?.key
+                ? <code key="ca" className="font-mono text-xs text-emerald-600">customFields.{datesCfg.createdAt.key}</code>
+                : <span key="ca" className="text-slate-400">— não configurado (opcional)</span>],
               ['Clinicorp',   clinicorpConfig()
                 ? <span key="cc" className="text-emerald-600 font-medium">
                     Vinculado · {clinicorpConfig().units.map(u => u.label ? `${u.label} (${u.user})` : u.user).join(' · ')}
@@ -1266,6 +1304,26 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                 </div>
               </div>
             )}
+            {clinicorpConfig() && (
+              <div className="px-4 py-3">
+                <div className="text-sm text-slate-500 mb-2">Mapa de CRC</div>
+                <div className="space-y-2">
+                  {clinicorpConfig().units.map(u => {
+                    const pairs = u.crcMap ?? []
+                    return (
+                      <div key={u.user} className="flex items-baseline gap-2">
+                        <span className="text-xs font-semibold text-slate-700 shrink-0">{u.label || u.user}:</span>
+                        <span className="text-xs text-slate-500">
+                          {pairs.length
+                            ? pairs.map(p => `${p.tagName} → ${p.clinicorpName}`).join(', ')
+                            : 'nenhuma etiqueta vinculada — cards desta unidade ficam sem CRC'}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
           <div className="flex justify-between pt-2">
             <button onClick={() => setStep(6)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
@@ -1275,7 +1333,8 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
             </button>
           </div>
         </div>
-      )}
+        )
+      })()}
     </div>
   )
 }
