@@ -74,7 +74,11 @@ export function normalizeDate(raw, format) {
     }
     return `${year}-${mm}-${dd}`
   }
-  const m = String(raw).match(/(\d{4})-(\d{2})-(\d{2})/)
+  // Separador '-' ou '/': a Helena reformata alguns customFields tipo data
+  // com barras na gravação (confirmado: "agendado-em-" volta como "2026/07/13"
+  // mesmo escrito em ISO com hífen — "agendado-para" preserva o hífen. Sem
+  // aceitar os dois, a extração falha silenciosamente nesses campos).
+  const m = String(raw).match(/(\d{4})[-/](\d{2})[-/](\d{2})/)
   return m ? `${m[1]}-${m[2]}-${m[3]}` : null
 }
 
