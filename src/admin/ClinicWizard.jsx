@@ -188,7 +188,7 @@ const miniSelect = 'px-2 py-1.5 text-xs border border-slate-200 rounded-md bg-wh
 const miniInput  = 'px-2 py-1.5 text-xs border border-slate-200 rounded-md bg-white font-mono focus:outline-none focus:border-slate-400'
 
 // ── Editor de regras de extração para um campo, com preview ao vivo ──────────
-function ExtractField({ field, rules, sampleCards, customFields, onChange }) {
+function ExtractField({ field, rules = [], sampleCards, customFields, onChange }) {
   const setRule = (i, patch) => onChange(rules.map((r, j) => j === i ? { ...r, ...patch } : r))
   const addRule = () => onChange([...rules, { from: 'description', regex: '', ...(field.kind === 'date' ? { format: 'YMD' } : {}) }])
   const delRule = (i) => onChange(rules.filter((_, j) => j !== i))
@@ -452,9 +452,10 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
     }
 
     // extração: config salva (edição) tem prioridade; senão tenta auto-detectar
+    const savedExtract = clinic?.steps?._extract
     setExtract(
-      hasAnyRule(clinic?.steps?._extract)
-        ? clinic.steps._extract
+      hasAnyRule(savedExtract)
+        ? { ...emptyExtract(), ...savedExtract }
         : autoDetectExtract(panel.sampleCards ?? [])
     )
 
