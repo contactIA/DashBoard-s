@@ -1,0 +1,51 @@
+Painel "Gestão de leads e Acompanhamento": 27 cards totais
+
+
+=== Unidade: Bueno (etiqueta: BUENO) ===
+  1372 agendamentos · 132 orçamentos (janela 2026-05-08..2026-08-06)
+  → moveria 2 · criaria 36 · ignorados (fato antes de 2026-07-01, sem card) 379
+
+=== Unidade: Eldorado (etiqueta: ELDORADO) ===
+  1283 agendamentos · 118 orçamentos (janela 2026-05-08..2026-08-06)
+  → moveria 3 · criaria 32 · ignorados (fato antes de 2026-07-01, sem card) 357
+
+=== RESUMO GERAL (dry-run · nada foi escrito) ===
+Total Clinicorp: 2655 agendamentos · 250 orçamentos (nas 2 unidades)
+MOVERIA 5 card(s):
+  · [Bueno] "Nome:Lucivalda bezerra de Araújo - Telefone: 62981048279" AGENDOU → NÃO COMPARECEU   [faltou 2026-07-03]
+  · [Bueno] "Nome:Fulvia Damasceno do Nascimento Aguiar. - Telefone: 47989103778" AGENDOU → NÃO COMPARECEU   [faltou 2026-07-07]
+  · [Eldorado] "Nome:João Gonçalves Borges Neto - Telefone 64992145520" NÃO COMPARECEU → COMPARECEU E NÃO FECHOU    [atendido 2026-06-20]
+  · [Eldorado] "Nome:Amujacy Rios - Telefone 62996261364" COMPARECEU E FECHOU → COMPARECEU E FECHOU · grava R$ 10500   [orçamento APROVADO 2026-07-01 · R$ 10500]
+  · [Eldorado] "Nome:Vanusa Rodrigues de Araújo - Telefone 62982000358" AGENDOU → NÃO COMPARECEU   [faltou 2026-07-04]
+
+CRIARIA 68 card(s) novo(s) (de julho em diante, sem card existente):
+  · [Bueno] GILSON DE LIMA AGUIAR → FALTOU   [faltou 2026-07-01]
+  · [Bueno] SANDRA GUEDES DA SILVA → FALTOU   [faltou 2026-07-01]
+  · [Bueno] JOYCE LEITE ALMEIDA → FALTOU   [faltou 2026-07-01]
+  · [Bueno] ROSIVANIA DA SILVA COSTA → FALTOU   [faltou 2026-07-01]
+  · [Bueno] MARIA DO SOCORRO MACHADO DA SILVA (11866) → FECHOU · R$ 1400   [orçamento APROVADO 2026-07-06 · R$ 1400]
+  · [Bueno] ANEDI MESSIAS ALVES → FALTOU   [faltou 2026-07-01]
+  · [Bueno] MARICIA GABRIELA MORAIS PRETO (11883) → FECHOU · R$ 2392.5   [orçamento APROVADO 2026-07-06 · R$ 2392.5]
+  · [Bueno] FRANCINEIA VITORIA DA SILVA (VITORIA) → FALTOU   [faltou 2026-07-02]
+  · [Bueno] SIMONE CRISTINA PEREIRA → FALTOU   [faltou 2026-07-02]
+  · [Bueno] JHONATAN SILVEIRA SOUZA (11879) → FECHOU · R$ 5805   [orçamento APROVADO 2026-07-06 · R$ 5805]
+  · [Bueno] DECIA BARROS MENDES (11875) → FECHOU · R$ 1095   [orçamento APROVADO 2026-07-02 · R$ 1095]
+  · [Bueno] SAMIA SORAIA CLEMENTE SILVA → FALTOU   [faltou 2026-07-03]
+  · [Bueno] VLADIMIR FARIA TAVORA → FALTOU   [faltou 2026-07-03]
+  · [Bueno] RICARDO AUGOSTO GONÇALVES → FALTOU   [faltou 2026-07-03]
+  · [Bueno] GEAN ALVES BRAZ → FALTOU   [faltou 2026-07-03]
+  · [Bueno] FERNANDA RIBEIRO DA SILVA → FALTOU   [faltou 2026-07-06]
+  · [Bueno] MARIA MIRANDA → FALTOU   [faltou 2026-07-07]
+  · [Bueno] VALMIRO BATISTA DO NASCIMENTO → NÃO FECHOU   [atendido 2026-07-07]
+  · [Bueno] EDVANIA GOMES DA SILVA → NÃO FECHOU   [atendido 2026-07-07]
+  · [Bueno] HILDA DE BOMFIM DIAS DA SILVA → FALTOU   [faltou 2026-07-07]
+  · [Bueno] MARIA ALVEZ PEREIRA → FALTOU   [faltou 2026-07-07]
+  · [Bueno] FRANCIMAR ALVEZ DE SOUZA → FALTOU   [faltou 2026-07-07]
+  · [Bueno] LUZENIRA MARTINS DIAS → FALTOU   [faltou 2026-07-07]
+  · [Bueno] MARIA DA PENHA DE OLIVERA → AGENDADO   [consulta futura 2026-07-07]
+  · [Bueno] CATARINA MARIA DOS SANTOS → FALTOU   [faltou 2026-07-07]
+  · [Bueno] SIRLEIDE VIEIRA LIMA → FALTOU   [faltou 2026-07-07]
+  · [Bueno] BEATRIZ MACHADO VARGAS → FALTOU   [faltou 2026-07-07]
+  · [Bueno] CLEYTON QUIRINO → FALTOU   [faltou 2026-07-07]
+  · [Bueno] CRISTIANE DE SOUZA SILVA → AGENDADO   [consulta futura 2026-07-08]
+  · [Bueno] IRENI SOUSA SANTANA → AGENDADO   [consulta futura 2026-07-08]
