@@ -1,0 +1,3064 @@
+{
+  "capturedAt": "2026-05-15T14:05:22.647Z",
+  "url": "https://sistema.clinicorp.com/",
+  "requests": [
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/",
+      "headers": {
+        "upgrade-insecure-requests": "1",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\""
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.599Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/css/react-bootstrap-table-all.min.css",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.799Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/css/base.css",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/e3b41f11267f1d697b1e.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/90e37f15e032fd6ee1ef.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/44224a0421b2fca5fc2b.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/04b04a9f7b7074077231.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/3f58195ffbf304a0f762.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/2281aa351ba3ae82367d.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/f4dc93eacfedf3315cc3.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/ef5ca08fb909c8c12753.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/bab83244ab6ee0ccb970.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/c53be63578ed8f0d1f82.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/b931542b64578ad62fce.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/4ddff33a36fe16b84681.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/6768d2723cf3e7fa0ff2.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/d1c2f2edd8ecaefc5ce4.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/71c94cdfd9ef30e1f843.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/ef8c935f18de850b9ec8.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/81122c7a11016f030146.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/575fcc17bde28a851e78.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/5c65c1b3f1e6d3265f08.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/build/cc9a6614c28da3db6471.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:46.800Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "blob:https://sistema.clinicorp.com/11f68469-c2c0-4941-9428-12c6c75edc17",
+      "headers": {
+        "accept": "*/*"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:47.993Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "blob:https://sistema.clinicorp.com/f3acdd44-1127-423b-ba06-79afcd344c2e",
+      "headers": {
+        "accept": "*/*"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:47.995Z"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "https://o1396554.ingest.us.sentry.io/api/6731218/envelope/?sentry_version=7&sentry_key=e5ce03f695ac4e78bb3f51b9acae29f1&sentry_client=sentry.javascript.react%2F10.33.0",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "content-type": "text/plain;charset=UTF-8",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": "{\"sent_at\":\"2026-05-15T14:04:47.984Z\",\"sdk\":{\"name\":\"sentry.javascript.react\",\"version\":\"10.33.0\"}}\n{\"type\":\"session\"}\n{\"sid\":\"c9a99b0952d94d14985dcd9859f87cf8\",\"init\":true,\"started\":\"2026-05-15T14:04:47.984Z\",\"timestamp\":\"2026-05-15T14:04:47.984Z\",\"status\":\"ok\",\"errors\":0,\"attrs\":{\"release\":\"0-34-59\",\"environment\":\"production\",\"ip_address\":\"{{auto}}\",\"user_agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\"}}",
+      "timestamp": "2026-05-15T14:04:47.996Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/webworker.js",
+      "headers": {
+        "accept": "*/*"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:48.115Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "blob:https://sistema.clinicorp.com/0ccde46a-be0a-4ccb-9cd6-eb68897976ef",
+      "headers": {
+        "accept": "*/*"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:48.236Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "blob:https://sistema.clinicorp.com/7c8fc3db-623a-413d-87ba-73e30f4e05f2",
+      "headers": {
+        "accept": "*/*"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:48.241Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/img/googleplay.png",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:48.526Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/img/appstore-min.png",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:48.526Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/remoteEntry.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:48.573Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/index.cjs-DfOq2DoA.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:49.432Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/virtualExposes-DYIaFHvo.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:49.432Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/preload-helper-2Ox4gv22.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:49.432Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/security__mf_v__runtimeInit__mf_v__-rf81HpNp.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:49.432Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/remoteEntry.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:49.505Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/cdam/current/mf-manifest.json",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:49.505Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/remoteEntry.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:49.505Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/financial/latest/remoteEntry.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:49.505Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/assets/index.cjs-C04-YBkW.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:50.203Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/assets/virtualExposes-DxEUN5yE.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:50.203Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/assets/preload-helper-DPPz9lSX.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:50.203Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/assets/calendar__mf_v__runtimeInit__mf_v__-OPzduXHq.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:50.203Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/financial/latest/assets/financial__mf_v__runtimeInit__mf_v__-CrXuwHq8.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/financial/latest/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:50.243Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/financial/latest/assets/virtualExposes-COaKLVaO.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/financial/latest/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:50.243Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/financial/latest/assets/preload-helper-DTh6CGsi.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/financial/latest/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:50.243Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/index.cjs-DfOq2DoA.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:50.245Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/virtualExposes-Bo-Ucgro.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:50.245Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/preload-helper-CvtlCQmc.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:50.245Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/shell__mf_v__runtimeInit__mf_v__-DUEe33W5.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:50.245Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/undefined/remoteEntry.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:50.271Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/remoteEntry.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:50.323Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/undefined/remoteEntry.js/",
+      "headers": {
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "referer": "https://storage.googleapis.com/"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:50.422Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/assets/index.cjs-ptORkTuk.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:51.015Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/assets/virtualExposes-Bh1g3Q72.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:51.015Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/assets/preload-helper-D2H58qCl.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:51.015Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/assets/cdam__mf_v__runtimeInit__mf_v__-CoTZ_LIg.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/remoteEntry.js",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:51.015Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/SolutionAuthRemote-C82VErsu.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:51.051Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/globals-DQ2pvx15.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:51.051Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/security__loadShare__react__loadShare__-BDisFIbH.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:51.051Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/_commonjsHelpers-B85MJLTf.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:51.051Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/globals-uKoVfWoQ.css",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:51.051Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/SolutionSecurityRoutes-BsEpWFuY.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:51.051Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/dialog-UrnuOg2E.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:51.051Z"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "https://o1396554.ingest.us.sentry.io/api/6731218/envelope/?sentry_version=7&sentry_key=e5ce03f695ac4e78bb3f51b9acae29f1&sentry_client=sentry.javascript.react%2F10.33.0",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "content-type": "text/plain;charset=UTF-8",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": "{\"sent_at\":\"2026-05-15T14:04:51.171Z\",\"sdk\":{\"name\":\"sentry.javascript.react\",\"version\":\"10.33.0\"}}\n{\"type\":\"session\"}\n{\"sid\":\"c9a99b0952d94d14985dcd9859f87cf8\",\"init\":false,\"started\":\"2026-05-15T14:04:47.984Z\",\"timestamp\":\"2026-05-15T14:04:51.171Z\",\"status\":\"exited\",\"errors\":0,\"attrs\":{\"release\":\"0-34-59\",\"environment\":\"production\",\"ip_address\":\"{{auto}}\",\"user_agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\"}}",
+      "timestamp": "2026-05-15T14:04:51.175Z"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "https://o1396554.ingest.us.sentry.io/api/6731218/envelope/?sentry_version=7&sentry_key=e5ce03f695ac4e78bb3f51b9acae29f1&sentry_client=sentry.javascript.react%2F10.33.0",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "content-type": "text/plain;charset=UTF-8",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": "{\"sent_at\":\"2026-05-15T14:04:51.171Z\",\"sdk\":{\"name\":\"sentry.javascript.react\",\"version\":\"10.33.0\"}}\n{\"type\":\"session\"}\n{\"sid\":\"8b5030d428fb495b89c97347681b72db\",\"init\":true,\"started\":\"2026-05-15T14:04:51.171Z\",\"timestamp\":\"2026-05-15T14:04:51.171Z\",\"status\":\"ok\",\"errors\":0,\"attrs\":{\"release\":\"0-34-59\",\"environment\":\"production\",\"ip_address\":\"{{auto}}\",\"user_agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\"}}",
+      "timestamp": "2026-05-15T14:04:51.175Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://api.clinicorp.com/api/banner/get_active",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0",
+        "baggage": "sentry-environment=production,sentry-release=0-34-59,sentry-public_key=e5ce03f695ac4e78bb3f51b9acae29f1,sentry-trace_id=b949d340f31f433593dc294991f88676,sentry-org_id=1396554,sentry-sampled=false,sentry-sample_rand=0.4916336522653775,sentry-sample_rate=0.1",
+        "sentry-trace": "b949d340f31f433593dc294991f88676-83127e83b8a06647-0",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "application/json, text/plain, */*"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:51.203Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://api.clinicorp.com/security/health",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0",
+        "baggage": "sentry-environment=production,sentry-release=0-34-59,sentry-public_key=e5ce03f695ac4e78bb3f51b9acae29f1,sentry-trace_id=b949d340f31f433593dc294991f88676,sentry-org_id=1396554,sentry-sampled=false,sentry-sample_rand=0.4916336522653775,sentry-sample_rate=0.1",
+        "sentry-trace": "b949d340f31f433593dc294991f88676-8af1fac492842844-0",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "application/json, text/plain, */*"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:51.204Z"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "https://api.clinicorp.com/security/user/login",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0",
+        "baggage": "sentry-environment=production,sentry-release=0-34-59,sentry-public_key=e5ce03f695ac4e78bb3f51b9acae29f1,sentry-trace_id=b949d340f31f433593dc294991f88676,sentry-org_id=1396554,sentry-sampled=false,sentry-sample_rand=0.4916336522653775,sentry-sample_rate=0.1",
+        "sentry-trace": "b949d340f31f433593dc294991f88676-8e4bd94ccae75cb8-0",
+        "x-new-login": "true",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "application/json, text/plain, */*",
+        "content-type": "application/json"
+      },
+      "postData": "{\"authMethod\":\"USER_PASSWORD\",\"clientId\":\"66bcd521-1819-41c3-aa03-dae95a3d0a94\",\"loginType\":\"DEFAULT\",\"password\":\"Joaohenrique123$\",\"tzoffset\":180,\"username\":\"joaoescalar@ibsodonto1s\"}",
+      "timestamp": "2026-05-15T14:04:55.690Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://api.clinicorp.com/api?_onlyLogAccess=true&_AccessPath=*.Access.Login",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "authorization": "***REMOVIDO***",
+        "referer": "https://sistema.clinicorp.com/",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0",
+        "baggage": "sentry-environment=production,sentry-release=0-34-59,sentry-public_key=e5ce03f695ac4e78bb3f51b9acae29f1,sentry-trace_id=b949d340f31f433593dc294991f88676,sentry-org_id=1396554,sentry-sampled=false,sentry-sample_rand=0.4916336522653775,sentry-sample_rate=0.1",
+        "sentry-trace": "b949d340f31f433593dc294991f88676-ae9a2f7656726ea3-0",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "application/json, text/plain, */*"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:58.528Z"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "https://api.clinicorp.com/security/user/get_user_permissions_access",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "authorization": "***REMOVIDO***",
+        "referer": "https://sistema.clinicorp.com/",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0",
+        "baggage": "sentry-environment=production,sentry-release=0-34-59,sentry-public_key=e5ce03f695ac4e78bb3f51b9acae29f1,sentry-trace_id=b949d340f31f433593dc294991f88676,sentry-org_id=1396554,sentry-sampled=false,sentry-sample_rand=0.4916336522653775,sentry-sample_rate=0.1",
+        "sentry-trace": "b949d340f31f433593dc294991f88676-b5150ae180f8025a-0",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "application/json, text/plain, */*",
+        "content-type": "application/json"
+      },
+      "postData": "{\"user_id\":6314384777871360}",
+      "timestamp": "2026-05-15T14:04:58.528Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://api.clinicorp.com/solution/api/core/global_subscriber_namespace/get_by_subscriber_bussiness_public_data_by_uuid/?subscriberUuid=ibsodonto1s",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "authorization": "***REMOVIDO***",
+        "referer": "https://sistema.clinicorp.com/",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0",
+        "baggage": "sentry-environment=production,sentry-release=0-34-59,sentry-public_key=e5ce03f695ac4e78bb3f51b9acae29f1,sentry-trace_id=b949d340f31f433593dc294991f88676,sentry-org_id=1396554,sentry-sampled=false,sentry-sample_rand=0.4916336522653775,sentry-sample_rate=0.1",
+        "sentry-trace": "b949d340f31f433593dc294991f88676-9d9a19c1ab6b67cf-0",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "*/*"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.377Z"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "https://o1396554.ingest.us.sentry.io/api/6731218/envelope/?sentry_version=7&sentry_key=e5ce03f695ac4e78bb3f51b9acae29f1&sentry_client=sentry.javascript.react%2F10.33.0",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "content-type": "text/plain;charset=UTF-8",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": "{\"sent_at\":\"2026-05-15T14:04:59.378Z\",\"sdk\":{\"name\":\"sentry.javascript.react\",\"version\":\"10.33.0\"}}\n{\"type\":\"session\"}\n{\"sid\":\"8b5030d428fb495b89c97347681b72db\",\"init\":false,\"started\":\"2026-05-15T14:04:51.171Z\",\"timestamp\":\"2026-05-15T14:04:59.378Z\",\"status\":\"exited\",\"errors\":0,\"did\":\"6314384777871360\",\"attrs\":{\"release\":\"0-34-59\",\"environment\":\"production\",\"ip_address\":\"{{auto}}\",\"user_agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\"}}",
+      "timestamp": "2026-05-15T14:04:59.383Z"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "https://o1396554.ingest.us.sentry.io/api/6731218/envelope/?sentry_version=7&sentry_key=e5ce03f695ac4e78bb3f51b9acae29f1&sentry_client=sentry.javascript.react%2F10.33.0",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "content-type": "text/plain;charset=UTF-8",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": "{\"sent_at\":\"2026-05-15T14:04:59.378Z\",\"sdk\":{\"name\":\"sentry.javascript.react\",\"version\":\"10.33.0\"}}\n{\"type\":\"session\"}\n{\"sid\":\"80f51e948f2c426387cf1256db628e33\",\"init\":true,\"started\":\"2026-05-15T14:04:59.378Z\",\"timestamp\":\"2026-05-15T14:04:59.378Z\",\"status\":\"ok\",\"errors\":0,\"attrs\":{\"release\":\"0-34-59\",\"environment\":\"production\",\"ip_address\":\"{{auto}}\",\"user_agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\"}}",
+      "timestamp": "2026-05-15T14:04:59.383Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://api.clinicorp.com/security/user/get_responsible_user",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "authorization": "***REMOVIDO***",
+        "referer": "https://sistema.clinicorp.com/",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0",
+        "baggage": "sentry-environment=production,sentry-release=0-34-59,sentry-public_key=e5ce03f695ac4e78bb3f51b9acae29f1,sentry-trace_id=0cd00513b4d5472da78120bcbf9a01fb,sentry-org_id=1396554,sentry-sampled=false,sentry-sample_rand=0.23848980843306566,sentry-sample_rate=0.1",
+        "sentry-trace": "0cd00513b4d5472da78120bcbf9a01fb-8950660c2cd1ea34-0",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "x-client-version": "0.34.59"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.385Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/img/magic_eye_off.svg",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.407Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/HomeRemote-Czb2pbWX.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.413Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/AppRoutes-BCOuvacS.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.413Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/shell__loadShare__react__loadShare__-Cs4nNd8g.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.413Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/_commonjsHelpers-B85MJLTf.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.413Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/AppRoutes-BmNMjkP4.css",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.413Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://servicedesk.clinicorp.tech/clinichat",
+      "headers": {
+        "referer": "https://sistema.clinicorp.com/",
+        "upgrade-insecure-requests": "1",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\""
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.483Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://api.clinicorp.com/solution/api/notification/get_user_subscriber_notification",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "authorization": "***REMOVIDO***",
+        "referer": "https://sistema.clinicorp.com/",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0",
+        "baggage": "sentry-environment=production,sentry-release=0-34-59,sentry-public_key=e5ce03f695ac4e78bb3f51b9acae29f1,sentry-trace_id=0cd00513b4d5472da78120bcbf9a01fb,sentry-org_id=1396554,sentry-sampled=false,sentry-sample_rand=0.23848980843306566,sentry-sample_rate=0.1",
+        "sentry-trace": "0cd00513b4d5472da78120bcbf9a01fb-80e3ee9c238751b1-0",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "x-client-version": "0.34.59"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.537Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://api.clinicorp.com/solution/api/digital_certificate/get_certificates_expired",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "authorization": "***REMOVIDO***",
+        "referer": "https://sistema.clinicorp.com/",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0",
+        "baggage": "sentry-environment=production,sentry-release=0-34-59,sentry-public_key=e5ce03f695ac4e78bb3f51b9acae29f1,sentry-trace_id=0cd00513b4d5472da78120bcbf9a01fb,sentry-org_id=1396554,sentry-sampled=false,sentry-sample_rand=0.23848980843306566,sentry-sample_rate=0.1",
+        "sentry-trace": "0cd00513b4d5472da78120bcbf9a01fb-af29b42818f3053f-0",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "x-client-version": "0.34.59"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.538Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://api.clinicorp.com/solution/api/core/subscriber_notification/get_minimized_notifications",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "authorization": "***REMOVIDO***",
+        "referer": "https://sistema.clinicorp.com/",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0",
+        "baggage": "sentry-environment=production,sentry-release=0-34-59,sentry-public_key=e5ce03f695ac4e78bb3f51b9acae29f1,sentry-trace_id=0cd00513b4d5472da78120bcbf9a01fb,sentry-org_id=1396554,sentry-sampled=false,sentry-sample_rand=0.23848980843306566,sentry-sample_rate=0.1",
+        "sentry-trace": "0cd00513b4d5472da78120bcbf9a01fb-a4274dbea3353e46-0",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "x-client-version": "0.34.59"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.538Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://api.clinicorp.com/solution/api/admin/check_show_nps",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "authorization": "***REMOVIDO***",
+        "referer": "https://sistema.clinicorp.com/",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0",
+        "baggage": "sentry-environment=production,sentry-release=0-34-59,sentry-public_key=e5ce03f695ac4e78bb3f51b9acae29f1,sentry-trace_id=0cd00513b4d5472da78120bcbf9a01fb,sentry-org_id=1396554,sentry-sampled=false,sentry-sample_rand=0.23848980843306566,sentry-sample_rate=0.1",
+        "sentry-trace": "0cd00513b4d5472da78120bcbf9a01fb-bde43bc9b76315d8-0",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "x-client-version": "0.34.59"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.538Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://sistema.clinicorp.com/img/bgn.jpg",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.538Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/agenda-X5xffIcl.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.579Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/pacientes-DuzcOwFR.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.579Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/crc--p8vPpr3.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.579Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/financeiro-D0HnSlML.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.579Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/profissionais-NIqWQZkj.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.579Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/relatorios-BdXukE1o.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.579Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/clinipay-ChD28D2a.js",
+      "headers": {
+        "origin": "https://sistema.clinicorp.com",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.579Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://api.clinicorp.com/solution/api/financial/invoice/list_invoices_issuer?isConfig=X",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "authorization": "***REMOVIDO***",
+        "referer": "https://sistema.clinicorp.com/",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0",
+        "baggage": "sentry-environment=production,sentry-release=0-34-59,sentry-public_key=e5ce03f695ac4e78bb3f51b9acae29f1,sentry-trace_id=0cd00513b4d5472da78120bcbf9a01fb,sentry-org_id=1396554,sentry-sampled=false,sentry-sample_rand=0.23848980843306566,sentry-sample_rate=0.1",
+        "sentry-trace": "0cd00513b4d5472da78120bcbf9a01fb-aa9ba165f5fd4e12-0",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "x-client-version": "0.34.59"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.591Z"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "https://www.google.com/ccm/collect?rcb=18&frm=0&ae=g&en=page_view&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&scrsrc=www.googletagmanager.com&rnd=925593728.1778853900&dt=IBS%20IMPLANTES&auid=909943532.1778853900&navt=n&npa=0&ep.ads_data_redaction=0&gtm=45He65d0v9205487176za200zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938469&apve=1&apvf=f&apvc=1&tft=1778853899724&tfd=13131",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.727Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://api.clinicorp.com/solution/api/admin_clinicorp/global_subscriber_notification/list_popups?isAdmin=true",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "authorization": "***REMOVIDO***",
+        "referer": "https://sistema.clinicorp.com/",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0",
+        "baggage": "sentry-environment=production,sentry-release=0-34-59,sentry-public_key=e5ce03f695ac4e78bb3f51b9acae29f1,sentry-trace_id=0cd00513b4d5472da78120bcbf9a01fb,sentry-org_id=1396554,sentry-sampled=false,sentry-sample_rand=0.23848980843306566,sentry-sample_rate=0.1",
+        "sentry-trace": "0cd00513b4d5472da78120bcbf9a01fb-81c541641e441590-0",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "x-client-version": "0.34.59"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.734Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://connect.facebook.net/signals/config/687292311843804?v=2.9.319&r=stable&domain=sistema.clinicorp.com&hme=7441a59ee5070e08bd0157a62d39bd95bf3afdcc83dafbad800e78b5416300a9&ex_m=104%2C207%2C155%2C22%2C72%2C73%2C146%2C68%2C67%2C11%2C164%2C90%2C16%2C138%2C48%2C147%2C77%2C112%2C47%2C127%2C39%2C75%2C78%2C134%2C160%2C166%2C8%2C4%2C5%2C7%2C6%2C3%2C91%2C101%2C167%2C172%2C221%2C62%2C188%2C189%2C55%2C278%2C30%2C74%2C233%2C232%2C231%2C23%2C33%2C103%2C61%2C10%2C63%2C97%2C98%2C99%2C105%2C130%2C31%2C29%2C132%2C133%2C129%2C128%2C156%2C76%2C159%2C157%2C158%2C50%2C60%2C123%2C15%2C163%2C45%2C265%2C266%2C264%2C26%2C27%2C28%2C18%2C20%2C44%2C40%2C42%2C41%2C83%2C92%2C96%2C110%2C145%2C148%2C46%2C111%2C24%2C21%2C119%2C69%2C36%2C150%2C149%2C151%2C142%2C140%2C25%2C35%2C59%2C109%2C162%2C70%2C17%2C153%2C114%2C81%2C66%2C19%2C85%2C86%2C116%2C84%2C136%2C135%2C139%2C161%2C34%2C280%2C296%2C214%2C203%2C204%2C202%2C299%2C290%2C52%2C215%2C107%2C131%2C80%2C121%2C54%2C49%2C113%2C120%2C126%2C58%2C64%2C152%2C115%2C37%2C32%2C53%2C56%2C100%2C165%2C1%2C124%2C14%2C122%2C12%2C2%2C57%2C93%2C65%2C118%2C89%2C88%2C168%2C169%2C94%2C95%2C9%2C125%2C102%2C51%2C143%2C87%2C79%2C71%2C117%2C106%2C43%2C144%2C0%2C82%2C137%2C141%2C154%2C38%2C108%2C13%2C170",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.862Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://servicedesk.clinicorp.tech/css/react-bootstrap-table-all.min.css",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://servicedesk.clinicorp.tech/clinichat",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.900Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://servicedesk.clinicorp.tech/css/base.css",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://servicedesk.clinicorp.tech/clinichat",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.900Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://servicedesk.clinicorp.tech/build/b644d7652c56d735dbb5.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://servicedesk.clinicorp.tech/clinichat",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.900Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://servicedesk.clinicorp.tech/build/afa938f347d156bf67da.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://servicedesk.clinicorp.tech/clinichat",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.900Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://www.facebook.com/tr/?id=687292311843804&ev=PageView&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&rl=&if=false&ts=1778853899907&sw=1280&sh=720&v=2.9.319&r=stable&ec=0&o=4126&fbp=fb.1.1778853899902.837703307517268404&cs_est=true&ler=empty&cdl=API_unavailable&pmd[title]=IBS%20IMPLANTES&pmd[description]=Fa%C3%A7a%20login%20no%20seu%20sistema%20Clinicorp%20e%20aproveite%20diversas%20ferramentas%20desenvolvidas%20para%20te%20fazer%20lucrar%20mais.%20O%20sucesso%20da%20sua%20cl%C3%ADnica%20come%C3%A7a%20aqui!&plt=1937.7999999523163&tz=-180&it=1778853899860&coo=false&exp=s0&expv2[0]=pl1&expv2[1]=el3&expv2[2]=bc1&expv2[3]=ra2&expv2[4]=rp2&expv2[5]=im1&expv2[6]=hf1&expv2[7]=pt0&rqm=GET",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.912Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://www.facebook.com/privacy_sandbox/pixel/register/trigger/?id=687292311843804&ev=PageView&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&rl=&if=false&ts=1778853899907&sw=1280&sh=720&v=2.9.319&r=stable&ec=0&o=4126&fbp=fb.1.1778853899902.837703307517268404&cs_est=true&ler=empty&cdl=API_unavailable&pmd[title]=IBS%20IMPLANTES&pmd[description]=Fa%C3%A7a%20login%20no%20seu%20sistema%20Clinicorp%20e%20aproveite%20diversas%20ferramentas%20desenvolvidas%20para%20te%20fazer%20lucrar%20mais.%20O%20sucesso%20da%20sua%20cl%C3%ADnica%20come%C3%A7a%20aqui!&plt=1937.7999999523163&tz=-180&it=1778853899860&coo=false&exp=s0&expv2[0]=pl1&expv2[1]=el3&expv2[2]=bc1&expv2[3]=ra2&expv2[4]=rp2&expv2[5]=im1&expv2[6]=hf1&expv2[7]=pt0&rqm=FGET",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.912Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://www.facebook.com/tr/?id=687292311843804&ev=ClienteSistema&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&rl=&if=false&ts=1778853899910&sw=1280&sh=720&v=2.9.319&r=stable&ec=1&o=4126&fbp=fb.1.1778853899902.837703307517268404&ler=empty&cdl=API_unavailable&pmd[description]=Fa%C3%A7a%20login%20no%20seu%20sistema%20Clinicorp%20e%20aproveite%20diversas%20ferramentas%20desenvolvidas%20para%20te%20fazer%20lucrar%20mais.%20O%20sucesso%20da%20sua%20cl%C3%ADnica%20come%C3%A7a%20aqui!&plt=1937.7999999523163&tz=-180&it=1778853899860&coo=false&exp=s0&expv2[0]=pl1&expv2[1]=el2&expv2[2]=bc1&expv2[3]=ra2&expv2[4]=rp2&expv2[5]=im1&expv2[6]=hf1&rqm=GET",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.912Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://www.facebook.com/privacy_sandbox/pixel/register/trigger/?id=687292311843804&ev=ClienteSistema&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&rl=&if=false&ts=1778853899910&sw=1280&sh=720&v=2.9.319&r=stable&ec=1&o=4126&fbp=fb.1.1778853899902.837703307517268404&ler=empty&cdl=API_unavailable&pmd[description]=Fa%C3%A7a%20login%20no%20seu%20sistema%20Clinicorp%20e%20aproveite%20diversas%20ferramentas%20desenvolvidas%20para%20te%20fazer%20lucrar%20mais.%20O%20sucesso%20da%20sua%20cl%C3%ADnica%20come%C3%A7a%20aqui!&plt=1937.7999999523163&tz=-180&it=1778853899860&coo=false&exp=s0&expv2[0]=pl1&expv2[1]=el2&expv2[2]=bc1&expv2[3]=ra2&expv2[4]=rp2&expv2[5]=im1&expv2[6]=hf1&rqm=FGET",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.912Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/712344369/?random=1778853899966&cv=11&fst=1778853899966&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&data=event%3Dgtag.config&rfmt=3&fmt=4",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.990Z"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "https://www.google.com/rmkt/collect/712344369/?random=1778853899966&cv=11&fst=1778853899966&fmt=8&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&data=event%3Dgtag.config&gcp=5",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.990Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/712344369/?random=1778853899983&cv=11&fst=1778853899983&bg=ffffff&guid=ON&async=1&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&_tu=CA&rfmt=3&fmt=4",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.990Z"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "https://www.google.com/rmkt/collect/712344369/?random=1778853899983&cv=11&fst=1778853899983&fmt=8&bg=ffffff&guid=ON&async=1&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&_tu=CA&gcp=5",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.990Z"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "https://www.google.com/ccm/collect?rcb=1&frm=0&en=page_view&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&scrsrc=www.googletagmanager.com&rnd=925593728.1778853900&dt=IBS%20IMPLANTES&auid=909943532.1778853900&navt=n&npa=0&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&apve=1&apvf=f&apvc=0&tids=AW-712344369&tid=AW-712344369&tft=1778853899987&tfd=13394",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.990Z"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "https://www.google.com/ccm/collect?rcb=1&frm=0&ae=g&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&scrsrc=www.googletagmanager.com&rnd=925593728.1778853900&dt=IBS%20IMPLANTES&auid=909943532.1778853900&navt=n&npa=0&_tu=CA&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&apve=1&apvf=f&apvc=0&tids=AW-712344369&tid=AW-712344369&tft=1778853899988&tfd=13395",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.990Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://api.clinicorp.com/solution/api/core/subscriber_notification/get_minimized_notifications",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "authorization": "***REMOVIDO***",
+        "referer": "https://sistema.clinicorp.com/",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0",
+        "baggage": "sentry-environment=production,sentry-release=0-34-59,sentry-public_key=e5ce03f695ac4e78bb3f51b9acae29f1,sentry-trace_id=0cd00513b4d5472da78120bcbf9a01fb,sentry-org_id=1396554,sentry-sampled=false,sentry-sample_rand=0.23848980843306566,sentry-sample_rate=0.1",
+        "sentry-trace": "0cd00513b4d5472da78120bcbf9a01fb-afc390b6ba02497f-0",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "x-client-version": "0.34.59"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:04:59.995Z"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "https://analytics.google.com/g/collect?v=2&tid=G-HTWHE2YSPL&gtm=45je65d0v887949663z89205487176za20gzb9205487176zd9205487176&_p=1778853899371&_gaz=1&gcd=13l3l3l3l1l1&npa=0&dma=0&ecid=1309032467&_eu=EAAAAGAC&are=1&cid=1473271991.1778853900&frm=0&ir=1&pscdl=noapi&rcb=2&sr=1280x720&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=pt-br&gaf=2&_s=1&tag_exp=0~115616985~115938465~115938469~118689381&sid=1778853900&sct=1&seg=0&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&dt=IBS%20IMPLANTES&en=page_view&_fv=1&_nsi=1&_ss=1&tfd=13463",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:00.073Z"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "https://www.google.com/measurement/conversion?random=1778853900039&cv=11&tid=G-HTWHE2YSPL&fst=1778853900039&fmt=8&en=ClienteSistema&gtm=45je65d0v887949663z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115616985~115938465~115938469~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&gacid=1473271991.1778853900&frm=0&tiba=IBS%20IMPLANTES&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&rcb=2",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:00.073Z"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "https://analytics.google.com/g/collect?v=2&tid=G-HTWHE2YSPL&gtm=45je65d0v887949663z89205487176za20gzb9205487176zd9205487176&_p=1778853899371&gcd=13l3l3l3l1l1&npa=0&dma=0&ecid=1309032467&_eu=EAAAAGQC&_prs=ok&are=1&cid=1473271991.1778853900&frm=0&ir=1&pscdl=noapi&rcb=2&sr=1280x720&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=pt-br&gaf=2&_s=2&tag_exp=0~115616985~115938465~115938469~118689381&sid=1778853900&sct=1&seg=0&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&dt=IBS%20IMPLANTES&en=ClienteSistema&_c=1&_et=3&tfd=13478",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:00.073Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://www.google.com/pagead/1p-user-list/712344369/?random=1778853899983&cv=11&fst=1778853600000&bg=ffffff&guid=ON&async=1&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&_tu=CA&rfmt=3&fmt=3&is_vtc=1&cid=CAQS1AEABaugfchzXapUw7iLR8XHTq8tdvS1apE6ooXkYrc9RSKKMOzAs1lE-14la4nnVJjNSgEcH0xRrbowcPuChvCvQFwmKucqyVlqHP49XSt0L3zTROXqCdjwnI0D0hIK1wE10Qoun2qYyxv8g3NjiHBJj031Yb0LmOp7tqC8zhSv3OEMDCWhMB0gKHrPQLOxVoSOoJlTDXM1fexva431vQ1rE5R5c_yeI77RINoJP_zbHYMqNqIoHz3Gn_0DCMgW9LQcEMIClFmVtA62nRKtjPkzm1jQSg&random=3595462182&rmt_tld=0&ipr=y",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:00.135Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://www.google.com.br/pagead/1p-user-list/712344369/?random=1778853899983&cv=11&fst=1778853600000&bg=ffffff&guid=ON&async=1&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&_tu=CA&rfmt=3&fmt=3&is_vtc=1&cid=CAQS1AEABaugfchzXapUw7iLR8XHTq8tdvS1apE6ooXkYrc9RSKKMOzAs1lE-14la4nnVJjNSgEcH0xRrbowcPuChvCvQFwmKucqyVlqHP49XSt0L3zTROXqCdjwnI0D0hIK1wE10Qoun2qYyxv8g3NjiHBJj031Yb0LmOp7tqC8zhSv3OEMDCWhMB0gKHrPQLOxVoSOoJlTDXM1fexva431vQ1rE5R5c_yeI77RINoJP_zbHYMqNqIoHz3Gn_0DCMgW9LQcEMIClFmVtA62nRKtjPkzm1jQSg&random=3595462182&rmt_tld=1&ipr=y",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:00.135Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://www.google.com/pagead/1p-user-list/712344369/?random=1778853899966&cv=11&fst=1778853600000&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&data=event%3Dgtag.config&rfmt=3&fmt=3&is_vtc=1&cid=CAQSsQEABaugfdlNTaJfyQrOA24hBBfD2z4sJdLvwT2fyL-4qAUwOCjuC6AtDtRB84d130sTbwKGRWQF0Qdd62lnBuf5N5KvwSPFxpzrsdCoPTMxWBDrnWy8XHWe3TDCxOGxTYKNrUlUzV7cJcnILQMhPxsSQ2mrnI3h6JFYG1Qai-tf82HjhQjk4yqhDjHtK8BFOUafz-NKsGcIfVjkPwgNtD6wRYkDzdPJSG4H87na0e4az6o&random=1397801820&rmt_tld=0&ipr=y",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:00.155Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://www.google.com.br/pagead/1p-user-list/712344369/?random=1778853899966&cv=11&fst=1778853600000&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&data=event%3Dgtag.config&rfmt=3&fmt=3&is_vtc=1&cid=CAQSsQEABaugfdlNTaJfyQrOA24hBBfD2z4sJdLvwT2fyL-4qAUwOCjuC6AtDtRB84d130sTbwKGRWQF0Qdd62lnBuf5N5KvwSPFxpzrsdCoPTMxWBDrnWy8XHWe3TDCxOGxTYKNrUlUzV7cJcnILQMhPxsSQ2mrnI3h6JFYG1Qai-tf82HjhQjk4yqhDjHtK8BFOUafz-NKsGcIfVjkPwgNtD6wRYkDzdPJSG4H87na0e4az6o&random=1397801820&rmt_tld=1&ipr=y",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:00.155Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://api.clinicorp.com/solution/api/fintech/bank_account/get_pending_bank_accounts",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "authorization": "***REMOVIDO***",
+        "referer": "https://sistema.clinicorp.com/",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0",
+        "baggage": "sentry-environment=production,sentry-release=0-34-59,sentry-public_key=e5ce03f695ac4e78bb3f51b9acae29f1,sentry-trace_id=0cd00513b4d5472da78120bcbf9a01fb,sentry-org_id=1396554,sentry-sampled=false,sentry-sample_rand=0.23848980843306566,sentry-sample_rate=0.1",
+        "sentry-trace": "0cd00513b4d5472da78120bcbf9a01fb-baba1882e9167d67-0",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "x-client-version": "0.34.59"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:00.401Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://servicedesk.clinicorp.tech/webworker.js",
+      "headers": {
+        "accept": "*/*"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:01.195Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://servicedesk.clinicorp.tech/build/e63a669536749734b5de.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://servicedesk.clinicorp.tech/clinichat",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:01.297Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://servicedesk.clinicorp.tech/build/4da4ba9081cb0b3e5d26.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://servicedesk.clinicorp.tech/clinichat",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:01.297Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://servicedesk.clinicorp.tech/build/7224cf0fce5a93d9d737.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://servicedesk.clinicorp.tech/clinichat",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:01.297Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://servicedesk.clinicorp.tech/build/36ace4368611d0142986.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://servicedesk.clinicorp.tech/clinichat",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:01.297Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://servicedesk.clinicorp.tech/build/d4b8e47a6d0bc469a3c3.js",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://servicedesk.clinicorp.tech/clinichat",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:01.297Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://api.clinicorp.com/servicedesk/api/messaging/list_users?Type=CHAT",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "authorization": "***REMOVIDO***",
+        "referer": "https://servicedesk.clinicorp.tech/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:02.027Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://api.clinicorp.com/servicedesk/api/support/service_desk/list_subscriber_user_sessions",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "authorization": "***REMOVIDO***",
+        "referer": "https://servicedesk.clinicorp.tech/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:02.027Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://api.clinicorp.com/servicedesk/api/cliniDesk/message/get_unread_messages",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "authorization": "***REMOVIDO***",
+        "referer": "https://servicedesk.clinicorp.tech/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:02.469Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/clinicorp_ibsodonto1s/6239088620404736_1758202962873_WhatsApp%20Image%202025-09-18%20at%2010.30.57.jpeg",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://servicedesk.clinicorp.tech/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:02.845Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/clinicorp_ibsodonto1s/5487024782442496_1705670415192_file.enc",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://servicedesk.clinicorp.tech/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:02.845Z"
+    },
+    {
+      "type": "request",
+      "method": "GET",
+      "url": "https://storage.googleapis.com/clinicorp_ibsodonto1s/5774883378823168_1723570627902_EU.jpeg",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://servicedesk.clinicorp.tech/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:02.845Z"
+    },
+    {
+      "type": "request",
+      "method": "POST",
+      "url": "https://analytics.google.com/g/collect?v=2&tid=G-HTWHE2YSPL&gtm=45je65d0v887949663za20gzb9205487176zd9205487176&_p=1778853899371&gcd=13l3l3l3l1l1&npa=0&dma=0&ecid=1309032467&_eu=EEAAAGQC&ae=a&are=1&cid=1473271991.1778853900&frm=0&ir=1&pscdl=noapi&rcb=2&sr=1280x720&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=pt-br&gaf=2&_s=3&tag_exp=0~115616985~115938465~115938469~118689381&sid=1778853900&sct=1&seg=0&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&dt=IBS%20IMPLANTES&_tu=CA&en=scroll&epn.percent_scrolled=90&_et=12&tfd=18502",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://sistema.clinicorp.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "postData": null,
+      "timestamp": "2026-05-15T14:05:05.101Z"
+    }
+  ],
+  "responses": [
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:46.789Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/css/react-bootstrap-table-all.min.css",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:46.816Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/css/base.css",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:46.818Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/04b04a9f7b7074077231.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.022Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/c53be63578ed8f0d1f82.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.041Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/b931542b64578ad62fce.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.046Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/5c65c1b3f1e6d3265f08.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.064Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/ef5ca08fb909c8c12753.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.074Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/71c94cdfd9ef30e1f843.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.081Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/ef8c935f18de850b9ec8.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.085Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/2281aa351ba3ae82367d.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.089Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/e3b41f11267f1d697b1e.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.089Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/f4dc93eacfedf3315cc3.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.097Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/44224a0421b2fca5fc2b.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.102Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/3f58195ffbf304a0f762.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.103Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/bab83244ab6ee0ccb970.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.119Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/81122c7a11016f030146.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.193Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/d1c2f2edd8ecaefc5ce4.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.194Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/6768d2723cf3e7fa0ff2.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.250Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/4ddff33a36fe16b84681.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.277Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/575fcc17bde28a851e78.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.287Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/90e37f15e032fd6ee1ef.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.287Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/build/cc9a6614c28da3db6471.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:47.480Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "blob:https://sistema.clinicorp.com/11f68469-c2c0-4941-9428-12c6c75edc17",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:48.535Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "blob:https://sistema.clinicorp.com/f3acdd44-1127-423b-ba06-79afcd344c2e",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:48.545Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/webworker.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:48.546Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "blob:https://sistema.clinicorp.com/0ccde46a-be0a-4ccb-9cd6-eb68897976ef",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:48.546Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "blob:https://sistema.clinicorp.com/7c8fc3db-623a-413d-87ba-73e30f4e05f2",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:48.546Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/img/googleplay.png",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:48.554Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/img/appstore-min.png",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:48.554Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://o1396554.ingest.us.sentry.io/api/6731218/envelope/?sentry_version=7&sentry_key=e5ce03f695ac4e78bb3f51b9acae29f1&sentry_client=sentry.javascript.react%2F10.33.0",
+      "body": "{}",
+      "timestamp": "2026-05-15T14:04:48.600Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/remoteEntry.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:49.432Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/preload-helper-2Ox4gv22.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:49.466Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/virtualExposes-DYIaFHvo.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:49.466Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/security__mf_v__runtimeInit__mf_v__-rf81HpNp.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:49.493Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/index.cjs-DfOq2DoA.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:49.495Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/remoteEntry.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:50.202Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/assets/virtualExposes-DxEUN5yE.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:50.239Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/assets/calendar__mf_v__runtimeInit__mf_v__-OPzduXHq.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:50.240Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/financial/latest/remoteEntry.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:50.242Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/assets/preload-helper-DPPz9lSX.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:50.242Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/remoteEntry.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:50.244Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/assets/index.cjs-C04-YBkW.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:50.260Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/financial/latest/assets/virtualExposes-COaKLVaO.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:50.276Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/financial/latest/assets/preload-helper-DTh6CGsi.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:50.276Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/virtualExposes-Bo-Ucgro.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:50.277Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/preload-helper-CvtlCQmc.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:50.282Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/shell__mf_v__runtimeInit__mf_v__-DUEe33W5.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:50.282Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/financial/latest/assets/financial__mf_v__runtimeInit__mf_v__-CrXuwHq8.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:50.285Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/index.cjs-DfOq2DoA.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:50.294Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/cdam/current/mf-manifest.json",
+      "body": "{\"id\":\"cdam\",\"name\":\"cdam\",\"metaData\":{\"name\":\"cdam\",\"type\":\"app\",\"buildInfo\":{\"buildVersion\":\"1.0.0\",\"buildName\":\"cdam\"},\"remoteEntry\":{\"name\":\"remoteEntry.js\",\"path\":\"\",\"type\":\"module\"},\"ssrRemoteEntry\":{\"name\":\"remoteEntry.js\",\"path\":\"\",\"type\":\"module\"},\"types\":{\"path\":\"\",\"name\":\"\"},\"globalName\":\"cdam\",\"pluginVersion\":\"0.2.5\",\"publicPath\":\"https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/\"},\"shared\":[{\"id\":\"cdam:react\",\"name\":\"react\",\"version\":\"18.3.1\",\"requiredVersion\":\"18.x\",\"assets\":{\"js\":{\"async\":[],\"sync\":[\"assets/index-4wMOc304.js\"]},\"css\":{\"async\":[],\"sync\":[]}}},{\"id\":\"cdam:react-router-dom\",\"name\":\"react-router-dom\",\"version\":\"5.3.4\",\"requiredVersion\":\"5.x\",\"assets\":{\"js\":{\"async\":[],\"sync\":[\"assets/react-router-dom-C9SLs_vW.js\"]},\"css\":{\"async\":[],\"sync\":[]}}},{\"id\":\"cdam:react-dom\",\"name\":\"react-dom\",\"version\":\"18.3.1\",\"requiredVersion\":\"18.x\",\"assets\":{\"js\":{\"async\":[],\"sync\":[\"assets/index-crwXeR0q.js\"]},\"css\":{\"async\":[],\"sync\":[]}}}],\"remotes\":[{\"federationContainerName\":\"undefined/remoteEntry.js\",\"moduleName\":\"AdminLoginRemote\",\"alias\":\"security\",\"entry\":\"*\"}],\"exposes\":[{\"id\":\"cdam:CdamRemote\",\"name\":\"CdamRemote\",\"assets\":{\"js\":{\"async\":[],\"sync\":[\"assets/CdamRemote-BfS7zF3c.js\"]},\"css\":{\"async\":[],\"sync\":[]}},\"path\":\"./CdamRemote\"}]}",
+      "timestamp": "2026-05-15T14:04:50.334Z"
+    },
+    {
+      "type": "response",
+      "status": 301,
+      "url": "https://sistema.clinicorp.com/undefined/remoteEntry.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:50.422Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/undefined/remoteEntry.js/",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:50.575Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/remoteEntry.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:51.015Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/assets/cdam__mf_v__runtimeInit__mf_v__-CoTZ_LIg.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:51.042Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/assets/preload-helper-D2H58qCl.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:51.043Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/assets/virtualExposes-Bh1g3Q72.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:51.043Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/assets/index.cjs-ptORkTuk.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:51.043Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/SolutionAuthRemote-C82VErsu.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:51.074Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/globals-uKoVfWoQ.css",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:51.081Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/_commonjsHelpers-B85MJLTf.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:51.082Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/security__loadShare__react__loadShare__-BDisFIbH.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:51.091Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/SolutionSecurityRoutes-BsEpWFuY.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:51.110Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/dialog-UrnuOg2E.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:51.110Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/globals-DQ2pvx15.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:51.129Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://o1396554.ingest.us.sentry.io/api/6731218/envelope/?sentry_version=7&sentry_key=e5ce03f695ac4e78bb3f51b9acae29f1&sentry_client=sentry.javascript.react%2F10.33.0",
+      "body": "{}",
+      "timestamp": "2026-05-15T14:04:51.262Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://o1396554.ingest.us.sentry.io/api/6731218/envelope/?sentry_version=7&sentry_key=e5ce03f695ac4e78bb3f51b9acae29f1&sentry_client=sentry.javascript.react%2F10.33.0",
+      "body": "{}",
+      "timestamp": "2026-05-15T14:04:51.262Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/security/health",
+      "body": "{\"message\":\"Security Service is up and running\",\"status\":\"success\"}",
+      "timestamp": "2026-05-15T14:04:51.599Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/api/banner/get_active",
+      "body": "[{\"ReleaseDate\":20260514,\"ExpiresDate\":20260518,\"Link\":\"https://www.clinicorp.com/novas-taxas-clinipay#form?utm_source=banner-login-sistema&utm_medium=sistema-clinicorp&utm_campaign=abril2026-novas-taxas-clinipay\",\"Status\":\"APPROVED\",\"Sector\":\"CS\",\"CreatedByName\":\"Juliana\",\"Title\":\"Clinipay\",\"ImageUrl\":\"https://storage.googleapis.com/production-bucket-system-banners/CLINIPAY-0526-AreaDoAssinante-2.png\",\"Approved\":false,\"z_Inserted_Date\":\"2026-05-13T19:41:55.683Z\",\"z_LastChange_UserId\":5515408393371648,\"z_Inserted_UserId\":6507723263377408,\"z_LastChange_Date\":\"2026-05-13T23:52:34.891Z\",\"z_Inserted_Server_Tool\":\"cloud-run:solution-general:undefined\",\"z_LastChange_Server_Tool\":\"cloud-run:solution-general:undefined\",\"z_Inserted_FingerPrintId\":4437794291130240,\"z_LastChange_FingerPrintId\":2870972211208064,\"ApprovedByName\":\"Leticia Cordeiro\",\"ApprovedById\":5515408393371648,\"id\":5759998220042241}]",
+      "timestamp": "2026-05-15T14:04:51.623Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/security/user/login",
+      "body": "{\"success\":true,\"user\":{\"id\":6314384777871360,\"namespace\":\"ibsodonto1s.br.go.goiania\",\"CSPeriod\":\"Client\",\"SubscriberBigQueryTableName\":\"ibsodonto1s_br_go_goiania\",\"bucketname\":\"clinicorp_ibsodonto1s\",\"NamespaceId\":4843194691616768,\"SubscriptionType\":\"PREMIUM\",\"SubscriberUuid\":\"ibsodonto1s\",\"ClinicType\":\"ODONTOLOGY\",\"Demo\":false,\"UserName\":\"joaoescalar\",\"FullName\":\"Joao Henrique\",\"Email\":\"joao.henrique@escalarodonto.com.br\",\"IsInitial\":\"\",\"z_LastPasswordChange_Date\":\"2025-12-01T19:04:54.993Z\",\"Active\":\"X\",\"MobilePhone\":\"(62) 98453-7496\",\"z_Inserted_Date\":\"2025-12-01T18:27:53.175Z\",\"z_LastChange_UserId\":6264361314811904,\"z_Inserted_UserId\":5878301280698368,\"z_LastChange_Date\":\"2026-01-26T17:45:27.994Z\",\"z_Inserted_Server_Tool\":\"cloud-run:solution-security:undefined\",\"z_LastChange_Server_Tool\":\"cloud-run:solution-security:undefined\",\"z_Inserted_FingerPrintId\":4471548150369920,\"z_LastChange_FingerPrintId\":1425188489856384,\"tzoffset\":180,\"ClinicList\":[],\"Options\":{\"ViewedPeriodonticsCampaign\":\"X\",\"z_Inserted_Date\":\"2026-05-03T23:55:28.284Z\",\"z_LastChange_UserId\":6314384777871360,\"z_Inserted_UserId\":6314384777871360,\"z_LastChange_Date\":\"2026-05-15T13:13:51.305Z\",\"z_Inserted_Server_Tool\":\"cloud-run:solution-general:undefined\",\"z_LastChange_Server_Tool\":\"cloud-run:solution-general:undefined\",\"z_Inserted_FingerPrintId\":2805953763938176,\"z_LastChange_FingerPrintId\":953683940106112,\"askUsingTeller\":\"X\",\"_AccessPath\":\"*.Calendar.ChangeViewSettings\",\"AddInfo\":{\"AddInfo1\":\"Calendar\"},\"id\":6314384777871360},\"Group\":{\"namespace\":\"ibsodonto.br.go.goiania\",\"subscriberUuid\":\"ibsodonto\",\"subscriptionType\":\"MULTICLINIC\",\"id\":5770716029386752},\"Groups\":[{\"namespace\":\"ibsodonto.br.go.goiania\",\"subscriberUuid\":\"ibsodonto\",\"subscriptionType\":\"MULTICLINIC\",\"id\":5770716029386752}],\"PaymentForm\":\"BOLETO\",\"SubscriberUId\":\"ibsodonto1s\",\"BusinessName\":\"IBS Odontologia\",\"GsnId\":4843194691616768,\"SubscriptionStatus\":\"ACTIVE\",\"refreshToken\":\"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJucyI6Imlic29kb250",
+      "timestamp": "2026-05-15T14:04:58.531Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/api?_onlyLogAccess=true&_AccessPath=*.Access.Login",
+      "body": "{\"ok\":true}",
+      "timestamp": "2026-05-15T14:04:58.850Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/security/user/get_user_permissions_access",
+      "body": "{\"Demo\":false,\"RoleList\":[{\"Name\":\"DENTIST\",\"Description\":\"general.dentist\"},{\"Name\":\"ADMIN\",\"Description\":\"general.admin\"},{\"Name\":\"CONSULTANT\",\"Description\":\"general.relationship_manager\"},{\"Name\":\"RECEP\",\"Description\":\"general.recep\"},{\"Name\":\"DENTIST_ASSISTANT\",\"Description\":\"general.technical_assistant\"},{\"Name\":\"FINANCIAL\",\"Description\":\"general.financial\"}],\"Config\":{\"ExternalAccessConfig\":\"X\",\"Customize_TilesIconColor\":\"#ff6633\",\"ShowCDLAssociation\":\"X\",\"DefaultSmsConfirmConsult\":\"\",\"PaymentConfigCreditCard\":\"X\",\"Customize_ToolbarColor\":\"#2b2b2b\",\"SubscriptionType\":\"PREMIUM\",\"ShowConfigureExternalAccess\":\"X\",\"LastClinicId\":5245340127592448,\"DebtRegisterAssociation\":\"X\",\"UsePixCharge\":\"X\",\"ReferralControl\":\"X\",\"Module_NewIssuer\":\"X\",\"FocusGroupMagicEye\":\"X\",\"SmartBar\":\"X\",\"DisableOrchestrationCancelPayment\":\"\",\"HidePersonFinancialCheck\":\"\",\"Module_BankAccount\":\"X\",\"UseClinicalRecordNumber\":\"X\",\"DefaultWhatsConfirmConsult\":\"\",\"Module_IssuerEnabled\":\"X\",\"DisableBoletoConciliation\":\"X\",\"ShowBillingRule\":\"X\",\"z_LastChange_Server_Tool\":\"cloud-run:cdam:cdam-00052-rbm\",\"Active\":\"X\",\"Customize_SearchbarColor\":\"#424242\",\"z_Inserted_Server_Tool\":\"cloud-run:cdam:cdam-00011-7bs\",\"EnablePixQRCode\":\"X\",\"DefaultWhatsAlertConsult\":\"\",\"Module_Inventory\":\"X\",\"AlreadyUpdateDefaultAlerts\":\"X\",\"DisableChangeBookEntryAccount\":\"\",\"TestUpdateOutdatedPatientPlanInstallments\":\"X\",\"TellerApprovalNotRequired\":\"X\",\"z_LastChange_FingerPrintId\":3072762089250688,\"DefaultSmsAlertConsult\":\"\",\"ConfigNFSe\":\"X\",\"GSN_Multiclinic-ImportReminder\":20221231,\"UNIT_CANCELATION\":\"X\",\"NewCompensation\":\"X\",\"DefaultEmailConfirmConsult\":\"\",\"z_Inserted_FingerPrintId\":5915872049823744,\"DigiDiagTControl\":\"X\",\"DisableHideModalMigrationConfig\":\"1\",\"ActiveWhats\":\"X\",\"TellerDisable\":\"X\",\"OpenAccountMobileV3\":\"X\",\"Customize_Name\":\"IBS IMPLANTES\",\"PaymentConfigBoleto\":\"X\",\"ActiveAlertSMS\":\"X\",\"z_LastChange_GroupAccountNamespace\":\"ibsodonto.br.go.goiania\",\"FromDateSearchConfig\":20220101,\"z_Inserted_Date\":\"2024-06-24T",
+      "timestamp": "2026-05-15T14:04:59.388Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://sistema.clinicorp.com/img/magic_eye_off.svg",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.428Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/AppRoutes-BmNMjkP4.css",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.437Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/shell__loadShare__react__loadShare__-Cs4nNd8g.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.440Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/_commonjsHelpers-B85MJLTf.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.441Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/HomeRemote-Czb2pbWX.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.441Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/AppRoutes-BCOuvacS.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.452Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://o1396554.ingest.us.sentry.io/api/6731218/envelope/?sentry_version=7&sentry_key=e5ce03f695ac4e78bb3f51b9acae29f1&sentry_client=sentry.javascript.react%2F10.33.0",
+      "body": "{}",
+      "timestamp": "2026-05-15T14:04:59.538Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://o1396554.ingest.us.sentry.io/api/6731218/envelope/?sentry_version=7&sentry_key=e5ce03f695ac4e78bb3f51b9acae29f1&sentry_client=sentry.javascript.react%2F10.33.0",
+      "body": "{}",
+      "timestamp": "2026-05-15T14:04:59.550Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/agenda-X5xffIcl.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.592Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/profissionais-NIqWQZkj.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.593Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/pacientes-DuzcOwFR.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.594Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/financeiro-D0HnSlML.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.594Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/crc--p8vPpr3.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.594Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/relatorios-BdXukE1o.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.595Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/clinipay-ChD28D2a.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.595Z"
+    },
+    {
+      "type": "response",
+      "status": 404,
+      "url": "https://sistema.clinicorp.com/img/bgn.jpg",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.706Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/security/user/get_responsible_user",
+      "body": "{\"Active\":\"X\",\"UserId\":6219514671267840,\"z_Inserted_Date\":\"2025-02-18T16:19:01.026Z\",\"z_LastChange_UserId\":-1,\"z_Inserted_UserId\":-1,\"z_LastChange_Date\":\"2025-02-18T16:40:02.545Z\",\"z_Inserted_Server_Tool\":\"-\",\"z_LastChange_Server_Tool\":\"-\",\"id\":6611362115551232}",
+      "timestamp": "2026-05-15T14:04:59.734Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/solution/api/core/global_subscriber_namespace/get_by_subscriber_bussiness_public_data_by_uuid/?subscriberUuid=ibsodonto1s",
+      "body": "{\"hasPartnerClass\":false,\"BusinessName\":\"IBS Odontologia\",\"SubscriberBusinessUuid\":\"ibsodonto1s\"}",
+      "timestamp": "2026-05-15T14:04:59.825Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/solution/api/digital_certificate/get_certificates_expired",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.825Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://www.google.com/ccm/collect?rcb=18&frm=0&ae=g&en=page_view&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&scrsrc=www.googletagmanager.com&rnd=925593728.1778853900&dt=IBS%20IMPLANTES&auid=909943532.1778853900&navt=n&npa=0&ep.ads_data_redaction=0&gtm=45He65d0v9205487176za200zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938469&apve=1&apvf=f&apvc=1&tft=1778853899724&tfd=13131",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.876Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://connect.facebook.net/signals/config/687292311843804?v=2.9.319&r=stable&domain=sistema.clinicorp.com&hme=7441a59ee5070e08bd0157a62d39bd95bf3afdcc83dafbad800e78b5416300a9&ex_m=104%2C207%2C155%2C22%2C72%2C73%2C146%2C68%2C67%2C11%2C164%2C90%2C16%2C138%2C48%2C147%2C77%2C112%2C47%2C127%2C39%2C75%2C78%2C134%2C160%2C166%2C8%2C4%2C5%2C7%2C6%2C3%2C91%2C101%2C167%2C172%2C221%2C62%2C188%2C189%2C55%2C278%2C30%2C74%2C233%2C232%2C231%2C23%2C33%2C103%2C61%2C10%2C63%2C97%2C98%2C99%2C105%2C130%2C31%2C29%2C132%2C133%2C129%2C128%2C156%2C76%2C159%2C157%2C158%2C50%2C60%2C123%2C15%2C163%2C45%2C265%2C266%2C264%2C26%2C27%2C28%2C18%2C20%2C44%2C40%2C42%2C41%2C83%2C92%2C96%2C110%2C145%2C148%2C46%2C111%2C24%2C21%2C119%2C69%2C36%2C150%2C149%2C151%2C142%2C140%2C25%2C35%2C59%2C109%2C162%2C70%2C17%2C153%2C114%2C81%2C66%2C19%2C85%2C86%2C116%2C84%2C136%2C135%2C139%2C161%2C34%2C280%2C296%2C214%2C203%2C204%2C202%2C299%2C290%2C52%2C215%2C107%2C131%2C80%2C121%2C54%2C49%2C113%2C120%2C126%2C58%2C64%2C152%2C115%2C37%2C32%2C53%2C56%2C100%2C165%2C1%2C124%2C14%2C122%2C12%2C2%2C57%2C93%2C65%2C118%2C89%2C88%2C168%2C169%2C94%2C95%2C9%2C125%2C102%2C51%2C143%2C87%2C79%2C71%2C117%2C106%2C43%2C144%2C0%2C82%2C137%2C141%2C154%2C38%2C108%2C13%2C170",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.890Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://servicedesk.clinicorp.tech/clinichat",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.891Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://www.facebook.com/tr/?id=687292311843804&ev=PageView&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&rl=&if=false&ts=1778853899907&sw=1280&sh=720&v=2.9.319&r=stable&ec=0&o=4126&fbp=fb.1.1778853899902.837703307517268404&cs_est=true&ler=empty&cdl=API_unavailable&pmd[title]=IBS%20IMPLANTES&pmd[description]=Fa%C3%A7a%20login%20no%20seu%20sistema%20Clinicorp%20e%20aproveite%20diversas%20ferramentas%20desenvolvidas%20para%20te%20fazer%20lucrar%20mais.%20O%20sucesso%20da%20sua%20cl%C3%ADnica%20come%C3%A7a%20aqui!&plt=1937.7999999523163&tz=-180&it=1778853899860&coo=false&exp=s0&expv2[0]=pl1&expv2[1]=el3&expv2[2]=bc1&expv2[3]=ra2&expv2[4]=rp2&expv2[5]=im1&expv2[6]=hf1&expv2[7]=pt0&rqm=GET",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.931Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://www.facebook.com/tr/?id=687292311843804&ev=ClienteSistema&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&rl=&if=false&ts=1778853899910&sw=1280&sh=720&v=2.9.319&r=stable&ec=1&o=4126&fbp=fb.1.1778853899902.837703307517268404&ler=empty&cdl=API_unavailable&pmd[description]=Fa%C3%A7a%20login%20no%20seu%20sistema%20Clinicorp%20e%20aproveite%20diversas%20ferramentas%20desenvolvidas%20para%20te%20fazer%20lucrar%20mais.%20O%20sucesso%20da%20sua%20cl%C3%ADnica%20come%C3%A7a%20aqui!&plt=1937.7999999523163&tz=-180&it=1778853899860&coo=false&exp=s0&expv2[0]=pl1&expv2[1]=el2&expv2[2]=bc1&expv2[3]=ra2&expv2[4]=rp2&expv2[5]=im1&expv2[6]=hf1&rqm=GET",
+      "body": null,
+      "timestamp": "2026-05-15T14:04:59.932Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://servicedesk.clinicorp.tech/css/react-bootstrap-table-all.min.css",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:00.036Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://servicedesk.clinicorp.tech/css/base.css",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:00.052Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/solution/api/notification/get_user_subscriber_notification",
+      "body": "[]",
+      "timestamp": "2026-05-15T14:05:00.078Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/solution/api/financial/invoice/list_invoices_issuer?isConfig=X",
+      "body": "{\"list\":[{\"ClinicAddress\":\"Rua CP15\",\"TaxSituation\":0,\"AddressComplement\":\"qdcp15 lt27\",\"TaxRegime\":1,\"CodeCNAE\":\"8630504\",\"MunicipalTaxCode\":\"412\",\"TaxCofins\":\"\",\"z_LastChange_FingerPrintId\":109757321898368,\"subscriber_id\":\"ibsodonto1s\",\"IssuerId\":33550,\"AddressCity\":\"GoiÃ¢nia\",\"ClinicName\":\"IBS IMPLANTES ELDORADO\",\"z_Inserted_FingerPrintId\":5524551863238656,\"AddressNeighborhood\":\"Loteamento Celina Park\",\"CertificateValidDate\":\"2026-06-12T08:56:55-03:00\",\"BusinessId\":5245340127592448,\"z_LastChange_UserId\":5399645840343040,\"BusinessName\":\"IBS ODONTOLOGIA LTDA\",\"CompanyId\":\"39940439000130\",\"FantasyName\":\"IBS IMPLANTES ELDORADO\",\"CodeService\":\"04.12\",\"TaxPis\":\"\",\"PassCertificate\":\"PS0130\",\"z_LastChange_GroupAccountNamespace\":\"ibsodonto.br.go.goiania\",\"CodeCST\":\"\",\"AddressZip\":\"74373-170\",\"z_Inserted_Date\":\"2023-03-28T12:35:12.572Z\",\"LandLine\":\"(62) 9925-50537\",\"z_Inserted_UserId\":6677988750655488,\"z_LastChange_Date\":\"2026-01-15T18:49:54.961Z\",\"z_LastChange_Server_Tool\":\"cloud-run:solution-financial:undefined\",\"_AccessPath\":\"*.Invoice.EditIssuer\",\"z_Inserted_Server_Tool\":\"app_engine:0-24-36\",\"z_Mutation\":\"[]\",\"ContactEmail\":\"ibs.financeiro1@gmail.com\",\"AddressNumber\":\"406\",\"Aliquot\":\"4.19\",\"CreateIn\":\"2023-03-28T12:35:12.571Z\",\"CodeMunicipal\":\"5208707\",\"MunicipalInscription\":\"5252687\",\"AddressState\":\"GO\",\"NBSCode\":\"1.2301.23.00\",\"TotalNationalTaxesPercentage\":null,\"TotalFederalTaxesPercentage\":null,\"TotalEstadualTaxesPercentage\":null,\"TotalMunicipalTaxesPercentage\":null,\"CstIbsCbsCode\":null,\"CClassTribCode\":\"200029\",\"CodeOperation\":\"030101\",\"id\":6285877869019136}]}",
+      "timestamp": "2026-05-15T14:05:00.079Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://www.google.com/ccm/collect?rcb=1&frm=0&ae=g&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&scrsrc=www.googletagmanager.com&rnd=925593728.1778853900&dt=IBS%20IMPLANTES&auid=909943532.1778853900&navt=n&npa=0&_tu=CA&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&apve=1&apvf=f&apvc=0&tids=AW-712344369&tid=AW-712344369&tft=1778853899988&tfd=13395",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:00.088Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://www.google.com/ccm/collect?rcb=1&frm=0&en=page_view&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&scrsrc=www.googletagmanager.com&rnd=925593728.1778853900&dt=IBS%20IMPLANTES&auid=909943532.1778853900&navt=n&npa=0&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&apve=1&apvf=f&apvc=0&tids=AW-712344369&tid=AW-712344369&tft=1778853899987&tfd=13394",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:00.088Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://www.google.com/rmkt/collect/712344369/?random=1778853899966&cv=11&fst=1778853899966&fmt=8&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&data=event%3Dgtag.config&gcp=5",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:00.089Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://www.google.com/rmkt/collect/712344369/?random=1778853899983&cv=11&fst=1778853899983&fmt=8&bg=ffffff&guid=ON&async=1&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&_tu=CA&gcp=5",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:00.089Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/solution/api/admin/check_show_nps",
+      "body": "{\"ShowNps\":\"-\",\"Message\":\"Window is not open\"}",
+      "timestamp": "2026-05-15T14:05:00.093Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/712344369/?random=1778853899983&cv=11&fst=1778853899983&bg=ffffff&guid=ON&async=1&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&_tu=CA&rfmt=3&fmt=4",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:00.134Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/712344369/?random=1778853899966&cv=11&fst=1778853899966&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&data=event%3Dgtag.config&rfmt=3&fmt=4",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:00.154Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://www.google.com/pagead/1p-user-list/712344369/?random=1778853899983&cv=11&fst=1778853600000&bg=ffffff&guid=ON&async=1&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&_tu=CA&rfmt=3&fmt=3&is_vtc=1&cid=CAQS1AEABaugfchzXapUw7iLR8XHTq8tdvS1apE6ooXkYrc9RSKKMOzAs1lE-14la4nnVJjNSgEcH0xRrbowcPuChvCvQFwmKucqyVlqHP49XSt0L3zTROXqCdjwnI0D0hIK1wE10Qoun2qYyxv8g3NjiHBJj031Yb0LmOp7tqC8zhSv3OEMDCWhMB0gKHrPQLOxVoSOoJlTDXM1fexva431vQ1rE5R5c_yeI77RINoJP_zbHYMqNqIoHz3Gn_0DCMgW9LQcEMIClFmVtA62nRKtjPkzm1jQSg&random=3595462182&rmt_tld=0&ipr=y",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:00.214Z"
+    },
+    {
+      "type": "response",
+      "status": 204,
+      "url": "https://analytics.google.com/g/collect?v=2&tid=G-HTWHE2YSPL&gtm=45je65d0v887949663z89205487176za20gzb9205487176zd9205487176&_p=1778853899371&_gaz=1&gcd=13l3l3l3l1l1&npa=0&dma=0&ecid=1309032467&_eu=EAAAAGAC&are=1&cid=1473271991.1778853900&frm=0&ir=1&pscdl=noapi&rcb=2&sr=1280x720&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=pt-br&gaf=2&_s=1&tag_exp=0~115616985~115938465~115938469~118689381&sid=1778853900&sct=1&seg=0&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&dt=IBS%20IMPLANTES&en=page_view&_fv=1&_nsi=1&_ss=1&tfd=13463",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:00.223Z"
+    },
+    {
+      "type": "response",
+      "status": 204,
+      "url": "https://analytics.google.com/g/collect?v=2&tid=G-HTWHE2YSPL&gtm=45je65d0v887949663z89205487176za20gzb9205487176zd9205487176&_p=1778853899371&gcd=13l3l3l3l1l1&npa=0&dma=0&ecid=1309032467&_eu=EAAAAGQC&_prs=ok&are=1&cid=1473271991.1778853900&frm=0&ir=1&pscdl=noapi&rcb=2&sr=1280x720&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=pt-br&gaf=2&_s=2&tag_exp=0~115616985~115938465~115938469~118689381&sid=1778853900&sct=1&seg=0&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&dt=IBS%20IMPLANTES&en=ClienteSistema&_c=1&_et=3&tfd=13478",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:00.227Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://www.google.com/pagead/1p-user-list/712344369/?random=1778853899966&cv=11&fst=1778853600000&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&data=event%3Dgtag.config&rfmt=3&fmt=3&is_vtc=1&cid=CAQSsQEABaugfdlNTaJfyQrOA24hBBfD2z4sJdLvwT2fyL-4qAUwOCjuC6AtDtRB84d130sTbwKGRWQF0Qdd62lnBuf5N5KvwSPFxpzrsdCoPTMxWBDrnWy8XHWe3TDCxOGxTYKNrUlUzV7cJcnILQMhPxsSQ2mrnI3h6JFYG1Qai-tf82HjhQjk4yqhDjHtK8BFOUafz-NKsGcIfVjkPwgNtD6wRYkDzdPJSG4H87na0e4az6o&random=1397801820&rmt_tld=0&ipr=y",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:00.231Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://www.google.com/measurement/conversion?random=1778853900039&cv=11&tid=G-HTWHE2YSPL&fst=1778853900039&fmt=8&en=ClienteSistema&gtm=45je65d0v887949663z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115616985~115938465~115938469~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&gacid=1473271991.1778853900&frm=0&tiba=IBS%20IMPLANTES&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&rcb=2",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:00.261Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://www.google.com.br/pagead/1p-user-list/712344369/?random=1778853899983&cv=11&fst=1778853600000&bg=ffffff&guid=ON&async=1&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&_tu=CA&rfmt=3&fmt=3&is_vtc=1&cid=CAQS1AEABaugfchzXapUw7iLR8XHTq8tdvS1apE6ooXkYrc9RSKKMOzAs1lE-14la4nnVJjNSgEcH0xRrbowcPuChvCvQFwmKucqyVlqHP49XSt0L3zTROXqCdjwnI0D0hIK1wE10Qoun2qYyxv8g3NjiHBJj031Yb0LmOp7tqC8zhSv3OEMDCWhMB0gKHrPQLOxVoSOoJlTDXM1fexva431vQ1rE5R5c_yeI77RINoJP_zbHYMqNqIoHz3Gn_0DCMgW9LQcEMIClFmVtA62nRKtjPkzm1jQSg&random=3595462182&rmt_tld=1&ipr=y",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:00.305Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://www.google.com.br/pagead/1p-user-list/712344369/?random=1778853899966&cv=11&fst=1778853600000&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&data=event%3Dgtag.config&rfmt=3&fmt=3&is_vtc=1&cid=CAQSsQEABaugfdlNTaJfyQrOA24hBBfD2z4sJdLvwT2fyL-4qAUwOCjuC6AtDtRB84d130sTbwKGRWQF0Qdd62lnBuf5N5KvwSPFxpzrsdCoPTMxWBDrnWy8XHWe3TDCxOGxTYKNrUlUzV7cJcnILQMhPxsSQ2mrnI3h6JFYG1Qai-tf82HjhQjk4yqhDjHtK8BFOUafz-NKsGcIfVjkPwgNtD6wRYkDzdPJSG4H87na0e4az6o&random=1397801820&rmt_tld=1&ipr=y",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:00.309Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/solution/api/admin_clinicorp/global_subscriber_notification/list_popups?isAdmin=true",
+      "body": "[{\"Mobile\":false,\"Active\":\"X\",\"ExpirationDate\":20261231,\"ActivationDate\":20260122,\"ToNamespaces\":\"ALL\",\"ToRolesId\":[\"ADMIN\",\"RECEP\",\"FINANCIAL\"],\"NotificationType\":\"POPUP\",\"PopupName\":\"Clinicorp-IA-Config-Insights\",\"NotifyByUser\":\"X\",\"z_Inserted_Date\":\"2026-01-22T14:14:08.144Z\",\"z_LastChange_UserId\":5049134015578112,\"z_Inserted_UserId\":5049134015578112,\"z_LastChange_Date\":\"2026-01-22T14:14:08.144Z\",\"z_Inserted_Server_Tool\":\"cloud-run:solution-servicedesk:undefined\",\"z_LastChange_Server_Tool\":\"cloud-run:solution-servicedesk:undefined\",\"z_Inserted_FingerPrintId\":3135673588693376,\"z_LastChange_FingerPrintId\":3135673588693376,\"id\":6204763395850241,\"Counter\":0,\"Finished\":false},{\"Mobile\":false,\"Active\":\"X\",\"ExpirationDate\":20271231,\"ActivationDate\":20260202,\"ToNamespaces\":\"ALL\",\"ToRolesId\":[\"ADMIN\"],\"NotificationType\":\"POPUP\",\"PopupName\":\"Fintech-BankAccounts-Pending-Adjustments\",\"NotifyByUser\":\"X\",\"z_Inserted_Date\":\"2026-01-21T17:30:20.998Z\",\"z_LastChange_UserId\":6614241043939328,\"z_Inserted_UserId\":6614241043939328,\"z_LastChange_Date\":\"2026-01-21T17:30:20.998Z\",\"z_Inserted_Server_Tool\":\"cloud-run:solution-servicedesk:undefined\",\"z_LastChange_Server_Tool\":\"cloud-run:solution-servicedesk:undefined\",\"z_Inserted_FingerPrintId\":3347100031596928,\"z_LastChange_FingerPrintId\":3347100031596928,\"id\":5268610479620096,\"Counter\":0,\"Finished\":false}]",
+      "timestamp": "2026-05-15T14:05:00.397Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/solution/api/core/subscriber_notification/get_minimized_notifications",
+      "body": "[]",
+      "timestamp": "2026-05-15T14:05:00.573Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/solution/api/fintech/bank_account/get_pending_bank_accounts",
+      "body": "{\"hasBankAccount\":false,\"bankAccounts\":[]}",
+      "timestamp": "2026-05-15T14:05:00.748Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://servicedesk.clinicorp.tech/build/afa938f347d156bf67da.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:00.928Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://servicedesk.clinicorp.tech/build/b644d7652c56d735dbb5.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:01.046Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://servicedesk.clinicorp.tech/webworker.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:01.339Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/solution/api/core/subscriber_notification/get_minimized_notifications",
+      "body": "[]",
+      "timestamp": "2026-05-15T14:05:01.456Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://servicedesk.clinicorp.tech/build/e63a669536749734b5de.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:01.463Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://servicedesk.clinicorp.tech/build/4da4ba9081cb0b3e5d26.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:01.466Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://servicedesk.clinicorp.tech/build/36ace4368611d0142986.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:01.473Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://servicedesk.clinicorp.tech/build/d4b8e47a6d0bc469a3c3.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:01.475Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://servicedesk.clinicorp.tech/build/7224cf0fce5a93d9d737.js",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:01.477Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/servicedesk/api/support/service_desk/list_subscriber_user_sessions",
+      "body": "[]",
+      "timestamp": "2026-05-15T14:05:02.419Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/servicedesk/api/messaging/list_users?Type=CHAT",
+      "body": "{\"list\":[{\"UserName\":\"SUPPORT\",\"FullName\":\"general.SUPPORT\",\"isSupport\":\"X\"},{\"UserName\":\"\",\"FullName\":\"\"},{\"UserName\":\"adenize\",\"FullName\":\"Adenize Gomes De Moura\"},{\"UserName\":\"ane\",\"FullName\":\"Ane Helen GonÃ§alves de Brito\",\"ProfilePicture\":\"https://storage.googleapis.com/clinicorp_ibsodonto1s/6239088620404736_1758202962873_WhatsApp Image 2025-09-18 at 10.30.57.jpeg\"},{\"UserName\":\"berg\",\"FullName\":\"Berg\"},{\"UserName\":\"claudia\",\"FullName\":\"Claudia Helena Ferreira da Cunha\"},{\"UserName\":\"daniela\",\"FullName\":\"Daniela Delfino de Oliveira\"},{\"UserName\":\"ezequiel\",\"FullName\":\"Ezequiel Alves \"},{\"UserName\":\"ferborges\",\"FullName\":\"Fernanda Borges GonÃ§alves\"},{\"UserName\":\"gabrielarc\",\"FullName\":\"Gabriela Rodrigues Caixeta\"},{\"UserName\":\"guilherme\",\"FullName\":\"Guilherme Batistella\"},{\"UserName\":\"hanster\",\"FullName\":\"Hanster Oliveira\"},{\"UserName\":\"higor\",\"FullName\":\"Higor de souza\"},{\"UserName\":\"ilaflavia\",\"FullName\":\"Ila Flavia Ferreira Furbino\"},{\"UserName\":\"klayton\",\"FullName\":\"Klayton Oliveira\"},{\"UserName\":\"luanac\",\"FullName\":\"Luana Cristina\"},{\"UserName\":\"duda\",\"FullName\":\"Maria Eduarda Lima Araujo\"},{\"UserName\":\"maricia\",\"FullName\":\"Maricia Gabriela Morais Preto\"},{\"UserName\":\"michelle\",\"FullName\":\"Michelle Firmino\"},{\"UserName\":\"naiara\",\"FullName\":\"Naiara Bastos Souza\"},{\"UserName\":\"paula\",\"FullName\":\"Paula Silva Nascimento\"},{\"UserName\":\"rafaella\",\"FullName\":\"Rafaella Lino Costa Silva\"},{\"UserName\":\"raioxeldorado\",\"FullName\":\"Raio X Eldorado\"},{\"UserName\":\"reabertura\",\"FullName\":\"Reabertura Implantes\"},{\"UserName\":\"rita\",\"FullName\":\"Rita De Cassia\"},{\"UserName\":\"rogerio\",\"FullName\":\"RogÃ©rio Napole\"},{\"UserName\":\"rose\",\"FullName\":\"Rosemary Dias Alencar\",\"ProfilePicture\":\"https://storage.googleapis.com/clinicorp_ibsodonto1s/5487024782442496_1705670415192_file.enc\"},{\"UserName\":\"thayanne\",\"FullName\":\"Thayanne Vieira Lima\",\"ProfilePicture\":\"https://storage.googleapis.com/clinicorp_ibsodonto1s/5774883378823168_1723570627902_EU.jpeg\"},{\"UserName\":\"victoralves\",\"FullName\"",
+      "timestamp": "2026-05-15T14:05:02.470Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://api.clinicorp.com/servicedesk/api/cliniDesk/message/get_unread_messages",
+      "body": "{\"list\":[{\"sender\":\"SUPPORT\",\"count\":6,\"lastMessage\":{\"id\":6583387,\"AgentSessionId\":1973619,\"Body\":\"A avaliaÃ§Ã£o do seu atendimento anterior foi *encerrada.* *Para iniciar um novo atendimento, basta enviar uma nova mensagem.* Estamos aqui para ajudar! AtÃ© a prÃ³xima. ðŸ˜Š\",\"Channel\":\"CLINICORP\",\"ChatBotType\":\"INACTIVE_FINISH_SESSION\",\"DateTime\":\"2026-03-11T23:30:23.123Z\",\"FinishSession\":\"X\",\"Receiver\":\"joaoescalar\",\"SK_SessionId_AtomicDateTime\":\"357512_20260311233023124\",\"SK_SessionId_LastChangeAtomicDateTime\":\"357512_20260311233023124\",\"Sender\":\"SUPPORT\",\"SenderNamespace\":\"ibsodonto1s.br.go.goiania\",\"ServiceDeskQueueId\":6703800534171648,\"SessionId\":357512,\"Time\":1773271823123,\"isSupport\":\"X\",\"z_LastChange_Date\":\"2026-03-11T23:30:23.123Z\"}}]}",
+      "timestamp": "2026-05-15T14:05:02.845Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/clinicorp_ibsodonto1s/5774883378823168_1723570627902_EU.jpeg",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:03.113Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/clinicorp_ibsodonto1s/6239088620404736_1758202962873_WhatsApp%20Image%202025-09-18%20at%2010.30.57.jpeg",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:03.140Z"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://storage.googleapis.com/clinicorp_ibsodonto1s/5487024782442496_1705670415192_file.enc",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:03.160Z"
+    },
+    {
+      "type": "response",
+      "status": 204,
+      "url": "https://analytics.google.com/g/collect?v=2&tid=G-HTWHE2YSPL&gtm=45je65d0v887949663za20gzb9205487176zd9205487176&_p=1778853899371&gcd=13l3l3l3l1l1&npa=0&dma=0&ecid=1309032467&_eu=EEAAAGQC&ae=a&are=1&cid=1473271991.1778853900&frm=0&ir=1&pscdl=noapi&rcb=2&sr=1280x720&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=pt-br&gaf=2&_s=3&tag_exp=0~115616985~115938465~115938469~118689381&sid=1778853900&sct=1&seg=0&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&dt=IBS%20IMPLANTES&_tu=CA&en=scroll&epn.percent_scrolled=90&_et=12&tfd=18502",
+      "body": null,
+      "timestamp": "2026-05-15T14:05:05.183Z"
+    }
+  ],
+  "summary": [
+    "[GET] https://sistema.clinicorp.com/",
+    "[GET] https://sistema.clinicorp.com/css/react-bootstrap-table-all.min.css",
+    "[GET] https://sistema.clinicorp.com/css/base.css",
+    "[GET] https://sistema.clinicorp.com/build/e3b41f11267f1d697b1e.js",
+    "[GET] https://sistema.clinicorp.com/build/90e37f15e032fd6ee1ef.js",
+    "[GET] https://sistema.clinicorp.com/build/44224a0421b2fca5fc2b.js",
+    "[GET] https://sistema.clinicorp.com/build/04b04a9f7b7074077231.js",
+    "[GET] https://sistema.clinicorp.com/build/3f58195ffbf304a0f762.js",
+    "[GET] https://sistema.clinicorp.com/build/2281aa351ba3ae82367d.js",
+    "[GET] https://sistema.clinicorp.com/build/f4dc93eacfedf3315cc3.js",
+    "[GET] https://sistema.clinicorp.com/build/ef5ca08fb909c8c12753.js",
+    "[GET] https://sistema.clinicorp.com/build/bab83244ab6ee0ccb970.js",
+    "[GET] https://sistema.clinicorp.com/build/c53be63578ed8f0d1f82.js",
+    "[GET] https://sistema.clinicorp.com/build/b931542b64578ad62fce.js",
+    "[GET] https://sistema.clinicorp.com/build/4ddff33a36fe16b84681.js",
+    "[GET] https://sistema.clinicorp.com/build/6768d2723cf3e7fa0ff2.js",
+    "[GET] https://sistema.clinicorp.com/build/d1c2f2edd8ecaefc5ce4.js",
+    "[GET] https://sistema.clinicorp.com/build/71c94cdfd9ef30e1f843.js",
+    "[GET] https://sistema.clinicorp.com/build/ef8c935f18de850b9ec8.js",
+    "[GET] https://sistema.clinicorp.com/build/81122c7a11016f030146.js",
+    "[GET] https://sistema.clinicorp.com/build/575fcc17bde28a851e78.js",
+    "[GET] https://sistema.clinicorp.com/build/5c65c1b3f1e6d3265f08.js",
+    "[GET] https://sistema.clinicorp.com/build/cc9a6614c28da3db6471.js",
+    "[GET] blob:https://sistema.clinicorp.com/11f68469-c2c0-4941-9428-12c6c75edc17",
+    "[GET] blob:https://sistema.clinicorp.com/f3acdd44-1127-423b-ba06-79afcd344c2e",
+    "[POST] https://o1396554.ingest.us.sentry.io/api/6731218/envelope/?sentry_version=7&sentry_key=e5ce03f695ac4e78bb3f51b9acae29f1&sentry_client=sentry.javascript.react%2F10.33.0",
+    "[GET] https://sistema.clinicorp.com/webworker.js",
+    "[GET] blob:https://sistema.clinicorp.com/0ccde46a-be0a-4ccb-9cd6-eb68897976ef",
+    "[GET] blob:https://sistema.clinicorp.com/7c8fc3db-623a-413d-87ba-73e30f4e05f2",
+    "[GET] https://sistema.clinicorp.com/img/googleplay.png",
+    "[GET] https://sistema.clinicorp.com/img/appstore-min.png",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/remoteEntry.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/index.cjs-DfOq2DoA.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/virtualExposes-DYIaFHvo.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/preload-helper-2Ox4gv22.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/security__mf_v__runtimeInit__mf_v__-rf81HpNp.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/remoteEntry.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/cdam/current/mf-manifest.json",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/remoteEntry.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/financial/latest/remoteEntry.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/assets/index.cjs-C04-YBkW.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/assets/virtualExposes-DxEUN5yE.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/assets/preload-helper-DPPz9lSX.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/gc/latest/assets/calendar__mf_v__runtimeInit__mf_v__-OPzduXHq.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/financial/latest/assets/financial__mf_v__runtimeInit__mf_v__-CrXuwHq8.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/financial/latest/assets/virtualExposes-COaKLVaO.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/financial/latest/assets/preload-helper-DTh6CGsi.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/index.cjs-DfOq2DoA.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/virtualExposes-Bo-Ucgro.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/preload-helper-CvtlCQmc.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/shell__mf_v__runtimeInit__mf_v__-DUEe33W5.js",
+    "[GET] https://sistema.clinicorp.com/undefined/remoteEntry.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/remoteEntry.js",
+    "[GET] https://sistema.clinicorp.com/undefined/remoteEntry.js/",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/assets/index.cjs-ptORkTuk.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/assets/virtualExposes-Bh1g3Q72.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/assets/preload-helper-D2H58qCl.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/cdam/releases/1.1.29/assets/cdam__mf_v__runtimeInit__mf_v__-CoTZ_LIg.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/SolutionAuthRemote-C82VErsu.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/globals-DQ2pvx15.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/security__loadShare__react__loadShare__-BDisFIbH.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/_commonjsHelpers-B85MJLTf.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/globals-uKoVfWoQ.css",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/SolutionSecurityRoutes-BsEpWFuY.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/security/latest/assets/dialog-UrnuOg2E.js",
+    "[POST] https://o1396554.ingest.us.sentry.io/api/6731218/envelope/?sentry_version=7&sentry_key=e5ce03f695ac4e78bb3f51b9acae29f1&sentry_client=sentry.javascript.react%2F10.33.0",
+    "[POST] https://o1396554.ingest.us.sentry.io/api/6731218/envelope/?sentry_version=7&sentry_key=e5ce03f695ac4e78bb3f51b9acae29f1&sentry_client=sentry.javascript.react%2F10.33.0",
+    "[GET] https://api.clinicorp.com/api/banner/get_active",
+    "[GET] https://api.clinicorp.com/security/health",
+    "[POST] https://api.clinicorp.com/security/user/login",
+    "[GET] https://api.clinicorp.com/api?_onlyLogAccess=true&_AccessPath=*.Access.Login",
+    "[POST] https://api.clinicorp.com/security/user/get_user_permissions_access",
+    "[GET] https://api.clinicorp.com/solution/api/core/global_subscriber_namespace/get_by_subscriber_bussiness_public_data_by_uuid/?subscriberUuid=ibsodonto1s",
+    "[POST] https://o1396554.ingest.us.sentry.io/api/6731218/envelope/?sentry_version=7&sentry_key=e5ce03f695ac4e78bb3f51b9acae29f1&sentry_client=sentry.javascript.react%2F10.33.0",
+    "[POST] https://o1396554.ingest.us.sentry.io/api/6731218/envelope/?sentry_version=7&sentry_key=e5ce03f695ac4e78bb3f51b9acae29f1&sentry_client=sentry.javascript.react%2F10.33.0",
+    "[GET] https://api.clinicorp.com/security/user/get_responsible_user",
+    "[GET] https://sistema.clinicorp.com/img/magic_eye_off.svg",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/HomeRemote-Czb2pbWX.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/AppRoutes-BCOuvacS.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/shell__loadShare__react__loadShare__-Cs4nNd8g.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/_commonjsHelpers-B85MJLTf.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/AppRoutes-BmNMjkP4.css",
+    "[GET] https://servicedesk.clinicorp.tech/clinichat",
+    "[GET] https://api.clinicorp.com/solution/api/notification/get_user_subscriber_notification",
+    "[GET] https://api.clinicorp.com/solution/api/digital_certificate/get_certificates_expired",
+    "[GET] https://api.clinicorp.com/solution/api/core/subscriber_notification/get_minimized_notifications",
+    "[GET] https://api.clinicorp.com/solution/api/admin/check_show_nps",
+    "[GET] https://sistema.clinicorp.com/img/bgn.jpg",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/agenda-X5xffIcl.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/pacientes-DuzcOwFR.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/crc--p8vPpr3.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/financeiro-D0HnSlML.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/profissionais-NIqWQZkj.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/relatorios-BdXukE1o.js",
+    "[GET] https://storage.googleapis.com/prod-clinicorp-mfe/shell-home/latest/assets/clinipay-ChD28D2a.js",
+    "[GET] https://api.clinicorp.com/solution/api/financial/invoice/list_invoices_issuer?isConfig=X",
+    "[POST] https://www.google.com/ccm/collect?rcb=18&frm=0&ae=g&en=page_view&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&scrsrc=www.googletagmanager.com&rnd=925593728.1778853900&dt=IBS%20IMPLANTES&auid=909943532.1778853900&navt=n&npa=0&ep.ads_data_redaction=0&gtm=45He65d0v9205487176za200zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938469&apve=1&apvf=f&apvc=1&tft=1778853899724&tfd=13131",
+    "[GET] https://api.clinicorp.com/solution/api/admin_clinicorp/global_subscriber_notification/list_popups?isAdmin=true",
+    "[GET] https://connect.facebook.net/signals/config/687292311843804?v=2.9.319&r=stable&domain=sistema.clinicorp.com&hme=7441a59ee5070e08bd0157a62d39bd95bf3afdcc83dafbad800e78b5416300a9&ex_m=104%2C207%2C155%2C22%2C72%2C73%2C146%2C68%2C67%2C11%2C164%2C90%2C16%2C138%2C48%2C147%2C77%2C112%2C47%2C127%2C39%2C75%2C78%2C134%2C160%2C166%2C8%2C4%2C5%2C7%2C6%2C3%2C91%2C101%2C167%2C172%2C221%2C62%2C188%2C189%2C55%2C278%2C30%2C74%2C233%2C232%2C231%2C23%2C33%2C103%2C61%2C10%2C63%2C97%2C98%2C99%2C105%2C130%2C31%2C29%2C132%2C133%2C129%2C128%2C156%2C76%2C159%2C157%2C158%2C50%2C60%2C123%2C15%2C163%2C45%2C265%2C266%2C264%2C26%2C27%2C28%2C18%2C20%2C44%2C40%2C42%2C41%2C83%2C92%2C96%2C110%2C145%2C148%2C46%2C111%2C24%2C21%2C119%2C69%2C36%2C150%2C149%2C151%2C142%2C140%2C25%2C35%2C59%2C109%2C162%2C70%2C17%2C153%2C114%2C81%2C66%2C19%2C85%2C86%2C116%2C84%2C136%2C135%2C139%2C161%2C34%2C280%2C296%2C214%2C203%2C204%2C202%2C299%2C290%2C52%2C215%2C107%2C131%2C80%2C121%2C54%2C49%2C113%2C120%2C126%2C58%2C64%2C152%2C115%2C37%2C32%2C53%2C56%2C100%2C165%2C1%2C124%2C14%2C122%2C12%2C2%2C57%2C93%2C65%2C118%2C89%2C88%2C168%2C169%2C94%2C95%2C9%2C125%2C102%2C51%2C143%2C87%2C79%2C71%2C117%2C106%2C43%2C144%2C0%2C82%2C137%2C141%2C154%2C38%2C108%2C13%2C170",
+    "[GET] https://servicedesk.clinicorp.tech/css/react-bootstrap-table-all.min.css",
+    "[GET] https://servicedesk.clinicorp.tech/css/base.css",
+    "[GET] https://servicedesk.clinicorp.tech/build/b644d7652c56d735dbb5.js",
+    "[GET] https://servicedesk.clinicorp.tech/build/afa938f347d156bf67da.js",
+    "[GET] https://www.facebook.com/tr/?id=687292311843804&ev=PageView&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&rl=&if=false&ts=1778853899907&sw=1280&sh=720&v=2.9.319&r=stable&ec=0&o=4126&fbp=fb.1.1778853899902.837703307517268404&cs_est=true&ler=empty&cdl=API_unavailable&pmd[title]=IBS%20IMPLANTES&pmd[description]=Fa%C3%A7a%20login%20no%20seu%20sistema%20Clinicorp%20e%20aproveite%20diversas%20ferramentas%20desenvolvidas%20para%20te%20fazer%20lucrar%20mais.%20O%20sucesso%20da%20sua%20cl%C3%ADnica%20come%C3%A7a%20aqui!&plt=1937.7999999523163&tz=-180&it=1778853899860&coo=false&exp=s0&expv2[0]=pl1&expv2[1]=el3&expv2[2]=bc1&expv2[3]=ra2&expv2[4]=rp2&expv2[5]=im1&expv2[6]=hf1&expv2[7]=pt0&rqm=GET",
+    "[GET] https://www.facebook.com/privacy_sandbox/pixel/register/trigger/?id=687292311843804&ev=PageView&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&rl=&if=false&ts=1778853899907&sw=1280&sh=720&v=2.9.319&r=stable&ec=0&o=4126&fbp=fb.1.1778853899902.837703307517268404&cs_est=true&ler=empty&cdl=API_unavailable&pmd[title]=IBS%20IMPLANTES&pmd[description]=Fa%C3%A7a%20login%20no%20seu%20sistema%20Clinicorp%20e%20aproveite%20diversas%20ferramentas%20desenvolvidas%20para%20te%20fazer%20lucrar%20mais.%20O%20sucesso%20da%20sua%20cl%C3%ADnica%20come%C3%A7a%20aqui!&plt=1937.7999999523163&tz=-180&it=1778853899860&coo=false&exp=s0&expv2[0]=pl1&expv2[1]=el3&expv2[2]=bc1&expv2[3]=ra2&expv2[4]=rp2&expv2[5]=im1&expv2[6]=hf1&expv2[7]=pt0&rqm=FGET",
+    "[GET] https://www.facebook.com/tr/?id=687292311843804&ev=ClienteSistema&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&rl=&if=false&ts=1778853899910&sw=1280&sh=720&v=2.9.319&r=stable&ec=1&o=4126&fbp=fb.1.1778853899902.837703307517268404&ler=empty&cdl=API_unavailable&pmd[description]=Fa%C3%A7a%20login%20no%20seu%20sistema%20Clinicorp%20e%20aproveite%20diversas%20ferramentas%20desenvolvidas%20para%20te%20fazer%20lucrar%20mais.%20O%20sucesso%20da%20sua%20cl%C3%ADnica%20come%C3%A7a%20aqui!&plt=1937.7999999523163&tz=-180&it=1778853899860&coo=false&exp=s0&expv2[0]=pl1&expv2[1]=el2&expv2[2]=bc1&expv2[3]=ra2&expv2[4]=rp2&expv2[5]=im1&expv2[6]=hf1&rqm=GET",
+    "[GET] https://www.facebook.com/privacy_sandbox/pixel/register/trigger/?id=687292311843804&ev=ClienteSistema&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&rl=&if=false&ts=1778853899910&sw=1280&sh=720&v=2.9.319&r=stable&ec=1&o=4126&fbp=fb.1.1778853899902.837703307517268404&ler=empty&cdl=API_unavailable&pmd[description]=Fa%C3%A7a%20login%20no%20seu%20sistema%20Clinicorp%20e%20aproveite%20diversas%20ferramentas%20desenvolvidas%20para%20te%20fazer%20lucrar%20mais.%20O%20sucesso%20da%20sua%20cl%C3%ADnica%20come%C3%A7a%20aqui!&plt=1937.7999999523163&tz=-180&it=1778853899860&coo=false&exp=s0&expv2[0]=pl1&expv2[1]=el2&expv2[2]=bc1&expv2[3]=ra2&expv2[4]=rp2&expv2[5]=im1&expv2[6]=hf1&rqm=FGET",
+    "[GET] https://googleads.g.doubleclick.net/pagead/viewthroughconversion/712344369/?random=1778853899966&cv=11&fst=1778853899966&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&data=event%3Dgtag.config&rfmt=3&fmt=4",
+    "[POST] https://www.google.com/rmkt/collect/712344369/?random=1778853899966&cv=11&fst=1778853899966&fmt=8&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&data=event%3Dgtag.config&gcp=5",
+    "[GET] https://googleads.g.doubleclick.net/pagead/viewthroughconversion/712344369/?random=1778853899983&cv=11&fst=1778853899983&bg=ffffff&guid=ON&async=1&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&_tu=CA&rfmt=3&fmt=4",
+    "[POST] https://www.google.com/rmkt/collect/712344369/?random=1778853899983&cv=11&fst=1778853899983&fmt=8&bg=ffffff&guid=ON&async=1&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&_tu=CA&gcp=5",
+    "[POST] https://www.google.com/ccm/collect?rcb=1&frm=0&en=page_view&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&scrsrc=www.googletagmanager.com&rnd=925593728.1778853900&dt=IBS%20IMPLANTES&auid=909943532.1778853900&navt=n&npa=0&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&apve=1&apvf=f&apvc=0&tids=AW-712344369&tid=AW-712344369&tft=1778853899987&tfd=13394",
+    "[POST] https://www.google.com/ccm/collect?rcb=1&frm=0&ae=g&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&scrsrc=www.googletagmanager.com&rnd=925593728.1778853900&dt=IBS%20IMPLANTES&auid=909943532.1778853900&navt=n&npa=0&_tu=CA&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&apve=1&apvf=f&apvc=0&tids=AW-712344369&tid=AW-712344369&tft=1778853899988&tfd=13395",
+    "[GET] https://api.clinicorp.com/solution/api/core/subscriber_notification/get_minimized_notifications",
+    "[POST] https://analytics.google.com/g/collect?v=2&tid=G-HTWHE2YSPL&gtm=45je65d0v887949663z89205487176za20gzb9205487176zd9205487176&_p=1778853899371&_gaz=1&gcd=13l3l3l3l1l1&npa=0&dma=0&ecid=1309032467&_eu=EAAAAGAC&are=1&cid=1473271991.1778853900&frm=0&ir=1&pscdl=noapi&rcb=2&sr=1280x720&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=pt-br&gaf=2&_s=1&tag_exp=0~115616985~115938465~115938469~118689381&sid=1778853900&sct=1&seg=0&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&dt=IBS%20IMPLANTES&en=page_view&_fv=1&_nsi=1&_ss=1&tfd=13463",
+    "[POST] https://www.google.com/measurement/conversion?random=1778853900039&cv=11&tid=G-HTWHE2YSPL&fst=1778853900039&fmt=8&en=ClienteSistema&gtm=45je65d0v887949663z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115616985~115938465~115938469~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&gacid=1473271991.1778853900&frm=0&tiba=IBS%20IMPLANTES&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&rcb=2",
+    "[POST] https://analytics.google.com/g/collect?v=2&tid=G-HTWHE2YSPL&gtm=45je65d0v887949663z89205487176za20gzb9205487176zd9205487176&_p=1778853899371&gcd=13l3l3l3l1l1&npa=0&dma=0&ecid=1309032467&_eu=EAAAAGQC&_prs=ok&are=1&cid=1473271991.1778853900&frm=0&ir=1&pscdl=noapi&rcb=2&sr=1280x720&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=pt-br&gaf=2&_s=2&tag_exp=0~115616985~115938465~115938469~118689381&sid=1778853900&sct=1&seg=0&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&dt=IBS%20IMPLANTES&en=ClienteSistema&_c=1&_et=3&tfd=13478",
+    "[GET] https://www.google.com/pagead/1p-user-list/712344369/?random=1778853899983&cv=11&fst=1778853600000&bg=ffffff&guid=ON&async=1&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&_tu=CA&rfmt=3&fmt=3&is_vtc=1&cid=CAQS1AEABaugfchzXapUw7iLR8XHTq8tdvS1apE6ooXkYrc9RSKKMOzAs1lE-14la4nnVJjNSgEcH0xRrbowcPuChvCvQFwmKucqyVlqHP49XSt0L3zTROXqCdjwnI0D0hIK1wE10Qoun2qYyxv8g3NjiHBJj031Yb0LmOp7tqC8zhSv3OEMDCWhMB0gKHrPQLOxVoSOoJlTDXM1fexva431vQ1rE5R5c_yeI77RINoJP_zbHYMqNqIoHz3Gn_0DCMgW9LQcEMIClFmVtA62nRKtjPkzm1jQSg&random=3595462182&rmt_tld=0&ipr=y",
+    "[GET] https://www.google.com.br/pagead/1p-user-list/712344369/?random=1778853899983&cv=11&fst=1778853600000&bg=ffffff&guid=ON&async=1&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xea&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&_tu=CA&rfmt=3&fmt=3&is_vtc=1&cid=CAQS1AEABaugfchzXapUw7iLR8XHTq8tdvS1apE6ooXkYrc9RSKKMOzAs1lE-14la4nnVJjNSgEcH0xRrbowcPuChvCvQFwmKucqyVlqHP49XSt0L3zTROXqCdjwnI0D0hIK1wE10Qoun2qYyxv8g3NjiHBJj031Yb0LmOp7tqC8zhSv3OEMDCWhMB0gKHrPQLOxVoSOoJlTDXM1fexva431vQ1rE5R5c_yeI77RINoJP_zbHYMqNqIoHz3Gn_0DCMgW9LQcEMIClFmVtA62nRKtjPkzm1jQSg&random=3595462182&rmt_tld=1&ipr=y",
+    "[GET] https://www.google.com/pagead/1p-user-list/712344369/?random=1778853899966&cv=11&fst=1778853600000&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&data=event%3Dgtag.config&rfmt=3&fmt=3&is_vtc=1&cid=CAQSsQEABaugfdlNTaJfyQrOA24hBBfD2z4sJdLvwT2fyL-4qAUwOCjuC6AtDtRB84d130sTbwKGRWQF0Qdd62lnBuf5N5KvwSPFxpzrsdCoPTMxWBDrnWy8XHWe3TDCxOGxTYKNrUlUzV7cJcnILQMhPxsSQ2mrnI3h6JFYG1Qai-tf82HjhQjk4yqhDjHtK8BFOUafz-NKsGcIfVjkPwgNtD6wRYkDzdPJSG4H87na0e4az6o&random=1397801820&rmt_tld=0&ipr=y",
+    "[GET] https://www.google.com.br/pagead/1p-user-list/712344369/?random=1778853899966&cv=11&fst=1778853600000&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be65d0v893503598z89205487176za20gzb9205487176zd9205487176xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938465~115938468~118689381&u_w=1280&u_h=720&url=https%3A%2F%2Fsistema.clinicorp.com%2F&rcb=1&frm=0&tiba=IBS%20IMPLANTES&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=909943532.1778853900&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&data=event%3Dgtag.config&rfmt=3&fmt=3&is_vtc=1&cid=CAQSsQEABaugfdlNTaJfyQrOA24hBBfD2z4sJdLvwT2fyL-4qAUwOCjuC6AtDtRB84d130sTbwKGRWQF0Qdd62lnBuf5N5KvwSPFxpzrsdCoPTMxWBDrnWy8XHWe3TDCxOGxTYKNrUlUzV7cJcnILQMhPxsSQ2mrnI3h6JFYG1Qai-tf82HjhQjk4yqhDjHtK8BFOUafz-NKsGcIfVjkPwgNtD6wRYkDzdPJSG4H87na0e4az6o&random=1397801820&rmt_tld=1&ipr=y",
+    "[GET] https://api.clinicorp.com/solution/api/fintech/bank_account/get_pending_bank_accounts",
+    "[GET] https://servicedesk.clinicorp.tech/webworker.js",
+    "[GET] https://servicedesk.clinicorp.tech/build/e63a669536749734b5de.js",
+    "[GET] https://servicedesk.clinicorp.tech/build/4da4ba9081cb0b3e5d26.js",
+    "[GET] https://servicedesk.clinicorp.tech/build/7224cf0fce5a93d9d737.js",
+    "[GET] https://servicedesk.clinicorp.tech/build/36ace4368611d0142986.js",
+    "[GET] https://servicedesk.clinicorp.tech/build/d4b8e47a6d0bc469a3c3.js",
+    "[GET] https://api.clinicorp.com/servicedesk/api/messaging/list_users?Type=CHAT",
+    "[GET] https://api.clinicorp.com/servicedesk/api/support/service_desk/list_subscriber_user_sessions",
+    "[GET] https://api.clinicorp.com/servicedesk/api/cliniDesk/message/get_unread_messages",
+    "[GET] https://storage.googleapis.com/clinicorp_ibsodonto1s/6239088620404736_1758202962873_WhatsApp%20Image%202025-09-18%20at%2010.30.57.jpeg",
+    "[GET] https://storage.googleapis.com/clinicorp_ibsodonto1s/5487024782442496_1705670415192_file.enc",
+    "[GET] https://storage.googleapis.com/clinicorp_ibsodonto1s/5774883378823168_1723570627902_EU.jpeg",
+    "[POST] https://analytics.google.com/g/collect?v=2&tid=G-HTWHE2YSPL&gtm=45je65d0v887949663za20gzb9205487176zd9205487176&_p=1778853899371&gcd=13l3l3l3l1l1&npa=0&dma=0&ecid=1309032467&_eu=EEAAAGQC&ae=a&are=1&cid=1473271991.1778853900&frm=0&ir=1&pscdl=noapi&rcb=2&sr=1280x720&uaa=x86&uab=64&uafvl=Not%252FA)Brand%3B99.0.0.0%7CChromium%3B148.0.7778.96&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=pt-br&gaf=2&_s=3&tag_exp=0~115616985~115938465~115938469~118689381&sid=1778853900&sct=1&seg=0&dl=https%3A%2F%2Fsistema.clinicorp.com%2F&dt=IBS%20IMPLANTES&_tu=CA&en=scroll&epn.percent_scrolled=90&_et=12&tfd=18502"
+  ]
+}
