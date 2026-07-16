@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { getSecret, setSecret, clearSecret, listClinics, deleteClinic } from './adminApi'
+import { useState, useEffect, Fragment } from 'react'
+import { getSecret, setSecret, clearSecret, listClinics, deleteClinic, getSyncStatus } from './adminApi'
 import { typeLabel } from './metricTypes'
 import ClinicWizard from './ClinicWizard.jsx'
 import ClinicorpImport from './ClinicorpImport.jsx'
@@ -56,9 +56,64 @@ function LoginGate({ onAuthed }) {
   )
 }
 
-function ClinicList({ clinics, onNew, onEdit, onDeleted, onError, onImportClinicorp }) {
+const SYNC_BADGE = {
+  green:  { dot: 'bg-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100', label: 'Sync ok' },
+  yellow: { dot: 'bg-amber-500',   text: 'text-amber-700',   bg: 'bg-amber-50 border-amber-100',     label: 'Pendências' },
+  red:    { dot: 'bg-red-500',     text: 'text-red-700',     bg: 'bg-red-50 border-red-100',         label: 'Atenção' },
+}
+
+function fmtWhen(iso) {
+  if (!iso) return 'nunca'
+  return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+}
+
+// Badge de saúde do sync (PLANO_AGENDADOR_CAMPANHA.md FASE 7) — verde (última
+// rodada ok), amarelo (unmatchedCrc pendente), vermelho (failed>0 ou sem
+// rodada há 2h+). Clique expande detalhes (última rodada + agregado 24h).
+function SyncBadge({ status, expanded, onToggle }) {
+  const s = SYNC_BADGE[status.status] ?? SYNC_BADGE.red
+  return (
+    <button type="button" onClick={onToggle}
+      className={`text-[10px] px-1.5 py-0.5 rounded border font-medium flex items-center gap-1 ${s.bg} ${s.text}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+      {s.label}
+      <span className="text-slate-300">{expanded ? '▲' : '▼'}</span>
+    </button>
+  )
+}
+
+function SyncDetails({ status }) {
+  return (
+    <div className="px-4 py-3 bg-slate-50 border-t border-slate-100 text-xs text-slate-600 space-y-2">
+      <div>
+        <span className="font-semibold text-slate-700">Última rodada:</span>{' '}
+        {fmtWhen(status.lastRun?.executedAt)}
+        {status.lastRun && (
+          <span className="text-slate-400"> · {status.lastRun.moved} movidos · {status.lastRun.created} criados · {status.lastRun.failed} falhas</span>
+        )}
+      </div>
+      {status.lastRun?.errors?.length > 0 && (
+        <div className="text-red-600">
+          Erros: {status.lastRun.errors.slice(0, 3).join(' · ')}{status.lastRun.errors.length > 3 ? ` (+${status.lastRun.errors.length - 3})` : ''}
+        </div>
+      )}
+      <div>
+        <span className="font-semibold text-slate-700">Últimas 24h:</span>{' '}
+        {status.last24h.runs} rodada{status.last24h.runs !== 1 ? 's' : ''} · {status.last24h.moved} movidos · {status.last24h.created} criados · {status.last24h.failed} falhas
+      </div>
+      {status.unmatchedCrc.length > 0 && (
+        <div className="text-amber-600">
+          CRC sem etiqueta mapeada: {status.unmatchedCrc.join(', ')}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ClinicList({ clinics, syncStatusByAccount, onNew, onEdit, onDeleted, onError, onImportClinicorp }) {
   const [copiedId, setCopiedId] = useState(null)
   const [deleting, setDeleting] = useState(null)
+  const [expandedId, setExpandedId] = useState(null)
 
   const copyUrl = async (clinic) => {
     const url = clinic.slug
@@ -121,49 +176,65 @@ function ClinicList({ clinics, onNew, onEdit, onDeleted, onError, onImportClinic
                     .map(([, s]) => s.type)
                 )]
                 const dims = Object.values(c.steps?._dims ?? {}).map(d => d.label).filter(Boolean)
+                const hasClinicorp = c.steps?._clinicorp?.units?.length > 0
+                const status = syncStatusByAccount?.[c.accountId] ?? null
+                const isExpanded = expandedId === c.accountId
                 return (
-                  <tr key={c.accountId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60">
-                    <td className="px-4 py-3">
-                      <div className="font-semibold text-slate-900">{c.name}</div>
-                      <div className="text-[10px] font-mono text-slate-400 truncate max-w-[220px]">
-                        {c.slug ? `/?clinic=${c.slug}` : c.accountId}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 hidden md:table-cell">
-                      <div className="flex flex-wrap gap-1">
-                        {types.map(t => (
-                          <span key={t} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{typeLabel(t)}</span>
-                        ))}
-                        {dims.map(d => (
-                          <span key={d} className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 border border-indigo-100">{d}</span>
-                        ))}
-                        {c.steps?._clinicorp?.units?.length > 0 && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100 font-medium">
-                            Clinicorp ✓{c.steps._clinicorp.units.length > 1 ? ` (${c.steps._clinicorp.units.length})` : ''}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono text-slate-600 hidden sm:table-cell">
-                      {c.ticket ? `R$ ${Number(c.ticket).toLocaleString('pt-BR')}` : '—'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button onClick={() => copyUrl(c)}
-                          className="text-xs px-2.5 py-1.5 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50">
-                          {copiedId === c.accountId ? 'Copiado ✓' : 'Copiar URL'}
-                        </button>
-                        <button onClick={() => onEdit(c)}
-                          className="text-xs px-2.5 py-1.5 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50">
-                          Editar
-                        </button>
-                        <button onClick={() => remove(c)} disabled={deleting === c.accountId}
-                          className="text-xs px-2.5 py-1.5 rounded-md border border-red-200 text-red-500 hover:bg-red-50 disabled:opacity-40">
-                          {deleting === c.accountId ? '...' : 'Excluir'}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                  <Fragment key={c.accountId}>
+                    <tr className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60">
+                      <td className="px-4 py-3">
+                        <div className="font-semibold text-slate-900">{c.name}</div>
+                        <div className="text-[10px] font-mono text-slate-400 truncate max-w-[220px]">
+                          {c.slug ? `/?clinic=${c.slug}` : c.accountId}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell">
+                        <div className="flex flex-wrap gap-1 items-center">
+                          {types.map(t => (
+                            <span key={t} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{typeLabel(t)}</span>
+                          ))}
+                          {dims.map(d => (
+                            <span key={d} className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 border border-indigo-100">{d}</span>
+                          ))}
+                          {hasClinicorp && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100 font-medium">
+                              Clinicorp ✓{c.steps._clinicorp.units.length > 1 ? ` (${c.steps._clinicorp.units.length})` : ''}
+                            </span>
+                          )}
+                          {hasClinicorp && status && (
+                            <SyncBadge status={status} expanded={isExpanded}
+                              onToggle={() => setExpandedId(isExpanded ? null : c.accountId)} />
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono text-slate-600 hidden sm:table-cell">
+                        {c.ticket ? `R$ ${Number(c.ticket).toLocaleString('pt-BR')}` : '—'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button onClick={() => copyUrl(c)}
+                            className="text-xs px-2.5 py-1.5 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50">
+                            {copiedId === c.accountId ? 'Copiado ✓' : 'Copiar URL'}
+                          </button>
+                          <button onClick={() => onEdit(c)}
+                            className="text-xs px-2.5 py-1.5 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50">
+                            Editar
+                          </button>
+                          <button onClick={() => remove(c)} disabled={deleting === c.accountId}
+                            className="text-xs px-2.5 py-1.5 rounded-md border border-red-200 text-red-500 hover:bg-red-50 disabled:opacity-40">
+                            {deleting === c.accountId ? '...' : 'Excluir'}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {isExpanded && status && (
+                      <tr>
+                        <td colSpan={4} className="p-0">
+                          <SyncDetails status={status} />
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 )
               })}
             </tbody>
@@ -177,14 +248,24 @@ function ClinicList({ clinics, onNew, onEdit, onDeleted, onError, onImportClinic
 export default function AdminApp() {
   const [authed,  setAuthed]  = useState(false)
   const [clinics, setClinics] = useState([])
+  const [syncStatusByAccount, setSyncStatusByAccount] = useState({})
   const [view,    setView]    = useState('list')   // 'list' | 'wizard' | 'clinicorp-import'
   const [editing, setEditing] = useState(null)
   const [error,   setError]   = useState(null)
+
+  const loadSyncStatus = () => {
+    getSyncStatus()
+      .then(({ clinics: statuses }) => {
+        setSyncStatusByAccount(Object.fromEntries(statuses.map(s => [s.accountId, s])))
+      })
+      .catch(() => {}) // widget é best-effort — não bloqueia a lista de clínicas
+  }
 
   const refresh = async () => {
     try {
       const { clinics } = await listClinics()
       setClinics(clinics)
+      loadSyncStatus()
     } catch (err) {
       if (err.status === 401) { clearSecret(); setAuthed(false) }
       else setError(err.message)
@@ -195,12 +276,12 @@ export default function AdminApp() {
   useEffect(() => {
     if (!getSecret()) return
     listClinics()
-      .then(({ clinics }) => { setClinics(clinics); setAuthed(true) })
+      .then(({ clinics }) => { setClinics(clinics); setAuthed(true); loadSyncStatus() })
       .catch(() => clearSecret())
   }, [])
 
   if (!authed) {
-    return <LoginGate onAuthed={(clinics) => { setClinics(clinics); setAuthed(true) }} />
+    return <LoginGate onAuthed={(clinics) => { setClinics(clinics); setAuthed(true); loadSyncStatus() }} />
   }
 
   return (
@@ -233,6 +314,7 @@ export default function AdminApp() {
         {view === 'list' ? (
           <ClinicList
             clinics={clinics}
+            syncStatusByAccount={syncStatusByAccount}
             onNew={() => { setEditing(null); setView('wizard') }}
             onEdit={(c) => { setEditing(c); setView('wizard') }}
             onDeleted={refresh}

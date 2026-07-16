@@ -3,7 +3,8 @@ import { fetchDashboard } from './api'
 import {
   computeKpis, computePreviousKpis, computeRevenue, computePreviousRevenue, delta,
   getLost, getNegotiating, getUpcoming, computeFunnel, breakdownByDimension,
-  revenueByDimension,
+  revenueByDimension, campaignBreakdown, computeResponseTime, computePreviousResponseTime,
+  getStuckLeads,
 } from './utils/parseCards'
 import { groupCardsByTime, getGranularity } from './utils/groupByTime'
 import { todayBR, daysAgoBR } from './utils/dates'
@@ -20,6 +21,8 @@ import FunnelChart     from './components/FunnelChart.jsx'
 import ContractsCard   from './components/ContractsCard.jsx'
 import DimensionBreakdown from './components/DimensionBreakdown.jsx'
 import RevenueDonut     from './components/RevenueDonut.jsx'
+import CampaignTable    from './components/CampaignTable.jsx'
+import StuckLeadsTable  from './components/StuckLeadsTable.jsx'
 import NotConfigured   from './components/NotConfigured.jsx'
 
 const todayStr = todayBR
@@ -118,6 +121,21 @@ export default function App() {
     }
   }, [kpis, prevKpis])
 
+  // Tempo de resposta da CRC — só exibido para clínicas SEM IA (flags.hasIA).
+  const hasIA = data?.flags?.hasIA ?? false
+  const responseTime = useMemo(
+    () => (hasIA ? null : computeResponseTime(cards, dateFrom, dateTo)),
+    [cards, dateFrom, dateTo, hasIA],
+  )
+  const prevResponseTime = useMemo(
+    () => (hasIA ? null : computePreviousResponseTime(cards, dateFrom, dateTo)),
+    [cards, dateFrom, dateTo, hasIA],
+  )
+  const responseTimeDelta = useMemo(
+    () => delta(responseTime?.avgDays, prevResponseTime?.avgDays),
+    [responseTime, prevResponseTime],
+  )
+
   const revenue = useMemo(
     () => computeRevenue(cards, dateFrom, dateTo, ticket, today),
     [cards, dateFrom, dateTo, ticket, today],
@@ -153,6 +171,8 @@ export default function App() {
   const lost       = useMemo(() => getLost(cards, dateFrom, dateTo), [cards, dateFrom, dateTo])
   const negotiating = useMemo(() => getNegotiating(cards, dateFrom, dateTo), [cards, dateFrom, dateTo])
   const upcoming   = useMemo(() => getUpcoming(cards, today), [cards, today])
+  const [stuckMinDays, setStuckMinDays] = useState(7)
+  const stuckLeads = useMemo(() => getStuckLeads(cards, today, stuckMinDays), [cards, today, stuckMinDays])
 
   const funnel = useMemo(
     () => computeFunnel(cards, dateFrom, dateTo, data?.funnelConfig),
@@ -179,6 +199,13 @@ export default function App() {
         revenueByDimension(cards, key, def.values, dateFrom, dateTo),
       ])
     )
+  }, [data, cards, dateFrom, dateTo])
+  // Campanhas: seção própria, corte por customField (não é mais uma dimensão
+  // do funil comum — tem colunas e réguas específicas, ver campaignBreakdown).
+  const campaignRows = useMemo(() => {
+    const def = data?.dimensions?.campanha
+    if (!def) return []
+    return campaignBreakdown(cards, 'campanha', def.values, dateFrom, dateTo, data?.funnelConfig)
   }, [data, cards, dateFrom, dateTo])
 
   const applyRange = (days) => { setDateFrom(daysAgo(days)); setDateTo(todayStr()) }
@@ -323,6 +350,8 @@ export default function App() {
             chartData={{ data: chartData }}
             ticket={ticket}
             onTicketChange={setTicket}
+            responseTime={responseTime}
+            responseTimeDelta={responseTimeDelta}
           />
 
           {/* ── 3. Funil (herói visual) + quebras por dimensão ───────────────
@@ -387,6 +416,16 @@ export default function App() {
             <LostTable cards={lost} ticket={ticket} />
             <BudgetTable cards={negotiating} ticket={ticket} />
           </div>
+          <div className="p-5 border-t border-slate-200">
+            <StuckLeadsTable leads={stuckLeads} minDays={stuckMinDays} onMinDaysChange={setStuckMinDays} />
+          </div>
+
+          {/* ── 7. Campanhas (corte por customField, preenchido manualmente) ── */}
+          {campaignRows.length > 0 && (
+            <div className="p-5 border-t border-slate-200">
+              <CampaignTable rows={campaignRows} />
+            </div>
+          )}
 
           {/* ── Footer ───────────────────────────────────────────────────── */}
           <div className="px-5 py-3 border-t border-slate-200 bg-white flex justify-between text-[11px] text-slate-400">

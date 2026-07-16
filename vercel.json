@@ -4,6 +4,7 @@
     "api/admin/panels.js": { "maxDuration": 30 },
     "api/admin/clinics.js": { "maxDuration": 30 },
     "api/admin/clinicorp-directory.js": { "maxDuration": 30 },
+    "api/admin/sync-status.js": { "maxDuration": 30 },
     "api/cron/sync-clinicorp.js": { "maxDuration": 60 }
   },
   "rewrites": [

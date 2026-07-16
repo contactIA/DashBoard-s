@@ -50,6 +50,9 @@ export const getPanelSteps = ({ helenaToken, accountId } = {}, panelId) => {
 
 export const getClinicorpDirectory = () => call('/api/admin/clinicorp-directory')
 
+// Widget de saúde do sync (badge por clínica com Clinicorp vinculado)
+export const getSyncStatus = () => call('/api/admin/sync-status')
+
 // Usuários (CRCs) cadastrados nas contas Clinicorp já configuradas no wizard —
 // para o autocomplete do mapa CRC (etiqueta Helena → nome no Clinicorp).
 // accountId (edição): permite o servidor restaurar o token real quando o

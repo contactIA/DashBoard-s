@@ -133,6 +133,43 @@ export function computePreviousKpis(cards, from, to) {
   )
 }
 
+/**
+ * Tempo de resposta da CRC (PLANO_AGENDADOR_CAMPANHA.md FASE 5) — só faz
+ * sentido para clínicas SEM IA (com IA, mede o tempo da automação, não do
+ * humano). Mede createdAt → scheduledAt (dias, 1 casa): "lead chegou → CRC
+ * agendou". Cards do período (por scheduledInPeriod — mesma janela usada na
+ * barra "Agendaram" do funil) que tenham os dois campos preenchidos.
+ */
+export function computeResponseTime(cards, from, to) {
+  if (!cards?.length || !from || !to) return null
+  const withBoth = cards.filter(c => c.createdAt && c.scheduledAt && scheduledInPeriod(c, from, to))
+  if (!withBoth.length) return { count: 0, avgDays: null, medianDays: null }
+
+  const days = withBoth
+    .map(c => (new Date(c.scheduledAt) - new Date(c.createdAt)) / 86_400_000)
+    .filter(d => Number.isFinite(d) && d >= 0)
+    .sort((a, b) => a - b)
+  if (!days.length) return { count: 0, avgDays: null, medianDays: null }
+
+  const avgDays = days.reduce((s, d) => s + d, 0) / days.length
+  const mid = Math.floor(days.length / 2)
+  const medianDays = days.length % 2 ? days[mid] : (days[mid - 1] + days[mid]) / 2
+
+  return { count: days.length, avgDays, medianDays }
+}
+
+/** Tempo de resposta do período imediatamente anterior de mesma duração */
+export function computePreviousResponseTime(cards, from, to) {
+  const duration = new Date(to) - new Date(from)
+  const prevTo   = new Date(new Date(from) - 86_400_000)
+  const prevFrom = new Date(prevTo - duration)
+  return computeResponseTime(
+    cards,
+    prevFrom.toISOString().slice(0, 10),
+    prevTo.toISOString().slice(0, 10),
+  )
+}
+
 /** Calcula delta percentual (retorna null se denominador for 0 ou prev for null) */
 export function delta(current, prev) {
   if (prev == null || prev === 0 || current == null) return null
@@ -315,22 +352,37 @@ export function computeFunnel(cards, from, to, funnelCfg) {
 
 /**
  * Quebra o funil por uma dimensão (origem, agendador, …).
- * Retorna [{ value, funnel }] em ordem de volume de entrada.
+ * Retorna [{ value, funnel }] em ordem de volume de entrada, com uma linha
+ * `value: null` ("Sem <dimensão>") sempre por último quando houver volume —
+ * indica etiqueta faltando no card ou nome faltando no mapa (ex: crcMap).
  */
 export function breakdownByDimension(cards, dimKey, values, from, to, funnelCfg) {
   if (!cards?.length || !dimKey) return []
   // Uma linha por etiqueta, com contas que o cliente confere de cabeça:
-  //   AGENDOU (movimentação no período) → desses, NÃO FECHOU / EM ABERTO /
-  //   FECHOU. Taxas na própria linha: comparecimento = compareceu ÷ agendou;
-  //   fechamento = fechou ÷ compareceu (mesma régua do funil de pipeline).
+  //   AGENDOU → desses, NÃO FECHOU / EM ABERTO / FECHOU. Taxas na própria
+  //   linha: comparecimento = compareceu ÷ agendou; fechamento = fechou ÷
+  //   compareceu (mesma régua do funil de pipeline).
+  // "Agendou" usa a mesma janela do funil geral (data do Agendado em, não
+  // movimentação) — senão a tabela por dimensão diverge do funil geral no
+  // mesmo período (REGRAS_DASHBOARD.md §7.1).
   const inRange = cards.filter(c => inPeriod(c, from, to))
-  return (values ?? [])
+  const agendouCards = cards.filter(c => scheduledInPeriod(c, from, to))
+  const labels = [...(values ?? []), null] // null = "sem" essa dimensão
+  return labels
     .map(v => ({
       value: v,
-      funnel: funnelOf(inRange.filter(c => (c.dims?.[dimKey] ?? null) === v), funnelCfg),
+      funnel: funnelOf(
+        inRange.filter(c => (c.dims?.[dimKey] ?? null) === v),
+        funnelCfg,
+        { agendouCards: agendouCards.filter(c => (c.dims?.[dimKey] ?? null) === v) },
+      ),
     }))
     .filter(r => r.funnel.agendou > 0 || r.funnel.compareceu > 0 || r.funnel.fechou > 0)
-    .sort((a, b) => b.funnel.agendou - a.funnel.agendou)
+    .sort((a, b) => {
+      if (a.value === null) return 1
+      if (b.value === null) return -1
+      return b.funnel.agendou - a.funnel.agendou
+    })
 }
 
 /**
@@ -358,6 +410,50 @@ export function revenueByDimension(cards, dimKey, values, from, to) {
     .sort((a, b) => b.fechada - a.fechada)
 }
 
+/**
+ * Quebra por Campanha (PLANO_AGENDADOR_CAMPANHA.md FASE 3.2) — reusa
+ * funnelOf/inPeriod/scheduledInPeriod/createdInPeriod, nenhuma régua nova:
+ *   Leads = criados no período (todos os steps — aqui createdAt é o correto,
+ *     por definição: mede quem ENTROU pela campanha, não quem já avançou).
+ *   Agendados = régua cumulativa `agendou` do funil (mesma da tabela de CRC).
+ *   Compareceram = régua `compareceu` · Fecharam = converted.
+ *   Faltaram = missed da campanha; No-show% = faltaram ÷ (compareceram+faltaram)
+ *     — mede qualidade do lead da campanha, não desempenho da CRC.
+ *   Valor fechado = soma value dos converted · Ticket médio = valor ÷ nº
+ *     converted COM valor preenchido.
+ * Retorna [{ value, leads, funnel, faltaram, noShowPct, valorFechado, ticketMedio }],
+ * com "Sem campanha" (value: null) sempre por último.
+ */
+export function campaignBreakdown(cards, dimKey, values, from, to, funnelCfg) {
+  if (!cards?.length || !dimKey) return []
+  const inRange      = cards.filter(c => inPeriod(c, from, to))
+  const agendouCards = cards.filter(c => scheduledInPeriod(c, from, to))
+  const leadsCards    = cards.filter(c => createdInPeriod(c, from, to))
+  const labels = [...(values ?? []), null]
+
+  return labels
+    .map(v => {
+      const ofValue = (arr) => arr.filter(c => (c.dims?.[dimKey] ?? null) === v)
+      const leads   = ofValue(leadsCards).length
+      const funnel  = funnelOf(ofValue(inRange), funnelCfg, { agendouCards: ofValue(agendouCards) })
+      const faltaram = ofValue(inRange).filter(c => c.stepType === 'missed').length
+      const noShowPct = (funnel.compareceu + faltaram) > 0
+        ? (faltaram / (funnel.compareceu + faltaram)) * 100
+        : null
+      const fechados = ofValue(inRange).filter(c => c.stepType === 'converted')
+      const valorFechado = fechados.reduce((s, c) => s + (c.value > 0 ? c.value : 0), 0)
+      const fechadosComValor = fechados.filter(c => c.value > 0).length
+      const ticketMedio = fechadosComValor > 0 ? valorFechado / fechadosComValor : null
+      return { value: v, leads, funnel, faltaram, noShowPct, valorFechado, ticketMedio }
+    })
+    .filter(r => r.leads > 0 || r.funnel.agendou > 0 || r.funnel.compareceu > 0 || r.funnel.fechou > 0)
+    .sort((a, b) => {
+      if (a.value === null) return 1
+      if (b.value === null) return -1
+      return b.leads - a.leads
+    })
+}
+
 /** Cards de "compareceu mas não fechou" dentro do período, com nome/telefone */
 export function getLost(cards, from, to) {
   if (!cards?.length) return []
@@ -373,6 +469,26 @@ export function getNegotiating(cards, from, to) {
   return cards
     .filter(c => c.stepType === 'negotiating' && inPeriod(c, from, to))
     .sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
+    .map(withContact)
+}
+
+/**
+ * Leads parados (PLANO_AGENDADOR_CAMPANHA.md FASE 6): cards em lead/
+ * notScheduled cuja última movimentação (updatedAt) passou de N dias —
+ * fila de trabalho pronta para a CRC, ordenada do mais antigo parado.
+ */
+export function getStuckLeads(cards, today, minDays = 7) {
+  if (!cards?.length) return []
+  const todayMs = new Date(today).getTime()
+  return cards
+    .filter(c => c.stepType === 'lead' || c.stepType === 'notScheduled')
+    .map(c => {
+      const last = c.updatedAt?.slice(0, 10) ?? c.createdAt?.slice(0, 10) ?? null
+      const daysStuck = last ? Math.floor((todayMs - new Date(last).getTime()) / 86_400_000) : null
+      return { ...c, daysStuck }
+    })
+    .filter(c => c.daysStuck != null && c.daysStuck >= minDays)
+    .sort((a, b) => b.daysStuck - a.daysStuck)
     .map(withContact)
 }
 

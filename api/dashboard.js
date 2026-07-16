@@ -161,6 +161,7 @@ export default async function handler(req, res) {
   const extractCfg  = rawSteps._extract ?? null
   const dimsCfg     = rawSteps._dims ?? null
   const funnelCfg   = rawSteps._funnel ?? null
+  const flags       = rawSteps._flags ?? {}
   // Steps "de verdade" (sem as chaves reservadas de config)
   const steps = Object.fromEntries(
     Object.entries(rawSteps).filter(([k]) => !RESERVED_KEYS.has(k))
@@ -265,9 +266,22 @@ export default async function handler(req, res) {
     // Definição das dimensões para o frontend renderizar quebras genericamente
     const dimensions = dimsCfg
       ? Object.fromEntries(Object.entries(dimsCfg).map(([k, def]) => {
-          const values = def.source === 'tag'
-            ? [...new Set(Object.values(def.values ?? {}))]
-            : [...new Set((def.rules ?? []).map(r => r.value))]
+          let values
+          if (def.source === 'tag') {
+            values = [...new Set(Object.values(def.values ?? {}))]
+          } else if (def.source?.startsWith('customFields.')) {
+            // Campo de valor livre (ex: Campanhas): sem lista fixa — os valores
+            // são os distintos vistos nos cards, ordenados por contagem (mais
+            // frequente primeiro).
+            const counts = new Map()
+            for (const c of cards) {
+              const v = c.dims?.[k]
+              if (v) counts.set(v, (counts.get(v) ?? 0) + 1)
+            }
+            values = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v)
+          } else {
+            values = [...new Set((def.rules ?? []).map(r => r.value))]
+          }
           return [k, { label: def.label ?? k, values, isUnit: def.isUnit ?? false }]
         }))
       : {}
@@ -283,6 +297,7 @@ export default async function handler(req, res) {
       steps,
       dimensions,
       funnelConfig: funnelCfg,
+      flags,
       cards,
       diagnostics,
       fetchedAt:  new Date().toISOString(),
