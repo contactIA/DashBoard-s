@@ -98,11 +98,14 @@ function clinicorpToUnits(cc) {
 
 // _dims (config salva) → estado do editor: [{ id, label, tags: [{ tid, label }] }]
 // O label de cada tag é o rótulo exibido no funil (pode diferir do nome da etiqueta).
+// Dimensão de campo personalizado (source: 'customFields.<key>') não tem tags —
+// o valor é o texto livre do campo (ex: Campanhas), sem lista fixa pra mapear.
 function dimsToState(dims) {
   return Object.entries(dims ?? {}).map(([key, def]) => ({
     id:     newDimId(),
     label:  def.label ?? key,
     isUnit: def.isUnit ?? false,
+    customFieldKey: def.source?.startsWith('customFields.') ? def.source.slice(13) : null,
     tags:   Object.entries(def.values ?? {}).map(([tid, label]) => ({ tid, label })),
   }))
 }
@@ -124,8 +127,17 @@ function stateToDims(dimensions, tagName) {
   const out = {}
   for (const d of dimensions) {
     const label = d.label?.trim()
-    const tags  = d.tags.filter(t => t.tid)
-    if (!label || !tags.length) continue
+    if (!label) continue
+    if (d.customFieldKey) {
+      // Campo personalizado: sem lista fixa de valores (texto livre) — o
+      // corte é derivado dos cards direto no backend (api/dashboard.js).
+      let key = kebabify(label).replace(/-/g, '') || 'dim'
+      while (out[key]) key += '2'
+      out[key] = { label, source: `customFields.${d.customFieldKey}` }
+      continue
+    }
+    const tags = d.tags.filter(t => t.tid)
+    if (!tags.length) continue
     let key = kebabify(label).replace(/-/g, '') || 'dim'
     while (out[key]) key += '2'
     out[key] = {
@@ -367,6 +379,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
 
   const [mappedSteps, setMappedSteps] = useState([])
   const [ticket,      setTicket]      = useState(clinic?.ticket ?? 10000)
+  const [hasIA,       setHasIA]       = useState(clinic?.steps?._flags?.hasIA ?? false)
 
   const [sampleCards, setSampleCards] = useState([])
   const [panelTags,   setPanelTags]   = useState([])
@@ -522,7 +535,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
       steps:     buildStepsConfig(mappedSteps, finalExtract, stateToDims(dimensions, tagName), {
         stages: funnelStages,
         mergeCancelledRescheduled: mergeCancelReagend,
-      }, clinicorpConfig(), deriveDatesConfig(finalExtract)),
+      }, clinicorpConfig(), deriveDatesConfig(finalExtract), { hasIA }),
     }
     if (isEdit) await updateClinic(payload)
     else        await createClinic(payload)
@@ -561,8 +574,9 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
   const assignedTagIds = new Set(dimensions.flatMap(d => d.tags.map(t => t.tid)))
   const unassignedTags = panelTags.filter(t => !assignedTagIds.has(t.id))
 
-  const addDimension     = ()              => setDimensions(ds => [...ds, { id: newDimId(), label: '', isUnit: false, tags: [] }])
+  const addDimension     = ()              => setDimensions(ds => [...ds, { id: newDimId(), label: '', isUnit: false, customFieldKey: null, tags: [] }])
   const removeDimension  = (id)            => setDimensions(ds => ds.filter(d => d.id !== id))
+  const setDimCustomField = (id, key)      => setDimensions(ds => ds.map(d => d.id === id ? { ...d, customFieldKey: key || null, ...(key ? { isUnit: false } : {}) } : d))
   // Marca (ou desmarca) uma dimensão como a unidade — exclusivo: só uma pode ser
   const toggleUnitDim    = (id)            => setDimensions(ds => ds.map(d => ({ ...d, isUnit: d.id === id ? !d.isUnit : false })))
   const renameDimension  = (id, label)     => setDimensions(ds => ds.map(d => d.id === id ? { ...d, label } : d))
@@ -770,6 +784,19 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                 </div>
               </div>
 
+              {/* IA no agendamento */}
+              <div className="flex items-start gap-3 px-4 py-3.5">
+                <label className="flex items-start gap-3 cursor-pointer w-full">
+                  <input type="checkbox" className="mt-0.5" checked={hasIA} onChange={e => setHasIA(e.target.checked)} />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium text-slate-800">Esta clínica usa IA para agendar?</div>
+                    <div className="text-xs text-slate-400 mt-0.5">
+                      Habilita/oculta o KPI "Tempo até agendar" (só faz sentido medir tempo humano quando não há IA).
+                    </div>
+                  </div>
+                </label>
+              </div>
+
               {/* Clinicorp (opcional) */}
               <div className="flex items-start gap-3 px-4 py-3.5">
                 <Check ok />
@@ -850,6 +877,17 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
               <input className={`${inputCls} font-mono`} type="number" min="0" step="100"
                 value={ticket} onChange={e => setTicket(e.target.value)} />
             </Field>
+          </div>
+          <div className="bg-white border border-slate-200 rounded-xl p-4 max-w-xs">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input type="checkbox" className="mt-0.5" checked={hasIA} onChange={e => setHasIA(e.target.checked)} />
+              <div>
+                <div className="text-sm font-medium text-slate-800">Esta clínica usa IA para agendar?</div>
+                <div className="text-xs text-slate-400 mt-0.5">
+                  Habilita/oculta o KPI "Tempo até agendar" (só faz sentido medir tempo humano quando não há IA).
+                </div>
+              </div>
+            </label>
           </div>
           <div className="flex justify-between pt-2">
             <button onClick={() => setStep(1)} className="text-sm text-slate-500 hover:text-slate-900">← Voltar</button>
@@ -994,54 +1032,96 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                     <div className="flex items-center gap-2 mb-3">
                       <input
                         className="flex-1 px-2.5 py-1.5 text-sm font-semibold text-slate-800 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400"
-                        placeholder="Nome da dimensão (ex: Origem)"
+                        placeholder="Nome da dimensão (ex: Origem, Campanha)"
                         value={d.label} onChange={e => renameDimension(d.id, e.target.value)} />
-                      <button type="button" onClick={() => toggleUnitDim(d.id)}
-                        title="Usar esta dimensão como filtro de unidade no topo do dashboard"
-                        className={`text-xs px-2.5 py-1.5 rounded-md border shrink-0 font-medium transition-colors ${
-                          d.isUnit
-                            ? 'border-indigo-500 bg-indigo-50 text-indigo-600'
-                            : 'border-slate-200 text-slate-500 hover:bg-slate-50'
-                        }`}>
-                        {d.isUnit ? '🏢 Unidade ✓' : 'É unidade?'}
-                      </button>
+                      <select
+                        value={d.customFieldKey ? 'customField' : 'tag'}
+                        onChange={e => setDimCustomField(d.id, e.target.value === 'customField' ? (d.customFieldKey ?? '') : null)}
+                        title="Fonte do corte"
+                        className="text-xs px-2 py-1.5 rounded-md border border-slate-200 text-slate-600 bg-white shrink-0 cursor-pointer">
+                        <option value="tag">Etiquetas</option>
+                        <option value="customField">Campo personalizado</option>
+                      </select>
+                      {!d.customFieldKey && (
+                        <button type="button" onClick={() => toggleUnitDim(d.id)}
+                          title="Usar esta dimensão como filtro de unidade no topo do dashboard"
+                          className={`text-xs px-2.5 py-1.5 rounded-md border shrink-0 font-medium transition-colors ${
+                            d.isUnit
+                              ? 'border-indigo-500 bg-indigo-50 text-indigo-600'
+                              : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                          }`}>
+                          {d.isUnit ? '🏢 Unidade ✓' : 'É unidade?'}
+                        </button>
+                      )}
                       <button onClick={() => removeDimension(d.id)}
                         className="text-xs px-2.5 py-1.5 rounded-md border border-red-200 text-red-500 hover:bg-red-50 shrink-0">
                         Remover
                       </button>
                     </div>
 
-                    <div className="space-y-1.5">
-                      {d.tags.length === 0 && (
-                        <span className="text-[11px] text-slate-400">Nenhuma etiqueta ainda — escolha abaixo.</span>
-                      )}
-                      {d.tags.map(t => {
-                        const info = tagById.get(t.tid) ?? { id: t.tid, name: t.label, color: null, textColor: null, count: 0 }
-                        return (
-                          <div key={t.tid} className="flex items-center gap-2">
-                            <div className="w-32 shrink-0"><TagChip tag={info} /></div>
-                            <span className="text-slate-300 text-xs shrink-0">→</span>
-                            <input
-                              className="flex-1 min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-md bg-white focus:outline-none focus:border-slate-400"
-                              placeholder={`rótulo no funil (ex: ${info.name})`}
-                              value={t.label} onChange={e => renameTagLabel(d.id, t.tid, e.target.value)} />
-                            <button type="button" onClick={() => removeTagFromDim(d.id, t.tid)}
-                              className="text-slate-300 hover:text-red-500 px-1 shrink-0" title="Remover etiqueta">✕</button>
-                          </div>
-                        )
-                      })}
-                    </div>
-
-                    {unassignedTags.length > 0 && (
-                      <div className="mt-2.5">
-                        <select value="" onChange={e => { if (e.target.value) addTagToDim(d.id, e.target.value) }}
-                          className="text-[11px] px-2 py-1 rounded-md border border-dashed border-slate-300 text-slate-500 bg-white hover:border-slate-400 focus:outline-none focus:border-slate-400 cursor-pointer">
-                          <option value="">+ adicionar etiqueta</option>
-                          {unassignedTags.map(t => (
-                            <option key={t.id} value={t.id}>{t.name}{t.count ? ` (${t.count})` : ''}</option>
+                    {d.customFieldKey !== null ? (() => {
+                      // Mesma convenção da Extração: card.customFields é indexado por
+                      // id interno ou key (nunca pelo nome exibido) — testa os dois
+                      // contra as amostras e usa o que bate, sem o admin precisar saber.
+                      const current = d.customFieldKey
+                        ? panelCustomFields.find(cf => cf.key === d.customFieldKey || cf.id === d.customFieldKey)
+                        : null
+                      return (
+                        <select
+                          value={current?.id ?? ''}
+                          onChange={e => {
+                            const cf = panelCustomFields.find(f => f.id === e.target.value)
+                            if (!cf) { setDimCustomField(d.id, ''); return }
+                            const candidates = [cf.key, cf.id].filter(Boolean)
+                            let bestKey = candidates[0], bestHits = -1
+                            for (const k of candidates) {
+                              const hits = countExtractHits([{ from: `customFields.${k}` }], sampleCards, 'text')
+                              if (hits > bestHits) { bestHits = hits; bestKey = k }
+                            }
+                            setDimCustomField(d.id, bestKey)
+                          }}
+                          className="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-md bg-white focus:outline-none focus:border-slate-400">
+                          <option value="">{panelCustomFields.length ? 'Selecione o campo…' : 'Nenhum campo personalizado encontrado'}</option>
+                          {panelCustomFields.map(cf => (
+                            <option key={cf.id} value={cf.id}>{cf.name}{cf.type ? ` (${cf.type})` : ''}</option>
                           ))}
                         </select>
-                      </div>
+                      )
+                    })() : (
+                      <>
+                        <div className="space-y-1.5">
+                          {d.tags.length === 0 && (
+                            <span className="text-[11px] text-slate-400">Nenhuma etiqueta ainda — escolha abaixo.</span>
+                          )}
+                          {d.tags.map(t => {
+                            const info = tagById.get(t.tid) ?? { id: t.tid, name: t.label, color: null, textColor: null, count: 0 }
+                            return (
+                              <div key={t.tid} className="flex items-center gap-2">
+                                <div className="w-32 shrink-0"><TagChip tag={info} /></div>
+                                <span className="text-slate-300 text-xs shrink-0">→</span>
+                                <input
+                                  className="flex-1 min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-md bg-white focus:outline-none focus:border-slate-400"
+                                  placeholder={`rótulo no funil (ex: ${info.name})`}
+                                  value={t.label} onChange={e => renameTagLabel(d.id, t.tid, e.target.value)} />
+                                <button type="button" onClick={() => removeTagFromDim(d.id, t.tid)}
+                                  className="text-slate-300 hover:text-red-500 px-1 shrink-0" title="Remover etiqueta">✕</button>
+                              </div>
+                            )
+                          })}
+                        </div>
+
+                        {unassignedTags.length > 0 && (
+                          <div className="mt-2.5">
+                            <select value="" onChange={e => { if (e.target.value) addTagToDim(d.id, e.target.value) }}
+                              className="text-[11px] px-2 py-1 rounded-md border border-dashed border-slate-300 text-slate-500 bg-white hover:border-slate-400 focus:outline-none focus:border-slate-400 cursor-pointer">
+                              <option value="">+ adicionar etiqueta</option>
+                              {unassignedTags.map(t => (
+                                <option key={t.id} value={t.id}>{t.name}{t.count ? ` (${t.count})` : ''}</option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 ))}

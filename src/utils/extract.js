@@ -243,6 +243,13 @@ export function dimValue(card, def) {
     }
     return null
   }
+  // Campo personalizado de valor livre (ex: Campanhas) — sem `values`/`rules`
+  // fixos: o valor é o próprio texto do customField (array → primeiro item).
+  if (def.source?.startsWith('customFields.')) {
+    const raw = card.customFields?.[def.source.slice(13)]
+    const v = String(Array.isArray(raw) ? raw[0] ?? '' : raw ?? '').trim()
+    return v || null
+  }
   return null
 }
 

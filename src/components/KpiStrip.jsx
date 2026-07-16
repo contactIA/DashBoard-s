@@ -19,7 +19,9 @@ function KpiCell({ label, value, sub, spark, sparkColor, last }) {
   )
 }
 
-export default function KpiStrip({ kpis, prevKpis, delta: d, chartData, ticket, onTicketChange }) {
+const fmtDays = (n) => n == null ? '—' : n.toFixed(1).replace('.', ',')
+
+export default function KpiStrip({ kpis, prevKpis, delta: d, chartData, ticket, onTicketChange, responseTime, responseTimeDelta }) {
   // Séries por TIPO de métrica (emitidas por groupCardsByTime) — agnóstico de clínica
   const rows = chartData?.data ?? []
   const sparkFor = (key) => rows.map(row => row[key] ?? 0)
@@ -63,6 +65,20 @@ export default function KpiStrip({ kpis, prevKpis, delta: d, chartData, ticket, 
         spark={spark.rescheduled}
         sparkColor="#8B5CF6"
       />
+      {/* Tempo de resposta da CRC — só clínicas SEM IA (ver flags.hasIA);
+          com IA o número mediria a automação, não o tempo humano. */}
+      {responseTime && (
+        <KpiCell
+          label="Tempo até agendar"
+          value={responseTime.avgDays != null ? `${fmtDays(responseTime.avgDays)}d` : '—'}
+          sub={
+            responseTime.avgDays != null
+              ? `mediana ${fmtDays(responseTime.medianDays)}d · ${responseTime.count} agendamento${responseTime.count !== 1 ? 's' : ''}`
+                + (responseTimeDelta != null ? ` · ${responseTimeDelta > 0 ? '+' : ''}${responseTimeDelta.toFixed(0)}%` : '')
+              : 'sem agendamentos no período'
+          }
+        />
+      )}
       {/* Ticket médio — editável */}
       <div className="flex-1 min-w-[150px] px-4 py-3.5">
         <div className="text-[11px] text-slate-400 font-medium mb-1.5">Ticket médio</div>
