@@ -6,3 +6,6 @@ dist
 
 # material de referência local (não versionado)
 Documentação API Helena/
+
+# saídas de scripts one-shot (relatórios com dados de pacientes)
+scripts/out/

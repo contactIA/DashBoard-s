@@ -251,6 +251,9 @@ export async function syncClinicClinicorp(clinic) {
   const hoje = iso(today)
 
   const allMoves = [], allCreates = []
+  // Só etiquetas conhecidas por algum crcMap podem ser removidas/trocadas pelo
+  // MOVE — protege tags de unidade/origem/etc., que não fazem parte disso.
+  const allCrcTagIds = new Set(units.flatMap((u) => (u.crcMap ?? []).map((m) => m.tagId)))
 
   for (const unit of units) {
     if (!unit.user || !unit.token) continue
@@ -316,8 +319,18 @@ export async function syncClinicClinicorp(clinic) {
     for (const a of appts) {
       const quando = String(a.date ?? '').slice(0, 10)
       const type = statusById[a.StatusId]?.Type ?? null
-      if (a.Patient_PersonId && a.CreateUserName) agendadorByPatient.set(String(a.Patient_PersonId), a.CreateUserName)
       const criadoEm = String(a.CreateDate ?? '').slice(0, 10) || null // "Agendado em": dia em que o agendamento foi criado no Clinicorp
+      // Guarda o agendamento mais recente por DATA DO AGENDADO EM (CreateDate) —
+      // com 2+ agendamentos do paciente na janela, "quem agendou por último" vence,
+      // consistente com o valor gravado em customFields['agendado-em-'] (want.criadoEm).
+      if (a.Patient_PersonId && a.CreateUserName) {
+        const pid0 = String(a.Patient_PersonId)
+        const agendadoEm = String(criadoEm ?? '')
+        const prevAgendador = agendadorByPatient.get(pid0)
+        if (!prevAgendador || agendadoEm > prevAgendador.agendadoEm) {
+          agendadorByPatient.set(pid0, { nome: a.CreateUserName, agendadoEm })
+        }
+      }
       const extra = { nome: a.PatientName, quando, time: a.fromTime ?? null, criadoEm, telefone: a.MobilePhone, patientId: a.Patient_PersonId, primeiraConsulta: Boolean(a.FirstAppointment) }
       if (a.Deleted === 'X') propose(a.Patient_PersonId, { target: 'DESMARCOU', motivo: `desmarcado ${quando}`, ...extra }, 2)
       else if (type === 'MISSED') propose(a.Patient_PersonId, { target: 'FALTOU', motivo: `faltou ${quando}`, ...extra }, 3)
@@ -341,7 +354,7 @@ export async function syncClinicClinicorp(clinic) {
 
       if (!card) {
         if (want.primeiraConsulta || want.valor != null || want.target === 'FECHOU') {
-          const crcNome = agendadorByPatient.get(pid) ?? null
+          const crcNome = agendadorByPatient.get(pid)?.nome ?? null
           const crcTagId = resolveCrcTagId(crcNome) // SÓ o mapa do setup (_crcMap) — sem adivinhação
           if (crcNome && !crcTagId) summary.unmatchedCrc.add(crcNome)
           allCreates.push({ unidade: unit.label || unit.user, tagId: unit.tagId, crcTagId, stepId: stepAlvo.id, step: stepAlvo.title, nome: want.nome, telefone: want.telefone, patientId: pid, valor: want.valor ?? null, quando: want.quando, time: want.time ?? null, criadoEm: want.criadoEm ?? null, motivo: want.motivo })
@@ -353,17 +366,23 @@ export async function syncClinicClinicorp(clinic) {
       const reativacao = want.futura && want.target === 'AGENDADO' && rankOfStep(card.stepId) < 5
       const fechouTerminal = rankOfStep(card.stepId) === 5 && want.target !== 'FECHOU'
       const precisaValor = want.valor > 0 && !(card.monetaryAmount > 0)
+      // Agendador DINÂMICO: a etiqueta de CRC acompanha quem agendou por ÚLTIMO
+      // (agendadorByPatient já resolvido pela data do Agendado em). Sem match
+      // (nome fora do crcMap) → crcTagId null → NÃO mexe em tagIds (decisão 2).
+      const crcTagId = resolveCrcTagId(agendadorByPatient.get(pid)?.nome ?? null)
+      const cardTagIds = card.tagIds ?? []
+      const precisaCrc = Boolean(crcTagId) && !cardTagIds.includes(crcTagId)
 
       if (fechouTerminal || (ehRegressao && !reativacao)) {
-        if (precisaValor && want.target === 'FECHOU') {
-          allMoves.push({ cardId: card.id, card: card.title, stepAlvoId: card.stepId, valor: want.valor, quando: want.quando, time: want.time ?? null, criadoEm: want.criadoEm ?? null, patientId: pid })
+        if ((precisaValor && want.target === 'FECHOU') || precisaCrc) {
+          allMoves.push({ cardId: card.id, card: card.title, stepAlvoId: card.stepId, valor: (precisaValor && want.target === 'FECHOU') ? want.valor : null, quando: want.quando, time: want.time ?? null, criadoEm: want.criadoEm ?? null, patientId: pid, crcTagId, cardTagIds })
         }
         continue
       }
 
       const precisaMover = card.stepId !== stepAlvo.id
-      if (precisaMover || precisaValor) {
-        allMoves.push({ cardId: card.id, card: card.title, stepAlvoId: stepAlvo.id, valor: precisaValor ? want.valor : null, quando: want.quando, time: want.time ?? null, criadoEm: want.criadoEm ?? null, patientId: pid })
+      if (precisaMover || precisaValor || precisaCrc) {
+        allMoves.push({ cardId: card.id, card: card.title, stepAlvoId: stepAlvo.id, valor: precisaValor ? want.valor : null, quando: want.quando, time: want.time ?? null, criadoEm: want.criadoEm ?? null, patientId: pid, crcTagId, cardTagIds })
       }
     }
   }
@@ -377,6 +396,12 @@ export async function syncClinicClinicorp(clinic) {
       const cf = buildDateCustomFields(m.quando, m.time, m.criadoEm)
       if (cf) { body.customFields = cf; fields.push('customFields') }
       if (m.quando) body.metadata.clinicorp_event_date = m.quando
+      if (m.crcTagId && !(m.cardTagIds ?? []).includes(m.crcTagId)) {
+        // Troca SÓ etiquetas de CRC mapeadas (allCrcTagIds); unidade/origem/etc.
+        // intocáveis. m.crcTagId null (sem match) → não entra aqui, tagIds intocado.
+        body.tagIds = [...(m.cardTagIds ?? []).filter((t) => !allCrcTagIds.has(t)), m.crcTagId]
+        fields.push('tagIds')
+      }
       body.fields = fields
       await helena('PUT', `/crm/v2/panel/card/${m.cardId}`, body)
       summary.moved++
