@@ -176,9 +176,10 @@ converted; fechou = converted.
 **Taxas do funil** (todas com denominador explicável "de cabeça"):
 - Taxa de agendamento = agendou ÷ entraram.
 - Taxa de comparecimento = compareceu ÷ (compareceu + faltou).
-- Taxa de fechamento = fechou ÷ (compareceu − em negociação) — os que ainda
-  estão decidindo (orçamento em aberto) não entram no denominador, para não
-  derrubar a taxa artificialmente.
+- Taxa de fechamento = **fechou ÷ compareceu** [regra revisada pelo usuário
+  16/07 à noite]: compareceu = em aberto + não fechou + fechou, e o em aberto
+  FICA no denominador. Mesma régua em TODO lugar que mostra % de conversão:
+  KPI do topo, tabelas por dimensão, campanhas, card de contratos.
 
 ### 7.1. Inconsistência confirmada entre o funil geral e a quebra por dimensão
 
@@ -197,8 +198,9 @@ deveriam contar do mesmo jeito.
   conversão.
 - Taxa de comparecimento = (não fechou + em aberto + fechou) ÷
   (esse total + faltou).
-- Taxa de conversão = fechou ÷ (fechou + não fechou) — em aberto fica de fora
-  do denominador (ainda não decidiu).
+- Taxa de conversão = **fechou ÷ compareceram** (não fechou + em aberto +
+  fechou) [regra revisada pelo usuário 16/07 à noite — o em aberto entra no
+  denominador; ex: 28 fecharam de 81 que compareceram = 34,6%].
 - Receita: só soma `monetaryAmount > 0` (valor real); cards sem valor em
   etapas que deveriam ter (fechou/em aberto/não fechou) aparecem numa lista
   separada de alerta ("sem valor preenchido").

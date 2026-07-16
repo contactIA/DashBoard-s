@@ -282,7 +282,7 @@ export default async function handler(req, res) {
           } else {
             values = [...new Set((def.rules ?? []).map(r => r.value))]
           }
-          return [k, { label: def.label ?? k, values, isUnit: def.isUnit ?? false }]
+          return [k, { label: def.label ?? k, values, isUnit: def.isUnit ?? false, source: def.source ?? 'tag' }]
         }))
       : {}
 

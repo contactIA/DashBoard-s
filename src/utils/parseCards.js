@@ -98,7 +98,6 @@ export function computeKpis(cards, from, to) {
   // Quem compareceu = não fechou + em negociação + fechou
   const showed       = notClosed.length + negotiating.length + converted.length
   const shouldAttend = showed + missed.length            // tinha consulta: compareceu ou faltou
-  const decided      = notClosed.length + converted.length // compareceu E já decidiu (em aberto fora)
 
   return {
     total:        inRange.length,
@@ -113,8 +112,11 @@ export function computeKpis(cards, from, to) {
     scheduled:    scheduled.length,
     attendanceRate:
       shouldAttend > 0 ? (showed / shouldAttend) * 100 : null,
+    // Taxa de conversão [regra do usuário 16/07]: fecharam ÷ COMPARECERAM
+    // (não fechou + em aberto + fechou) — o em aberto FICA no denominador,
+    // mesma régua do Fech.% das tabelas por dimensão/campanha.
     conversionRate:
-      decided > 0 ? (converted.length / decided) * 100 : null,   // em aberto fora do denominador
+      showed > 0 ? (converted.length / showed) * 100 : null,
     missRate:
       shouldAttend > 0 ? (missed.length / shouldAttend) * 100 : null,
     noDate: cards.filter(c => !c.date).length,
@@ -327,8 +329,10 @@ export function funnelOf(cards, funnelCfg, opts = {}) {
     taxaAgendamento: entrou > 0 ? (agendou / entrou) * 100 : null,
     // comparecimento entre os que tiveram desfecho de consulta (compareceu ou faltou)
     taxaComparecimento: (compareceu + missed) > 0 ? (compareceu / (compareceu + missed)) * 100 : null,
-    // fechamento só entre os que já decidiram — em negociação não derruba a taxa
-    taxaFechamento: decididos > 0 ? (fechou / decididos) * 100 : null,
+    // fechamento = fechou ÷ COMPARECEU (em aberto no denominador) — regra do
+    // usuário [16/07]: "taxa de conversão = fecharam/compareceram", igual em
+    // KPI, tabelas por dimensão e campanhas ("dá pra conferir de cabeça").
+    taxaFechamento: compareceu > 0 ? (fechou / compareceu) * 100 : null,
   }
 }
 
