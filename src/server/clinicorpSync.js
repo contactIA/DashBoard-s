@@ -289,7 +289,7 @@ export async function syncClinicClinicorp(clinic) {
   const today = new Date()
   const hoje = iso(today)
 
-  const allMoves = [], allCreates = []
+  const allMoves = [], allCreates = [], moveCandidates = []
   // Só etiquetas conhecidas por algum crcMap podem ser removidas/trocadas pelo
   // MOVE — protege tags de unidade/origem/etc., que não fazem parte disso.
   const allCrcTagIds = new Set(units.flatMap((u) => (u.crcMap ?? []).map((m) => m.tagId)))
@@ -401,36 +401,55 @@ export async function syncClinicClinicorp(clinic) {
         continue
       }
 
-      const ehRegressao = rankOfStep(stepAlvo.id) < rankOfStep(card.stepId)
-      const reativacao = want.futura && want.target === 'AGENDADO' && rankOfStep(card.stepId) < 5
-      const fechouTerminal = rankOfStep(card.stepId) === 5 && want.target !== 'FECHOU'
-      const precisaValor = want.valor > 0 && !(card.monetaryAmount > 0)
-      // Agendador DINÂMICO: a etiqueta de CRC acompanha quem agendou por ÚLTIMO
-      // (agendadorByPatient já resolvido pela data do Agendado em). Sem match
-      // (nome fora do crcMap) → crcTagId null → NÃO mexe em tagIds (decisão 2).
-      const crcTagId = resolveCrcTagId(agendadorByPatient.get(pid)?.nome ?? null)
-      const cardTagIds = card.tagIds ?? []
-      const precisaCrc = Boolean(crcTagId) && !cardTagIds.includes(crcTagId)
-      // REGRA DO FECHAMENTO (2.1): card já em FECHOU nunca gerava PUT — gap
-      // que impedia a correção do "Agendado Para" para a data do fechamento
-      // em cards fechados antes desta regra existir. Só se aplica a target
-      // FECHOU (want.quando aqui é a data do orçamento aprovado, e.Date).
-      const precisaData = want.target === 'FECHOU' && precisaCorrigirData(card, want.quando)
-      // want.time nunca vem preenchido para FECHOU (estimates não têm hora) —
-      // ao corrigir só a data, preserva a hora que já estava no card.
-      const timeParaGravar = want.time ?? (precisaData ? horaAtualDoCard(card) : null)
+      // NÃO decide nada ainda — só registra o candidato. Paciente com cadastro
+      // DOBRADO no Clinicorp (2 pids, ou o mesmo pid em 2 unidades) gera 2+
+      // desejos para o MESMO card; decidir por desejo causava ping-pong eterno
+      // (ex: pid "fechou 10/07" satisfeito não gera move, aí o pid "faltou
+      // 01/07" vira o único candidato e desfaz — observado 16/07 na NEUSA).
+      // A escolha do vencedor por card (maior prioridade) acontece DEPOIS,
+      // sobre TODOS os desejos, satisfeitos ou não.
+      moveCandidates.push({ card, want, pid, stepAlvo, crcTagId: resolveCrcTagId(agendadorByPatient.get(pid)?.nome ?? null) })
+    }
+  }
 
-      if (fechouTerminal || (ehRegressao && !reativacao)) {
-        if ((precisaValor && want.target === 'FECHOU') || precisaCrc || precisaData) {
-          allMoves.push({ cardId: card.id, card: card.title, stepAlvoId: card.stepId, valor: (precisaValor && want.target === 'FECHOU') ? want.valor : null, quando: want.quando, time: timeParaGravar, criadoEm: want.criadoEm ?? null, patientId: pid, crcTagId, cardTagIds, flags: { precisaValor, precisaCrc, precisaData, terminal: true } })
-        }
-        continue
-      }
+  // Vencedor por card: maior prioridade entre todos os desejos que resolvem
+  // para ele (FECHOU=7 > aberto=6 > reprovado=5 > atendido=4 > faltou=3 >
+  // desmarcou=2 > futura=1). Só o vencedor tem flags calculadas.
+  const bestByCard = new Map()
+  for (const cand of moveCandidates) {
+    const cur = bestByCard.get(cand.card.id)
+    if (!cur || cand.want.priority > cur.want.priority) bestByCard.set(cand.card.id, cand)
+  }
 
-      const precisaMover = card.stepId !== stepAlvo.id
-      if (precisaMover || precisaValor || precisaCrc || precisaData) {
-        allMoves.push({ cardId: card.id, card: card.title, stepAlvoId: stepAlvo.id, valor: precisaValor ? want.valor : null, quando: want.quando, time: timeParaGravar, criadoEm: want.criadoEm ?? null, patientId: pid, crcTagId, cardTagIds, flags: { precisaMover, precisaValor, precisaCrc, precisaData } })
+  for (const { card, want, pid, stepAlvo, crcTagId } of bestByCard.values()) {
+    const ehRegressao = rankOfStep(stepAlvo.id) < rankOfStep(card.stepId)
+    const reativacao = want.futura && want.target === 'AGENDADO' && rankOfStep(card.stepId) < 5
+    const fechouTerminal = rankOfStep(card.stepId) === 5 && want.target !== 'FECHOU'
+    const precisaValor = want.valor > 0 && !(card.monetaryAmount > 0)
+    // Agendador DINÂMICO: a etiqueta de CRC acompanha quem agendou por ÚLTIMO
+    // (agendadorByPatient já resolvido pela data do Agendado em). Sem match
+    // (nome fora do crcMap) → crcTagId null → NÃO mexe em tagIds (decisão 2).
+    const cardTagIds = card.tagIds ?? []
+    const precisaCrc = Boolean(crcTagId) && !cardTagIds.includes(crcTagId)
+    // REGRA DO FECHAMENTO (2.1): card já em FECHOU nunca gerava PUT — gap
+    // que impedia a correção do "Agendado Para" para a data do fechamento
+    // em cards fechados antes desta regra existir. Só se aplica a target
+    // FECHOU (want.quando aqui é a data do orçamento aprovado, e.Date).
+    const precisaData = want.target === 'FECHOU' && precisaCorrigirData(card, want.quando)
+    // want.time nunca vem preenchido para FECHOU (estimates não têm hora) —
+    // ao corrigir só a data, preserva a hora que já estava no card.
+    const timeParaGravar = want.time ?? (precisaData ? horaAtualDoCard(card) : null)
+
+    if (fechouTerminal || (ehRegressao && !reativacao)) {
+      if ((precisaValor && want.target === 'FECHOU') || precisaCrc || precisaData) {
+        allMoves.push({ cardId: card.id, card: card.title, stepAlvoId: card.stepId, valor: (precisaValor && want.target === 'FECHOU') ? want.valor : null, quando: want.quando, time: timeParaGravar, criadoEm: want.criadoEm ?? null, patientId: pid, crcTagId, cardTagIds, flags: { precisaValor, precisaCrc, precisaData, terminal: true } })
       }
+      continue
+    }
+
+    const precisaMover = card.stepId !== stepAlvo.id
+    if (precisaMover || precisaValor || precisaCrc || precisaData) {
+      allMoves.push({ cardId: card.id, card: card.title, stepAlvoId: stepAlvo.id, valor: precisaValor ? want.valor : null, quando: want.quando, time: timeParaGravar, criadoEm: want.criadoEm ?? null, patientId: pid, crcTagId, cardTagIds, flags: { precisaMover, precisaValor, precisaCrc, precisaData } })
     }
   }
 
@@ -440,6 +459,17 @@ export async function syncClinicClinicorp(clinic) {
 
   for (const m of allMoves) {
     try {
+      // Leitura FRESCA por ID antes de escrever: a LISTAGEM paginada do painel
+      // pode vir defasada (observado 16/07 — card já movido reaparecia na
+      // lista com o step antigo). Duas consequências práticas:
+      //   1. pular o move se o card já está no estado desejado (evita re-PUT
+      //      idempotente toda rodada enquanto a lista não atualiza);
+      //   2. montar tagIds a partir das tags ATUAIS reais, não das da lista
+      //      (senão uma tag adicionada há minutos seria removida sem querer).
+      // No DRY, usa o estado da listagem mesmo (sem custo extra por card).
+      const fresh = DRY ? null : await helenaGet(`/crm/v1/panel/card/${m.cardId}`)
+      const tagsAtuais = fresh?.tagIds ?? m.cardTagIds ?? []
+
       const body = { metadata: { clinicorp_patient_id: String(m.patientId ?? '') } }
       const fields = ['metadata']
       if (m.stepAlvoId) { body.stepId = m.stepAlvoId; fields.push('stepId') }
@@ -447,10 +477,10 @@ export async function syncClinicClinicorp(clinic) {
       const cf = buildDateCustomFields(m.quando, m.time, m.criadoEm)
       if (cf) { body.customFields = cf; fields.push('customFields') }
       if (m.quando) body.metadata.clinicorp_event_date = m.quando
-      if (m.crcTagId && !(m.cardTagIds ?? []).includes(m.crcTagId)) {
+      if (m.crcTagId && !tagsAtuais.includes(m.crcTagId)) {
         // Troca SÓ etiquetas de CRC mapeadas (allCrcTagIds); unidade/origem/etc.
         // intocáveis. m.crcTagId null (sem match) → não entra aqui, tagIds intocado.
-        body.tagIds = [...(m.cardTagIds ?? []).filter((t) => !allCrcTagIds.has(t)), m.crcTagId]
+        body.tagIds = [...tagsAtuais.filter((t) => !allCrcTagIds.has(t)), m.crcTagId]
         fields.push('tagIds')
       }
       body.fields = fields
@@ -458,7 +488,32 @@ export async function syncClinicClinicorp(clinic) {
         summary.moves.push({ card: m.card, cardId: m.cardId, stepAlvo: stepTitleById[m.stepAlvoId] ?? m.stepAlvoId, flags: m.flags ?? null, quando: m.quando ?? null, dryBody: body })
         continue
       }
-      await helena('PUT', `/crm/v2/panel/card/${m.cardId}`, body)
+
+      // Já convergiu? (estado fresco = desejado) → nada a escrever nesta rodada.
+      const stepJaOk = !body.stepId || fresh?.stepId === body.stepId
+      const tagsJaOk = !body.tagIds
+      const valorJaOk = !(m.valor > 0) || fresh?.monetaryAmount > 0
+      const dataJaOk = !m.quando || fresh?.metadata?.clinicorp_event_date === m.quando
+      if (stepJaOk && tagsJaOk && valorJaOk && dataJaOk) continue
+      // Verificação pós-escrita: observado em 16/07 que a Helena às vezes
+      // responde 200 SEM aplicar stepId/tagIds (no-op silencioso — o mesmo
+      // body reenviado depois aplica normal). Relê o card e retenta 1x;
+      // persistindo, conta como falha VISÍVEL em vez de "moved" mentiroso.
+      let aplicado = false
+      for (let tentativa = 0; tentativa < 2 && !aplicado; tentativa++) {
+        if (tentativa > 0) await sleep(1000)
+        await helena('PUT', `/crm/v2/panel/card/${m.cardId}`, body)
+        await sleep(400)
+        const check = await helenaGet(`/crm/v1/panel/card/${m.cardId}`)
+        const stepOk = !body.stepId || check?.stepId === body.stepId
+        const tagsOk = !body.tagIds || (check?.tagIds ?? []).includes(m.crcTagId)
+        aplicado = stepOk && tagsOk
+      }
+      if (!aplicado) {
+        summary.failed++
+        summary.errors.push(`move "${m.card}": PUT 200 mas stepId/tagIds não aplicados (2 tentativas)`)
+        continue
+      }
       summary.moved++
       summary.moves.push({ card: m.card, flags: m.flags ?? null, quando: m.quando ?? null })
     } catch (err) { summary.failed++; summary.errors.push(`move "${m.card}": ${err.message}`) }
