@@ -180,10 +180,14 @@ export default function App() {
   )
   // Quebras do funil por cada dimensão configurada (origem, agendador, …).
   // Ao filtrar por uma unidade, a própria dimensão-unidade some (seria 1 só valor).
+  // Dimensões de customField (ex: Campanha) ficam FORA daqui — têm seção
+  // própria no fim do dash (CampaignTable); como o valor é livre, a lista
+  // cresce sem limite e bagunçaria o bloco do funil [decisão do usuário 16/07].
   const breakdowns = useMemo(() => {
     const dims = data?.dimensions ?? {}
     return Object.entries(dims)
       .filter(([key]) => !(unit && key === unitDim?.key))
+      .filter(([, def]) => !String(def.source ?? 'tag').startsWith('customFields.'))
       .map(([key, def]) => ({
         key,
         label: def.label,

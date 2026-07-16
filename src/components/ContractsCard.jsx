@@ -22,8 +22,9 @@ export default function ContractsCard({ funnel, revenue }) {
   if (!contratos) return null
 
   const totalMoney = slices.reduce((s, x) => s + x.money, 0)
-  const decididos  = funnel.attended + funnel.converted
-  const taxa       = decididos > 0 ? Math.round((funnel.converted / decididos) * 100) : null
+  // fechou ÷ compareceram (em aberto no denominador) — mesma régua da
+  // Conversão do topo; o rodapé "X compareceram → Y fecharam" confere direto.
+  const taxa       = contratos > 0 ? Math.round((funnel.converted / contratos) * 100) : null
   const pct = (v) => (totalMoney > 0 ? ((v / totalMoney) * 100).toFixed(0) + '%' : '—')
 
   const pieData = slices.filter(s => s.money > 0)

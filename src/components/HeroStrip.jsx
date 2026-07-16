@@ -28,7 +28,8 @@ function HeroCard({ label, value, sub, delta, goodWhenUp = true, accent }) {
 /** Faixa-herói: os números que respondem "como está o negócio?" (ganho × perdido × em aberto). */
 export default function HeroStrip({ revenue, kpis, deltas, revenueDelta, lostDelta }) {
   const pct = (v) => (v == null ? '—' : v.toFixed(1).replace('.', ',') + '%')
-  const decididos = (kpis?.notClosed ?? 0) + (kpis?.converted ?? 0)
+  // Denominador da Conversão = COMPARECERAM (não fechou + em aberto + fechou)
+  const compareceram = kpis?.attended ?? 0
 
   return (
     <div className="px-5 py-5 border-b border-slate-200">
@@ -54,7 +55,7 @@ export default function HeroStrip({ revenue, kpis, deltas, revenueDelta, lostDel
         <HeroCard
           label="Conversão"
           value={pct(kpis?.conversionRate)}
-          sub={`${kpis?.converted ?? 0} de ${decididos} que decidiram`}
+          sub={`${kpis?.converted ?? 0} de ${compareceram} que compareceram`}
           delta={deltas?.conversionRate} goodWhenUp accent="#0EA5E9"
         />
         <HeroCard

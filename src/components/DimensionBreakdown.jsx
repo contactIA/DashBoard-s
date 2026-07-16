@@ -7,9 +7,8 @@ const fmtPct = (v) => v == null ? '—' : v.toFixed(0) + '%'
  * Compareceram = régua `compareceu` do funil (attended+negotiating+converted).
  * "Em aberto" (negotiating) tem coluna própria para a soma fechar aos olhos:
  * Compareceram = Em aberto + Não fecharam + Fecharam.
- * Fech.% = MESMA régua do KPI Conversão do topo (fechou ÷ decididos, em
- * aberto fora do denominador) — antes dividia por Compareceram e destoava
- * do KPI geral no mesmo período.
+ * Fech.% = Fecharam ÷ Compareceram [regra do usuário 16/07] — em aberto no
+ * denominador, MESMA régua do KPI Conversão do topo (via funnel.taxaFechamento).
  * rows: [{ value, funnel }] vindo de breakdownByDimension(); value === null
  * vira a linha "Sem <dimensão>", sempre por último.
  * typeLabels: vocabulário da clínica vira tooltip nas colunas, não o título.
@@ -47,7 +46,7 @@ export default function DimensionBreakdown({ title, rows, typeLabels }) {
           <tbody>
             {rows.map(({ value, funnel: f }) => {
               const compar = f.agendou > 0 ? (f.compareceu / f.agendou) * 100 : null
-              // fechou ÷ decididos (em aberto fora) — igual ao KPI Conversão
+              // Fecharam ÷ Compareceram — igual ao KPI Conversão do topo
               const fech   = f.taxaFechamento
               return (
                 <tr key={value ?? '_sem'} className="border-b border-slate-100 last:border-0">
