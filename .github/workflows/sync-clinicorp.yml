@@ -10,7 +10,7 @@ name: Sync Clinicorp
 
 on:
   schedule:
-    - cron: '7 * * * *'   # aos 7 minutos de cada hora (evita o topo da hora, quando mais crons disparam)
+    - cron: '7,37 * * * *'   # aos 7 e 37 minutos de cada hora (a cada 30min, evitando o topo/meia hora cheios)
   workflow_dispatch: {}     # permite disparar manualmente na aba Actions do GitHub
 
 jobs:
