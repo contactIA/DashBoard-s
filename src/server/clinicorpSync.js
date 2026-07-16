@@ -108,7 +108,9 @@ async function withRetry429(fn, { attempts = 3, baseDelayMs = 2000 } = {}) {
  */
 export async function syncClinicClinicorp(clinic) {
   const units = clinic.steps?._clinicorp?.units ?? []
-  const summary = { clinic: clinic.name, accountId: clinic.accountId, moved: 0, created: 0, failed: 0, errors: [], unmatchedCrc: new Set() }
+  // `moves` detalha cada PUT aplicado (card + flags que o dispararam) — é o
+  // que permite diagnosticar um move que não converge (re-aplicado toda rodada).
+  const summary = { clinic: clinic.name, accountId: clinic.accountId, moved: 0, created: 0, failed: 0, errors: [], unmatchedCrc: new Set(), moves: [] }
   if (!units.length) return summary
 
   const helenaAuth = { Authorization: normalizeHelenaToken(clinic.token) }
@@ -213,10 +215,40 @@ export async function syncClinicClinicorp(clinic) {
     return Object.keys(cf).length ? cf : null
   }
 
+  // Lê o valor atual de um customField do card — a Helena devolve tanto valor
+  // simples quanto array de 1 item, dependendo do campo (confirmado via leitura
+  // real). Confirmado por teste real (scripts/test-customfields-merge.mjs) que o
+  // PUT de customFields faz MERGE, não REPLACE — por isso o move de fechamento
+  // (2.2) não precisa reenviar 'agendado-em-' para preservá-lo.
+  const cardFieldValue = (card, key) => {
+    const v = card.customFields?.[key]
+    return Array.isArray(v) ? v[0] ?? null : v ?? null
+  }
+  // Hora atual gravada em "Agendado Para" do card, se houver — usada para
+  // preservar a hora original da consulta quando só o DIA precisa ser
+  // corrigido pela regra do fechamento (e.Date não tem hora).
+  function horaAtualDoCard(card) {
+    const sf = dateCfg?.scheduledFor
+    if (!sf?.key) return null
+    const atual = String(cardFieldValue(card, sf.key) ?? '')
+    return (atual.match(/T(\d{2}:\d{2})/) ?? [])[1] ?? null
+  }
+  // "agendado-para" desejado difere do gravado no card? Compara só a DATA
+  // (YYYY-MM-DD, tolerando o formato com barras que a Helena devolve em
+  // alguns campos) — a regra do fechamento substitui o DIA pelo dia do
+  // orçamento aprovado (e.Date não tem hora); a hora original da consulta
+  // não faz parte do que precisa ser corrigido aqui.
+  function precisaCorrigirData(card, quando) {
+    const sf = dateCfg?.scheduledFor
+    if (!sf?.key || !quando) return false
+    const atual = String(cardFieldValue(card, sf.key) ?? '').replace(/\//g, '-')
+    return atual.slice(0, 10) !== quando
+  }
+
   let cards = []
   try {
     for (let pg = 1; pg <= 20; pg++) {
-      const page = await helenaGet(`/crm/v1/panel/card?PanelId=${panelId}&PageSize=100&PageNumber=${pg}&IncludeDetails=Contacts`)
+      const page = await helenaGet(`/crm/v1/panel/card?PanelId=${panelId}&PageSize=100&PageNumber=${pg}&IncludeDetails=Contacts&IncludeDetails=CustomFields`)
       cards = cards.concat(page.items ?? [])
       if (!page.hasMorePages) break
     }
@@ -225,16 +257,23 @@ export async function syncClinicClinicorp(clinic) {
     return summary
   }
 
+  // Telefones dos contatos: base do dedup por telefone (cardsByPhone). Um 429
+  // aqui NÃO pode ser engolido em silêncio — sem o telefone, o dedup fica cego
+  // e o sync CRIA CARD DUPLICADO para paciente com cadastro dobrado no
+  // Clinicorp (aconteceu de verdade em 16/07: 5 duplicatas em uma rodada que
+  // estourou rate-limit). withRetry429 + falha residual registrada em errors.
   const contactIds = [...new Set(cards.map((c) => c.contacts?.[0]?.id ?? c.contactIds?.[0]).filter(Boolean))]
   const contactPhone = {}
+  let contactFetchFails = 0
   for (let i = 0; i < contactIds.length; i += 10) {
     await Promise.all(contactIds.slice(i, i + 10).map(async (id) => {
       try {
-        const res = await fetch(`${HELENA}/core/v1/contact/${id}`, { headers: helenaAuth })
-        if (res.ok) { const ct = await res.json(); contactPhone[id] = ct.phoneNumber ?? ct.phoneNumberFormatted ?? null }
-      } catch { /* best-effort */ }
+        const ct = await helenaGet(`/core/v1/contact/${id}`)
+        contactPhone[id] = ct?.phoneNumber ?? ct?.phoneNumberFormatted ?? null
+      } catch { contactFetchFails++ }
     }))
   }
+  if (contactFetchFails > 0) summary.errors.push(`contatos: ${contactFetchFails} telefone(s) não carregado(s) — dedup por telefone parcial nesta rodada`)
 
   const cardsByPhone = new Map()
   const cardsByClinicorpId = new Map()
@@ -372,20 +411,32 @@ export async function syncClinicClinicorp(clinic) {
       const crcTagId = resolveCrcTagId(agendadorByPatient.get(pid)?.nome ?? null)
       const cardTagIds = card.tagIds ?? []
       const precisaCrc = Boolean(crcTagId) && !cardTagIds.includes(crcTagId)
+      // REGRA DO FECHAMENTO (2.1): card já em FECHOU nunca gerava PUT — gap
+      // que impedia a correção do "Agendado Para" para a data do fechamento
+      // em cards fechados antes desta regra existir. Só se aplica a target
+      // FECHOU (want.quando aqui é a data do orçamento aprovado, e.Date).
+      const precisaData = want.target === 'FECHOU' && precisaCorrigirData(card, want.quando)
+      // want.time nunca vem preenchido para FECHOU (estimates não têm hora) —
+      // ao corrigir só a data, preserva a hora que já estava no card.
+      const timeParaGravar = want.time ?? (precisaData ? horaAtualDoCard(card) : null)
 
       if (fechouTerminal || (ehRegressao && !reativacao)) {
-        if ((precisaValor && want.target === 'FECHOU') || precisaCrc) {
-          allMoves.push({ cardId: card.id, card: card.title, stepAlvoId: card.stepId, valor: (precisaValor && want.target === 'FECHOU') ? want.valor : null, quando: want.quando, time: want.time ?? null, criadoEm: want.criadoEm ?? null, patientId: pid, crcTagId, cardTagIds })
+        if ((precisaValor && want.target === 'FECHOU') || precisaCrc || precisaData) {
+          allMoves.push({ cardId: card.id, card: card.title, stepAlvoId: card.stepId, valor: (precisaValor && want.target === 'FECHOU') ? want.valor : null, quando: want.quando, time: timeParaGravar, criadoEm: want.criadoEm ?? null, patientId: pid, crcTagId, cardTagIds, flags: { precisaValor, precisaCrc, precisaData, terminal: true } })
         }
         continue
       }
 
       const precisaMover = card.stepId !== stepAlvo.id
-      if (precisaMover || precisaValor || precisaCrc) {
-        allMoves.push({ cardId: card.id, card: card.title, stepAlvoId: stepAlvo.id, valor: precisaValor ? want.valor : null, quando: want.quando, time: want.time ?? null, criadoEm: want.criadoEm ?? null, patientId: pid, crcTagId, cardTagIds })
+      if (precisaMover || precisaValor || precisaCrc || precisaData) {
+        allMoves.push({ cardId: card.id, card: card.title, stepAlvoId: stepAlvo.id, valor: precisaValor ? want.valor : null, quando: want.quando, time: timeParaGravar, criadoEm: want.criadoEm ?? null, patientId: pid, crcTagId, cardTagIds, flags: { precisaMover, precisaValor, precisaCrc, precisaData } })
       }
     }
   }
+
+  // Modo dry-run (CLINICORP_SYNC_DRY_RUN=1): monta tudo, não escreve nada —
+  // usado para diagnosticar moves sem tocar em produção.
+  const DRY = process.env.CLINICORP_SYNC_DRY_RUN === '1'
 
   for (const m of allMoves) {
     try {
@@ -403,10 +454,28 @@ export async function syncClinicClinicorp(clinic) {
         fields.push('tagIds')
       }
       body.fields = fields
+      if (DRY) {
+        summary.moves.push({ card: m.card, cardId: m.cardId, stepAlvo: stepTitleById[m.stepAlvoId] ?? m.stepAlvoId, flags: m.flags ?? null, quando: m.quando ?? null, dryBody: body })
+        continue
+      }
       await helena('PUT', `/crm/v2/panel/card/${m.cardId}`, body)
       summary.moved++
+      summary.moves.push({ card: m.card, flags: m.flags ?? null, quando: m.quando ?? null })
     } catch (err) { summary.failed++; summary.errors.push(`move "${m.card}": ${err.message}`) }
     await sleep(250)
+  }
+
+  // Com dedup por telefone parcial (429 residual), criar é arriscado — um
+  // paciente com cadastro dobrado no Clinicorp poderia virar card duplicado.
+  // Adia TODOS os creates para a próxima rodada (30 min), que é barato;
+  // duplicar card em produção não é.
+  if (contactFetchFails > 0 && allCreates.length > 0) {
+    summary.errors.push(`creates adiados: ${allCreates.length} card(s) não criado(s) nesta rodada por dedup parcial`)
+    allCreates.length = 0
+  }
+  if (DRY && allCreates.length > 0) {
+    summary.errors.push(`DRY: ${allCreates.length} create(s) suprimido(s): ${allCreates.map((c) => c.nome).join(', ')}`)
+    allCreates.length = 0
   }
 
   for (const c of allCreates) {
