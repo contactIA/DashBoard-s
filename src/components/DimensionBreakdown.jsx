@@ -2,10 +2,14 @@ const fmtPct = (v) => v == null ? '—' : v.toFixed(0) + '%'
 
 /**
  * Quebra por dimensão (agendador, origem, …) — colunas e nomenclatura FIXAS
- * em toda clínica (PLANO_AGENDADOR_CAMPANHA.md decisão 3):
- *   Agendados · Compareceram · Não fecharam · Fecharam · Compar.% · Fech.%
- * Compareceram = régua `compareceu` do funil (attended+negotiating+converted);
- * "Em aberto"/negotiating vive dentro desse total, sem coluna própria.
+ * em toda clínica (PLANO_AGENDADOR_CAMPANHA.md decisão 3, revisada 16/07):
+ *   Agendados · Compareceram · Em aberto · Não fecharam · Fecharam · Compar.% · Fech.%
+ * Compareceram = régua `compareceu` do funil (attended+negotiating+converted).
+ * "Em aberto" (negotiating) tem coluna própria para a soma fechar aos olhos:
+ * Compareceram = Em aberto + Não fecharam + Fecharam.
+ * Fech.% = MESMA régua do KPI Conversão do topo (fechou ÷ decididos, em
+ * aberto fora do denominador) — antes dividia por Compareceram e destoava
+ * do KPI geral no mesmo período.
  * rows: [{ value, funnel }] vindo de breakdownByDimension(); value === null
  * vira a linha "Sem <dimensão>", sempre por último.
  * typeLabels: vocabulário da clínica vira tooltip nas colunas, não o título.
@@ -16,6 +20,7 @@ export default function DimensionBreakdown({ title, rows, typeLabels }) {
   const cols = [
     { key: 'agendou',     label: 'Agendados' },
     { key: 'compareceu',  label: 'Compareceram' },
+    { key: 'negotiating', label: 'Em aberto', tooltip: typeLabels?.negotiating },
     { key: 'attended',    label: 'Não fecharam', tooltip: typeLabels?.attended },
     { key: 'converted',   label: 'Fecharam', tooltip: typeLabels?.converted },
   ]
@@ -42,7 +47,8 @@ export default function DimensionBreakdown({ title, rows, typeLabels }) {
           <tbody>
             {rows.map(({ value, funnel: f }) => {
               const compar = f.agendou > 0 ? (f.compareceu / f.agendou) * 100 : null
-              const fech   = f.compareceu > 0 ? (f.fechou / f.compareceu) * 100 : null
+              // fechou ÷ decididos (em aberto fora) — igual ao KPI Conversão
+              const fech   = f.taxaFechamento
               return (
                 <tr key={value ?? '_sem'} className="border-b border-slate-100 last:border-0">
                   <td className="py-2.5 pr-2 font-medium text-slate-700">

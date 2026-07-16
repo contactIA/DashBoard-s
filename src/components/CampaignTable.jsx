@@ -35,7 +35,8 @@ export default function CampaignTable({ rows }) {
           </thead>
           <tbody>
             {rows.map(({ value, leads, funnel: f, faltaram, noShowPct, valorFechado, ticketMedio }) => {
-              const fech = f.compareceu > 0 ? (f.fechou / f.compareceu) * 100 : null
+              // fechou ÷ decididos (em aberto fora) — igual ao KPI Conversão
+              const fech = f.taxaFechamento
               return (
                 <tr key={value ?? '_sem'} className="border-b border-slate-100 last:border-0">
                   <td className="py-2.5 pr-2 font-medium text-slate-700">
