@@ -40,11 +40,13 @@ export function fmtBRL(n, { short = false } = {}) {
 }
 
 /**
- * Data efetiva do card para "aconteceu no período" — rastreia atividade no
- * pipeline, não a data do agendamento em si (essa é só exibida, ver `date`):
+ * Data efetiva do card para "aconteceu no período" — rastreia quando o lead
+ * teve seu desfecho, não a data de exibição do agendamento:
  *   - Lead (topo do funil, ainda não trabalhado): data de CRIAÇÃO.
- *   - Qualquer outra etapa (agendou, reagendou, cancelou, faltou, etc.):
- *     data da ÚLTIMA ATUALIZAÇÃO — aproxima quando o card entrou nesse estado.
+ *   - Qualquer outra etapa (agendou, compareceu, fechou, faltou, cancelou):
+ *     data do AGENDAMENTO (`date`, o "Agendado Para") — é o dia em que a
+ *     consulta aconteceu/deveria acontecer e NÃO muda quando alguém edita o
+ *     card. Só cai em updatedAt/createdAt se o card não tiver data de agenda.
  */
 export function effectiveDate(c) {
   // Data REAL do evento (ex: sync Clinicorp grava quando o paciente fechou/
@@ -52,6 +54,9 @@ export function effectiveDate(c) {
   // junho contaria como receita de julho.
   if (c?.eventDate) return c.eventDate
   if (c?.stepType === 'lead') return c?.createdAt?.slice(0, 10) ?? null
+  // Data do agendamento é a âncora: imune a edições no card (mover de fase,
+  // anotar, etc. reescrevem updatedAt e puxavam o card para o mês errado).
+  if (c?.date) return c.date.slice(0, 10)
   return c?.updatedAt?.slice(0, 10) ?? c?.createdAt?.slice(0, 10) ?? null
 }
 
