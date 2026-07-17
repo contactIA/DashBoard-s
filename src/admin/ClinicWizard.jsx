@@ -576,7 +576,10 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
 
   const addDimension     = ()              => setDimensions(ds => [...ds, { id: newDimId(), label: '', isUnit: false, customFieldKey: null, tags: [] }])
   const removeDimension  = (id)            => setDimensions(ds => ds.filter(d => d.id !== id))
-  const setDimCustomField = (id, key)      => setDimensions(ds => ds.map(d => d.id === id ? { ...d, customFieldKey: key || null, ...(key ? { isUnit: false } : {}) } : d))
+  // customFieldKey: null = fonte "Etiquetas" · '' = "Campo personalizado" com
+  // campo ainda não escolhido · 'key' = escolhido. `?? null` (não `|| null`):
+  // o `||` engolia o '' e o seletor voltava sozinho para "Etiquetas".
+  const setDimCustomField = (id, key)      => setDimensions(ds => ds.map(d => d.id === id ? { ...d, customFieldKey: key ?? null, ...(key != null ? { isUnit: false } : {}) } : d))
   // Marca (ou desmarca) uma dimensão como a unidade — exclusivo: só uma pode ser
   const toggleUnitDim    = (id)            => setDimensions(ds => ds.map(d => ({ ...d, isUnit: d.id === id ? !d.isUnit : false })))
   const renameDimension  = (id, label)     => setDimensions(ds => ds.map(d => d.id === id ? { ...d, label } : d))
@@ -1035,14 +1038,14 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                         placeholder="Nome da dimensão (ex: Origem, Campanha)"
                         value={d.label} onChange={e => renameDimension(d.id, e.target.value)} />
                       <select
-                        value={d.customFieldKey ? 'customField' : 'tag'}
+                        value={d.customFieldKey != null ? 'customField' : 'tag'}
                         onChange={e => setDimCustomField(d.id, e.target.value === 'customField' ? (d.customFieldKey ?? '') : null)}
                         title="Fonte do corte"
                         className="text-xs px-2 py-1.5 rounded-md border border-slate-200 text-slate-600 bg-white shrink-0 cursor-pointer">
                         <option value="tag">Etiquetas</option>
                         <option value="customField">Campo personalizado</option>
                       </select>
-                      {!d.customFieldKey && (
+                      {d.customFieldKey == null && (
                         <button type="button" onClick={() => toggleUnitDim(d.id)}
                           title="Usar esta dimensão como filtro de unidade no topo do dashboard"
                           className={`text-xs px-2.5 py-1.5 rounded-md border shrink-0 font-medium transition-colors ${
