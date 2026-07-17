@@ -436,7 +436,6 @@ export function revenueByDimension(cards, dimKey, values, from, to) {
 export function campaignBreakdown(cards, dimKey, values, from, to, funnelCfg) {
   if (!cards?.length || !dimKey) return []
   const inRange      = cards.filter(c => inPeriod(c, from, to))
-  const agendouCards = cards.filter(c => scheduledInPeriod(c, from, to))
   const leadsCards    = cards.filter(c => createdInPeriod(c, from, to))
   const labels = [...(values ?? []), null]
 
@@ -444,7 +443,13 @@ export function campaignBreakdown(cards, dimKey, values, from, to, funnelCfg) {
     .map(v => {
       const ofValue = (arr) => arr.filter(c => (c.dims?.[dimKey] ?? null) === v)
       const leads   = ofValue(leadsCards).length
-      const funnel  = funnelOf(ofValue(inRange), funnelCfg, { agendouCards: ofValue(agendouCards) })
+      // "Agendados" = total que teve consulta marcada no período (todos os
+      // desfechos: agendado/remarcado/compareceu/em aberto/fechou/faltou/cancelou),
+      // pela MESMA data efetiva das demais colunas — assim o funil fecha
+      // (Agendados >= Compareceram >= Fecharam). Sem agendouCards de propósito:
+      // contar por scheduledAt punha a consulta e a marcação em janelas
+      // diferentes e deixava "Agendados" menor que "Compareceram".
+      const funnel  = funnelOf(ofValue(inRange), funnelCfg)
       const faltaram = ofValue(inRange).filter(c => c.stepType === 'missed').length
       const noShowPct = (funnel.compareceu + faltaram) > 0
         ? (faltaram / (funnel.compareceu + faltaram)) * 100
