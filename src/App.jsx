@@ -206,10 +206,15 @@ export default function App() {
   }, [data, cards, dateFrom, dateTo])
   // Campanhas: seção própria, corte por customField (não é mais uma dimensão
   // do funil comum — tem colunas e réguas específicas, ver campaignBreakdown).
+  // Acha a dimensão pela FONTE (customFields.*), não pela chave literal
+  // 'campanha' — o wizard gera a chave a partir do nome digitado pelo admin
+  // ("Campanhas" viraria 'campanhas' e a seção sumia sem erro nenhum).
   const campaignRows = useMemo(() => {
-    const def = data?.dimensions?.campanha
-    if (!def) return []
-    return campaignBreakdown(cards, 'campanha', def.values, dateFrom, dateTo, data?.funnelConfig)
+    const entry = Object.entries(data?.dimensions ?? {})
+      .find(([, def]) => String(def.source ?? '').startsWith('customFields.'))
+    if (!entry) return []
+    const [key, def] = entry
+    return campaignBreakdown(cards, key, def.values, dateFrom, dateTo, data?.funnelConfig)
   }, [data, cards, dateFrom, dateTo])
 
   const applyRange = (days) => { setDateFrom(daysAgo(days)); setDateTo(todayStr()) }
