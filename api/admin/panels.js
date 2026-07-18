@@ -46,8 +46,10 @@ async function fetchContactSafe(id, token) {
 
 // Campos personalizados de card, cadastrados na conta Helena — pro wizard
 // oferecer um dropdown em vez do admin ter que adivinhar/digitar a chave
-// interna do campo. Busca os dois EntityType (PANEL e CONTACT) porque contas
-// diferentes cadastram os campos de agendamento em um ou outro. Best-effort:
+// interna do campo. Busca CARD, PANEL e CONTACT porque contas diferentes
+// cadastram os campos de agendamento em tipos distintos (ex: Salutar usa
+// campos de CARD — só a descoberta via amostra não os acha quando estão
+// vazios nos cards, pois a Helena omite campo sem valor). Best-effort:
 // sem isso o wizard ainda funciona (admin digita a key na mão).
 async function fetchCustomFieldsSafe(token) {
   const oneType = async (entityType) => {
@@ -58,8 +60,15 @@ async function fetchCustomFieldsSafe(token) {
       return []
     }
   }
-  const [panel, contact] = await Promise.all([oneType('PANEL'), oneType('CONTACT')])
-  return [...panel, ...contact]
+  const [card, panel, contact] = await Promise.all([oneType('CARD'), oneType('PANEL'), oneType('CONTACT')])
+  // Dedup por key/id — o mesmo campo pode voltar em mais de um EntityType.
+  const seen = new Set()
+  return [...card, ...panel, ...contact].filter(f => {
+    const k = f.key ?? f.id
+    if (seen.has(k)) return false
+    seen.add(k)
+    return true
+  })
 }
 
 // Resolve o token da clínica já cadastrada (modo edição, sem re-digitar o token)
@@ -93,10 +102,23 @@ export default async function handler(req, res) {
     if (panelId) {
       // IncludeDetails=Tags traz as etiquetas de CARD já nomeadas (com cor).
       // São um registro separado das etiquetas de contato (/core/v1/tag).
+      // IncludeDetails=CustomFields: definições de campo no escopo do painel
+      // (os campos que o modal do card lista mesmo vazios) — segunda via de
+      // descoberta; a API ignora o parâmetro se não suportar.
       const [panel, customFields] = await Promise.all([
-        helenaGet(`/crm/v1/panel/${encodeURIComponent(panelId)}?IncludeDetails=Steps&IncludeDetails=Tags`, token),
+        helenaGet(`/crm/v1/panel/${encodeURIComponent(panelId)}?IncludeDetails=Steps&IncludeDetails=Tags&IncludeDetails=CustomFields`, token),
         fetchCustomFieldsSafe(token),
       ])
+
+      // Definições vindas do próprio painel entram primeiro no dropdown (nome
+      // "bonito" e tipo corretos), sem duplicar o que a conta já devolveu.
+      const knownFromAccount = new Set(customFields.flatMap(f => [f.key, f.id].filter(Boolean)))
+      for (const f of panel.customFields ?? []) {
+        const k = f.key ?? f.id
+        if (!k || knownFromAccount.has(k)) continue
+        knownFromAccount.add(k)
+        customFields.push({ id: f.id ?? k, key: f.key ?? k, name: f.name ?? k, type: f.type ?? null, entityType: 'CARD' })
+      }
 
       // Amostra de cards (até 3 páginas) para o wizard: preview de extração
       // e estatística de uso de cada tag de card.
