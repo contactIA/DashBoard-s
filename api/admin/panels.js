@@ -102,32 +102,32 @@ export default async function handler(req, res) {
     if (panelId) {
       // IncludeDetails=Tags traz as etiquetas de CARD já nomeadas (com cor).
       // São um registro separado das etiquetas de contato (/core/v1/tag).
-      // IncludeDetails=CustomFields: definições de campo no escopo do painel
-      // (os campos que o modal do card lista mesmo vazios) — segunda via de
-      // descoberta; a API ignora o parâmetro se não suportar.
+      // ATENÇÃO: a Helena VALIDA o IncludeDetails — valor desconhecido (ex:
+      // CustomFields) derruba a chamada com 500 "The value 'X' is not valid",
+      // não é ignorado. Só Steps e Tags aqui; campos personalizados vêm de
+      // fetchCustomFieldsSafe (best-effort) + descoberta nos cards de amostra.
       const [panel, customFields] = await Promise.all([
-        helenaGet(`/crm/v1/panel/${encodeURIComponent(panelId)}?IncludeDetails=Steps&IncludeDetails=Tags&IncludeDetails=CustomFields`, token),
+        helenaGet(`/crm/v1/panel/${encodeURIComponent(panelId)}?IncludeDetails=Steps&IncludeDetails=Tags`, token),
         fetchCustomFieldsSafe(token),
       ])
 
-      // Definições vindas do próprio painel entram primeiro no dropdown (nome
-      // "bonito" e tipo corretos), sem duplicar o que a conta já devolveu.
-      const knownFromAccount = new Set(customFields.flatMap(f => [f.key, f.id].filter(Boolean)))
-      for (const f of panel.customFields ?? []) {
-        const k = f.key ?? f.id
-        if (!k || knownFromAccount.has(k)) continue
-        knownFromAccount.add(k)
-        customFields.push({ id: f.id ?? k, key: f.key ?? k, name: f.name ?? k, type: f.type ?? null, entityType: 'CARD' })
-      }
-
-      // Amostra de cards (até 3 páginas) para o wizard: preview de extração
-      // e estatística de uso de cada tag de card.
+      // Cards do painel para o wizard: preview de extração, estatística de uso
+      // de tag e DESCOBERTA de keys de customFields. Pagina o painel inteiro
+      // (teto de 15 páginas = 1500 cards) porque a Helena omite campo vazio no
+      // card: com amostra pequena, um campo preenchido em poucos cards (ex:
+      // agendado-em em 16 de 908) pode nunca aparecer no dropdown.
+      const cardPage = (pg) =>
+        helenaGet(`/crm/v1/panel/card?PanelId=${encodeURIComponent(panelId)}&PageSize=100&PageNumber=${pg}&IncludeDetails=Contacts&IncludeDetails=CustomFields`, token)
       let cards = []
       try {
-        for (let pg = 1; pg <= 3; pg++) {
-          const page = await helenaGet(`/crm/v1/panel/card?PanelId=${encodeURIComponent(panelId)}&PageSize=100&PageNumber=${pg}&IncludeDetails=Contacts&IncludeDetails=CustomFields`, token)
-          cards = cards.concat(page.items ?? [])
-          if (!page.hasMorePages) break
+        const first = await cardPage(1)
+        cards = [...(first.items ?? [])]
+        const totalPages = Math.min(first.totalPages ?? 1, 15)
+        if (totalPages > 1) {
+          const pages = await Promise.all(
+            Array.from({ length: totalPages - 1 }, (_, i) => cardPage(i + 2).catch(() => ({ items: [] })))
+          )
+          for (const page of pages) cards = cards.concat(page.items ?? [])
         }
       } catch { /* sem amostra — wizard ainda funciona, só sem preview */ }
 

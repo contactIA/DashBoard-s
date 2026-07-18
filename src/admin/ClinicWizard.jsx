@@ -20,7 +20,7 @@ const FUNNEL_STAGE_DEFS = [
 const EXTRACT_FIELDS = [
   { key: 'date',  label: 'Agendado Para (data/hora da consulta)', kind: 'date', hint: 'A data que filtra o dashboard e alimenta "agendamentos futuros". Sem ela o card some das métricas por período.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)' },
   { key: 'time',  label: 'Horário',             kind: 'text', hint: 'Opcional — usado na lista de agendamentos. Ignorado quando "Agendado Para" já é um campo único data+hora.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)' },
-  { key: 'scheduledAt', label: 'Agendado em (dia que a CRC agendou)', kind: 'date', hint: 'Opcional — alimenta a barra "Agendaram" do funil. Diferente da data da consulta.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)', noSuggest: true },
+  { key: 'scheduledAt', label: 'Agendado em (dia que a CRC agendou)', kind: 'date', hint: 'Opcional — alimenta a barra "Agendaram" do funil. Diferente da data da consulta.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)', noSuggest: true, optional: true },
   { key: 'name',  label: 'Nome do paciente',    kind: 'text', hint: 'Exibido nas tabelas.', helenaSource: 'contactName', helenaLabel: 'Contato vinculado ao card' },
   { key: 'phone', label: 'Telefone',            kind: 'phone', hint: 'Opcional.', helenaSource: 'contactPhone', helenaLabel: 'Contato vinculado ao card' },
 ]
@@ -337,7 +337,9 @@ function ExtractField({ field, rules = [], sampleCards, customFields, onChange }
                   <option value="DMY">DD/MM/AAAA</option>
                 </select>
               )}
-              <button onClick={() => delRule(i)} disabled={rules.length === 1}
+              {/* Campo opcional (ex: "Agendado em") pode voltar a zero regras —
+                  sem isso, uma regra adicionada por engano ficava presa. */}
+              <button onClick={() => delRule(i)} disabled={rules.length === 1 && !field.optional}
                 className="text-slate-300 hover:text-red-500 disabled:opacity-30 px-1" title="Remover regra">✕</button>
             </div>
           )
@@ -1070,25 +1072,35 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                         ? panelCustomFields.find(cf => cf.key === d.customFieldKey || cf.id === d.customFieldKey)
                         : null
                       return (
-                        <select
-                          value={current?.id ?? ''}
-                          onChange={e => {
-                            const cf = panelCustomFields.find(f => f.id === e.target.value)
-                            if (!cf) { setDimCustomField(d.id, ''); return }
-                            const candidates = [cf.key, cf.id].filter(Boolean)
-                            let bestKey = candidates[0], bestHits = -1
-                            for (const k of candidates) {
-                              const hits = countExtractHits([{ from: `customFields.${k}` }], sampleCards, 'text')
-                              if (hits > bestHits) { bestHits = hits; bestKey = k }
-                            }
-                            setDimCustomField(d.id, bestKey)
-                          }}
-                          className="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-md bg-white focus:outline-none focus:border-slate-400">
-                          <option value="">{panelCustomFields.length ? 'Selecione o campo…' : 'Nenhum campo personalizado encontrado'}</option>
-                          {panelCustomFields.map(cf => (
-                            <option key={cf.id} value={cf.id}>{cf.name}{cf.type ? ` (${cf.type})` : ''}</option>
-                          ))}
-                        </select>
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={current?.id ?? ''}
+                            onChange={e => {
+                              const cf = panelCustomFields.find(f => f.id === e.target.value)
+                              if (!cf) { setDimCustomField(d.id, ''); return }
+                              const candidates = [cf.key, cf.id].filter(Boolean)
+                              let bestKey = candidates[0], bestHits = -1
+                              for (const k of candidates) {
+                                const hits = countExtractHits([{ from: `customFields.${k}` }], sampleCards, 'text')
+                                if (hits > bestHits) { bestHits = hits; bestKey = k }
+                              }
+                              setDimCustomField(d.id, bestKey)
+                            }}
+                            className="flex-1 min-w-0 px-2.5 py-1.5 text-xs border border-slate-200 rounded-md bg-white focus:outline-none focus:border-slate-400">
+                            <option value="">{panelCustomFields.length ? 'Selecione o campo…' : 'Nenhum campo personalizado encontrado'}</option>
+                            {panelCustomFields.map(cf => (
+                              <option key={cf.id} value={cf.id}>{cf.name}{cf.type ? ` (${cf.type})` : ''}</option>
+                            ))}
+                          </select>
+                          {/* Paridade com a Extração: campo que não aparece no dropdown
+                              (ex: vazio em todos os cards) entra pela key digitada. */}
+                          <input
+                            className="w-44 shrink-0 px-2.5 py-1.5 text-xs border border-slate-200 rounded-md bg-white focus:outline-none focus:border-slate-400 font-mono"
+                            placeholder="ou digite a key"
+                            value={d.customFieldKey ?? ''}
+                            onChange={e => setDimCustomField(d.id, e.target.value)}
+                          />
+                        </div>
                       )
                     })() : (
                       <>
