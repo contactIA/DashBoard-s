@@ -12,7 +12,7 @@
 // Telefone NÃO é comparado (fonte contactPhone não é ingerida — fallback de
 // título cobre; não afeta métrica nenhuma).
 
-const DASH_URL = process.env.DASH_URL ?? 'https://dash-board-s-kappa.vercel.app'
+const DASH_URL = process.env.DASH_URL ?? 'https://dashboardodontologico.vercel.app'
 const clinic = process.argv[2]
 const accessToken = process.argv[3]
 if (!clinic) {
