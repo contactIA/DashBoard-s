@@ -40,24 +40,26 @@ export function fmtBRL(n, { short = false } = {}) {
 }
 
 /**
- * Data efetiva do card para "aconteceu no período" — rastreia quando o lead
- * teve seu desfecho, não a data de exibição do agendamento:
- *   - Lead (topo do funil, ainda não trabalhado): data de CRIAÇÃO.
+ * Data efetiva do card para "aconteceu no período" — regra estrita, sem
+ * adivinhação (card mal alimentado NÃO computa, e o aviso de diagnóstico
+ * aponta quem precisa de correção):
+ *   - Lead / Não agendou (nunca tiveram consulta): data de CRIAÇÃO — essas
+ *     etapas não têm "Agendado Para" mesmo, e o topo do funil conta entrada.
  *   - Qualquer outra etapa (agendou, compareceu, fechou, faltou, cancelou):
- *     data do AGENDAMENTO (`date`, o "Agendado Para") — é o dia em que a
- *     consulta aconteceu/deveria acontecer e NÃO muda quando alguém edita o
- *     card. Só cai em updatedAt/createdAt se o card não tiver data de agenda.
+ *     SÓ a data do AGENDAMENTO (`date`, o "Agendado Para") — imune a edições
+ *     no card. Sem ela o card fica FORA das métricas por período: melhor
+ *     ausência visível (e acusada no aviso) do que número falso por
+ *     updatedAt, que mudava a cada toque no card.
  */
 export function effectiveDate(c) {
   // Data REAL do evento (ex: sync Clinicorp grava quando o paciente fechou/
   // faltou/desmarcou) — sem ela, um card criado/movido hoje sobre um fato de
   // junho contaria como receita de julho.
   if (c?.eventDate) return c.eventDate
-  if (c?.stepType === 'lead') return c?.createdAt?.slice(0, 10) ?? null
-  // Data do agendamento é a âncora: imune a edições no card (mover de fase,
-  // anotar, etc. reescrevem updatedAt e puxavam o card para o mês errado).
-  if (c?.date) return c.date.slice(0, 10)
-  return c?.updatedAt?.slice(0, 10) ?? c?.createdAt?.slice(0, 10) ?? null
+  if (c?.stepType === 'lead' || c?.stepType === 'notScheduled') {
+    return c?.createdAt?.slice(0, 10) ?? null
+  }
+  return c?.date?.slice(0, 10) ?? null
 }
 
 /** O card cai no período [from, to] pela data efetiva? */
@@ -66,13 +68,26 @@ export function inPeriod(c, from, to) {
   return Boolean(d && d >= from && d <= to)
 }
 
-/** O lead foi AGENDADO no período? (barra "Agendaram" do funil)
- *  Usa a data "Agendado em" (c.scheduledAt — dia em que a CRC/IA/sync marcou o
- *  agendamento), distinta da data da consulta (c.date, "Agendado Para").
- *  Fallback: data efetiva, para cards sem esse campo (legado/sem extração). */
+/** O card tem "Agendado em" (c.scheduledAt) dentro do período? Estrito: sem o
+ *  campo preenchido, não conta — regra é regra, card mal alimentado não
+ *  computa (ver agendouCardsOf para a decisão por clínica). */
 export function scheduledInPeriod(c, from, to) {
-  const d = c?.scheduledAt ?? effectiveDate(c)
+  const d = c?.scheduledAt?.slice(0, 10) ?? null
   return Boolean(d && d >= from && d <= to)
+}
+
+/** Cards da barra "Agendaram" no período — decisão POR CLÍNICA, nunca por card:
+ *  - Clínica que extrai "Agendado em" (algum card tem o campo): regra ESTRITA,
+ *    só conta card com o campo preenchido. Card sem dado fica de fora — é o
+ *    sinal para corrigir o card, não para o dashboard adivinhar.
+ *  - Clínica sem o campo no fluxo (ex: sem extração configurada): usa a data
+ *    efetiva — não existe dado a cobrar.
+ */
+export function agendouCardsOf(cards, from, to) {
+  const strict = cards.some(c => c.scheduledAt)
+  return strict
+    ? cards.filter(c => scheduledInPeriod(c, from, to))
+    : cards.filter(c => inPeriod(c, from, to))
 }
 
 /** O card foi CRIADO no período [from, to]? (usado no topo do funil: "entraram")
@@ -124,7 +139,9 @@ export function computeKpis(cards, from, to) {
       showed > 0 ? (converted.length / showed) * 100 : null,
     missRate:
       shouldAttend > 0 ? (missed.length / shouldAttend) * 100 : null,
-    noDate: cards.filter(c => !c.date).length,
+    // Só acusa card que JÁ passou de lead — em Leads/Não agendou a ausência de
+    // "Agendado Para" é o estado natural, não falta de alimentação.
+    noDate: cards.filter(c => c.stepType && c.stepType !== 'lead' && c.stepType !== 'notScheduled' && !c.date).length,
   }
 }
 
@@ -345,8 +362,9 @@ export function funnelOf(cards, funnelCfg, opts = {}) {
  * Funil do período [from, to]:
  *   - "Entraram" (topo) = cards CRIADOS no período — quando o lead chegou.
  *   - "Agendaram" = cards cuja data "Agendado em" caiu no período — quando a
- *     CRC/IA/sync marcou o agendamento (distinto da data da consulta em si).
- *   - Demais estágios = data efetiva (última movimentação), como os KPIs.
+ *     CRC/IA/sync marcou o agendamento (ver agendouCardsOf: estrito quando a
+ *     clínica extrai o campo; card sem dado não computa).
+ *   - Demais estágios = data efetiva (Agendado Para / evento real).
  * São coortes diferentes de propósito: "entraram X leads; no período, Y
  * agendaram / Z compareceram / W fecharam" — inclusive leads antigos que
  * andaram no funil agora.
@@ -355,7 +373,7 @@ export function computeFunnel(cards, from, to, funnelCfg) {
   if (!cards?.length) return null
   const inRange      = cards.filter(c => inPeriod(c, from, to))
   const entrou       = cards.filter(c => createdInPeriod(c, from, to)).length
-  const agendouCards = cards.filter(c => scheduledInPeriod(c, from, to))
+  const agendouCards = agendouCardsOf(cards, from, to)
   return funnelOf(inRange, funnelCfg, { entrou, agendouCards })
 }
 
@@ -375,7 +393,7 @@ export function breakdownByDimension(cards, dimKey, values, from, to, funnelCfg)
   // movimentação) — senão a tabela por dimensão diverge do funil geral no
   // mesmo período (REGRAS_DASHBOARD.md §7.1).
   const inRange = cards.filter(c => inPeriod(c, from, to))
-  const agendouCards = cards.filter(c => scheduledInPeriod(c, from, to))
+  const agendouCards = agendouCardsOf(cards, from, to)
   const labels = [...(values ?? []), null] // null = "sem" essa dimensão
   return labels
     .map(v => ({

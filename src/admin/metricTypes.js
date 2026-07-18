@@ -72,6 +72,10 @@ export function buildStepsConfig(mappedSteps, extract, dims, funnel, clinicorp, 
     while (config[slug]) slug += '2'
     config[slug] = { id: s.id, label: s.title, color: s.color, type: s.type }
   }
+  // Etapas ignoradas DE PROPÓSITO ficam registradas — o dashboard as exclui das
+  // métricas sem acusá-las no aviso de "etapas não mapeadas" (drift real).
+  const ignored = mappedSteps.filter(s => s.type === 'ignore').map(s => s.id)
+  if (ignored.length) config._ignored = ignored
   if (extract && Object.values(extract).some(rules => rules?.length)) config._extract = extract
   if (funnel) config._funnel = funnel
   if (dims && Object.keys(dims).length) config._dims = dims

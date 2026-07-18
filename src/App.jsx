@@ -334,14 +334,14 @@ export default function App() {
         </div>
       )}
 
-      {/* ── Aviso de datas não extraídas — sem isso o filtro de período vira loteria ── */}
+      {/* ── Aviso de datas não extraídas — card sem "Agendado Para" não computa ── */}
       {data?.diagnostics?.noDate > 0 && (
         <div className="mx-5 mt-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 flex gap-2">
           <span>⚠</span>
           <span>
-            {data.diagnostics.noDate} de {data.diagnostics.total} card(s) não têm data de agendamento extraída —
-            esses caem no filtro de período pela última movimentação no CRM, não pela data real do atendimento.
-            Ajuste a extração em <code className="font-mono">/setup</code>.
+            {data.diagnostics.noDate} de {data.diagnostics.noDateOf ?? data.diagnostics.total} card(s) já
+            agendados estão sem a data "Agendado Para" — ficam FORA das métricas por período até o campo
+            ser preenchido no card (ou a extração ajustada em <code className="font-mono">/setup</code>).
           </span>
         </div>
       )}
