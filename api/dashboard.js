@@ -8,7 +8,9 @@ const PAGE_SIZE     = 100
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 // Chaves reservadas dentro do JSONB `steps` — não são etapas, e sim config v2.
-const RESERVED_KEYS = new Set(['_extract', '_dims', '_funnel', '_clinicorp'])
+// Toda chave com prefixo "_" é config (_extract, _dims, _funnel, _clinicorp,
+// _dates, _flags, _ignored, ...); etapa de verdade nunca começa com "_".
+const isReservedKey = (k) => k.startsWith('_')
 
 // Garante o prefixo "Bearer " no token (o mesmo cuidado do admin/panels.js).
 function normalizeToken(raw) {
@@ -162,9 +164,12 @@ export default async function handler(req, res) {
   const dimsCfg     = rawSteps._dims ?? null
   const funnelCfg   = rawSteps._funnel ?? null
   const flags       = rawSteps._flags ?? {}
+  // Etapas que o admin mandou ignorar no /setup — fora das métricas E fora do
+  // aviso de "não mapeadas" (ignorar foi decisão, não drift).
+  const ignoredIds  = new Set(rawSteps._ignored ?? [])
   // Steps "de verdade" (sem as chaves reservadas de config)
   const steps = Object.fromEntries(
-    Object.entries(rawSteps).filter(([k]) => !RESERVED_KEYS.has(k))
+    Object.entries(rawSteps).filter(([k]) => !isReservedKey(k))
   )
 
   try {
@@ -243,9 +248,10 @@ export default async function handler(req, res) {
     })
 
     // ── Diagnóstico: nada some em silêncio ───────────────────────────────────
+    // Etapa em _ignored não é drift: o admin decidiu deixá-la fora no /setup.
     const unmappedByStep = {}
     for (const card of items) {
-      if (stepLookup[card.stepId]) continue
+      if (stepLookup[card.stepId] || ignoredIds.has(card.stepId)) continue
       const e = unmappedByStep[card.stepId] ?? { stepId: card.stepId, label: null, count: 0 }
       e.count++
       unmappedByStep[card.stepId] = e
@@ -256,9 +262,15 @@ export default async function handler(req, res) {
       for (const u of unmapped) u.label = titles[u.stepId] ?? null
     }
 
+    // noDate só acusa card que JÁ passou de lead: quem está em Leads/Não agendou
+    // ainda não tem "Agendado Para" mesmo — falta de data ali não é problema.
+    const pastLead = cards.filter(
+      c => c.stepType && c.stepType !== 'lead' && c.stepType !== 'notScheduled'
+    )
     const diagnostics = {
       total:         cards.length,
-      noDate:        cards.filter(c => !c.date).length,
+      noDate:        pastLead.filter(c => !c.date).length,
+      noDateOf:      pastLead.length,
       unmappedCount: unmapped.reduce((s, u) => s + u.count, 0),
       unmapped:      unmapped.sort((a, b) => b.count - a.count),
     }
