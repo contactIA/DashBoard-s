@@ -1,0 +1,55 @@
+# Ingestão de cards Helena → Supabase, a cada hora (FASE A2 do
+# PLANO_INGESTAO_E_PROCESSO.md). Mesmo desenho do sync-clinicorp: GitHub
+# Actions dispara o endpoint por HTTP (plano Vercel sem cron horário nativo),
+# 1 job por clínica em matrix. Aos :22 — fora dos :07/:37 do sync Clinicorp,
+# para a ingestão fotografar o painel já atualizado pelo sync.
+#
+# Reusa os secrets existentes: INGEST usa a MESMA URL do SYNC trocando o
+# nome do endpoint — sem secret novo para configurar.
+name: Ingest Cards
+
+on:
+  schedule:
+    - cron: '22 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  listar-clinicas:
+    runs-on: ubuntu-latest
+    outputs:
+      account_ids: ${{ steps.listar.outputs.account_ids }}
+    steps:
+      - name: Listar clínicas com painel configurado
+        id: listar
+        run: |
+          url="${{ secrets.SYNC_URL }}"
+          url="${url/sync-clinicorp/ingest-cards}"
+          resp=$(curl -s --max-time 20 -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" "${url}?list=1")
+          echo "Resposta: $resp"
+          ids=$(echo "$resp" | jq -c '.accountIds // []')
+          echo "account_ids=$ids" >> "$GITHUB_OUTPUT"
+
+  ingerir:
+    needs: listar-clinicas
+    if: needs.listar-clinicas.outputs.account_ids != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        accountId: ${{ fromJson(needs.listar-clinicas.outputs.account_ids) }}
+    steps:
+      - name: Ingerir clínica ${{ matrix.accountId }}
+        run: |
+          url="${{ secrets.SYNC_URL }}"
+          url="${url/sync-clinicorp/ingest-cards}"
+          status=$(curl -s -o response.json -w "%{http_code}" \
+            --max-time 55 \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${url}?accountId=${{ matrix.accountId }}")
+          echo "HTTP $status"
+          cat response.json
+          if [ "$status" -ge 300 ]; then
+            echo "::error::Ingestão de ${{ matrix.accountId }} falhou com HTTP $status"
+            exit 1
+          fi
