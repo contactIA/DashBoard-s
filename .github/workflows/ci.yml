@@ -1,0 +1,22 @@
+# CI — portão de qualidade (PLANO_INGESTAO_E_PROCESSO.md, PARTE B2).
+# Roda testes + build em todo push e PR. Merge em main só com isto verde
+# (proteger a branch em GitHub → Settings → Branches → require status checks).
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-e-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
