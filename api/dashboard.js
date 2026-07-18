@@ -134,6 +134,113 @@ function parseTitleAppointment(title) {
 //   source 'tag'           → values: { <tagId>: 'Rótulo' }  (casa contra card.tagIds)
 //   source 'metadata.<x>'  → rules:  [ { match, value } ]   (substring em metadata.x)
 
+// ── FASE A3: monta a resposta a partir da tabela `cards` do Supabase ─────────
+// Mesmo formato do caminho Helena. stepType/label/cor são resolvidos AQUI
+// (pelo mapeamento atual do /setup, não pelo step_type gravado na ingestão) —
+// mudou o setup, a leitura já reflete sem esperar o próximo cron.
+async function fetchAllCardRows(accountId) {
+  const rows = []
+  const CHUNK = 1000 // teto de linhas por resposta do PostgREST
+  for (let offset = 0; ; offset += CHUNK) {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/cards?account_id=eq.${encodeURIComponent(accountId)}&select=card_id,step_id,title,name,phone,date,time,scheduled_at,event_date,value,dims,created_at,updated_at&order=card_id`,
+      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, Range: `${offset}-${offset + CHUNK - 1}` } }
+    )
+    const body = await res.text()
+    if (!res.ok) throw new Error(`Supabase cards ${res.status}: ${body.slice(0, 200)}`)
+    const page = JSON.parse(body)
+    rows.push(...page)
+    if (page.length < CHUNK) break
+  }
+  return rows
+}
+
+async function respondFromDb(res, config, { steps, dimsCfg, funnelCfg, flags, ignoredIds }) {
+  const rows = await fetchAllCardRows(config.account_id)
+
+  const stepLookup = Object.fromEntries(
+    Object.entries(steps).map(([key, s]) => [s.id, { key, label: s.label, color: s.color, type: s.type }])
+  )
+
+  const cards = rows.map(r => {
+    const step = stepLookup[r.step_id] ?? null
+    return {
+      id:          r.card_id,
+      title:       r.title,
+      name:        r.name,
+      phone:       r.phone,
+      stepKey:     step?.key ?? null,
+      stepLabel:   step?.label ?? null,
+      stepType:    step?.type ?? null,
+      stepColor:   step?.color ?? null,
+      date:        r.date,
+      time:        r.time,
+      value:       r.value != null ? Number(r.value) : null,
+      createdAt:   r.created_at,
+      updatedAt:   r.updated_at,
+      eventDate:   r.event_date,
+      scheduledAt: r.scheduled_at,
+      dims:        r.dims ?? {},
+    }
+  })
+
+  // Diagnóstico equivalente ao do caminho Helena (sem chamada extra para
+  // títulos de step — etapa desconhecida aparece pelo stepId).
+  const unmappedByStep = {}
+  for (const r of rows) {
+    if (stepLookup[r.step_id] || ignoredIds.has(r.step_id)) continue
+    const e = unmappedByStep[r.step_id] ?? { stepId: r.step_id, label: null, count: 0 }
+    e.count++
+    unmappedByStep[r.step_id] = e
+  }
+  const unmapped = Object.values(unmappedByStep)
+  const pastLead = cards.filter(c => c.stepType && c.stepType !== 'lead' && c.stepType !== 'notScheduled')
+  const diagnostics = {
+    total:         cards.length,
+    noDate:        pastLead.filter(c => !c.date).length,
+    noDateOf:      pastLead.length,
+    unmappedCount: unmapped.reduce((s, u) => s + u.count, 0),
+    unmapped:      unmapped.sort((a, b) => b.count - a.count),
+  }
+
+  const dimensions = dimsCfg
+    ? Object.fromEntries(Object.entries(dimsCfg).map(([k, def]) => {
+        let values
+        if (def.source === 'tag') {
+          values = [...new Set(Object.values(def.values ?? {}))]
+        } else if (def.source?.startsWith('customFields.')) {
+          const counts = new Map()
+          for (const c of cards) {
+            const v = c.dims?.[k]
+            if (v) counts.set(v, (counts.get(v) ?? 0) + 1)
+          }
+          values = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v)
+        } else {
+          values = [...new Set((def.rules ?? []).map(r => r.value))]
+        }
+        return [k, { label: def.label ?? k, values, isUnit: def.isUnit ?? false, source: def.source ?? 'tag' }]
+      }))
+    : {}
+
+  const closedWithValue = cards.filter(c => c.stepType === 'converted' && c.value > 0)
+  const computedTicket  = closedWithValue.length > 0
+    ? Math.round(closedWithValue.reduce((s, c) => s + c.value, 0) / closedWithValue.length)
+    : (config.ticket ?? 10000)
+
+  return res.status(200).json({
+    clinic:     config.name,
+    ticket:     computedTicket,
+    steps,
+    dimensions,
+    funnelConfig: funnelCfg,
+    flags,
+    cards,
+    diagnostics,
+    source:     'db',
+    fetchedAt:  new Date().toISOString(),
+  })
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
 
@@ -182,6 +289,21 @@ export default async function handler(req, res) {
   const steps = Object.fromEntries(
     Object.entries(rawSteps).filter(([k]) => !isReservedKey(k))
   )
+
+  // ── FASE A3: leitura da tabela `cards` (ingerida pelo cron) em vez da ─────
+  // Helena ao vivo. Virada por clínica via steps._flags.readFromDb; overrides
+  // para a validação-sombra: ?source=db força o caminho novo, ?source=helena
+  // força o antigo (escape hatch com a flag ligada). Resposta tem o MESMO
+  // formato — o front não distingue (campo extra `source` marca o caminho).
+  const useDb = req.query.source === 'db' || (flags.readFromDb === true && req.query.source !== 'helena')
+  if (useDb) {
+    try {
+      return await respondFromDb(res, config, { steps, dimsCfg, funnelCfg, flags, ignoredIds })
+    } catch (err) {
+      console.error('[dashboard/db]', err)
+      return res.status(500).json({ error: `Falha lendo a base de cards: ${err.message}` })
+    }
+  }
 
   try {
     const first      = await fetchPage(config.panel_id, token, 1)
@@ -323,6 +445,7 @@ export default async function handler(req, res) {
       flags,
       cards,
       diagnostics,
+      source:     'helena',
       fetchedAt:  new Date().toISOString(),
     })
   } catch (err) {
