@@ -164,6 +164,17 @@ export default async function handler(req, res) {
   const dimsCfg     = rawSteps._dims ?? null
   const funnelCfg   = rawSteps._funnel ?? null
   const flags       = rawSteps._flags ?? {}
+
+  // ── Token de acesso por clínica (LGPD — dados de paciente no payload) ─────
+  // Virada GRADUAL: só exige quando a clínica tem steps._flags.requireToken
+  // ligado E a coluna access_token preenchida (supabase/access_token.sql).
+  // URL passa a ser /?clinic=slug&t=<access_token>. Sem a flag, comportamento
+  // atual (o UUID do accountId já funciona como capability não-adivinhável).
+  if (flags.requireToken) {
+    if (!config.access_token || req.query.t !== config.access_token) {
+      return res.status(401).json({ error: 'Acesso negado — link inválido ou desatualizado. Solicite o link correto à Contact.' })
+    }
+  }
   // Etapas que o admin mandou ignorar no /setup — fora das métricas E fora do
   // aviso de "não mapeadas" (ignorar foi decisão, não drift).
   const ignoredIds  = new Set(rawSteps._ignored ?? [])
