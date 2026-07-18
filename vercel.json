@@ -5,7 +5,8 @@
     "api/admin/clinics.js": { "maxDuration": 30 },
     "api/admin/clinicorp-directory.js": { "maxDuration": 30 },
     "api/admin/sync-status.js": { "maxDuration": 30 },
-    "api/cron/sync-clinicorp.js": { "maxDuration": 60 }
+    "api/cron/sync-clinicorp.js": { "maxDuration": 60 },
+    "api/cron/ingest-cards.js": { "maxDuration": 60 }
   },
   "rewrites": [
     { "source": "/setup", "destination": "/index.html" }
