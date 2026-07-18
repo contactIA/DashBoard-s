@@ -53,8 +53,9 @@ const RefreshIcon = ({ spin }) => (
 )
 
 export default function App() {
-  const params     = new URLSearchParams(window.location.search)
-  const clinicSlug = params.get('clinic') ?? params.get('accountId')
+  const params      = new URLSearchParams(window.location.search)
+  const clinicSlug  = params.get('clinic') ?? params.get('accountId')
+  const accessToken = params.get('t')   // token de acesso por clínica (B5.1 — flag requireToken)
 
   const [data,      setData]      = useState(null)
   const [loading,   setLoading]   = useState(false)
@@ -84,7 +85,7 @@ export default function App() {
   const load = () => {
     if (!clinicSlug) return
     setLoading(true); setError(null); setNotFound(false)
-    fetchDashboard(clinicSlug)
+    fetchDashboard(clinicSlug, accessToken)
       .then(d => {
         setData(d)
         setTicket(d.ticket ?? 10000)
