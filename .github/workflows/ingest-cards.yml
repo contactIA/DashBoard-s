@@ -4,8 +4,12 @@
 # 1 job por clínica em matrix. Aos :22 — fora dos :07/:37 do sync Clinicorp,
 # para a ingestão fotografar o painel já atualizado pelo sync.
 #
-# Reusa os secrets existentes: INGEST usa a MESMA URL do SYNC trocando o
-# nome do endpoint — sem secret novo para configurar.
+# URL própria (INGEST_URL) — NÃO deriva de SYNC_URL por substituição de string
+# (frágil: dependia do secret terminar exatamente em ".../sync-clinicorp",
+# quebrou em produção). Fallback: se INGEST_URL não existir ainda, cai para
+# BASE_URL + /api/cron/ingest-cards (defina BASE_URL como o domínio raiz,
+# ex: https://dashboardodontologico.vercel.app) — assim dá para rodar sem
+# cadastrar um secret novo, mas o ideal é cadastrar INGEST_URL explícito.
 name: Ingest Cards
 
 on:
@@ -18,15 +22,27 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       account_ids: ${{ steps.listar.outputs.account_ids }}
+      url: ${{ steps.resolve.outputs.url }}
     steps:
+      - name: Resolver URL do endpoint
+        id: resolve
+        run: |
+          if [ -n "${{ secrets.INGEST_URL }}" ]; then
+            url="${{ secrets.INGEST_URL }}"
+          elif [ -n "${{ secrets.BASE_URL }}" ]; then
+            url="${{ secrets.BASE_URL }}/api/cron/ingest-cards"
+          else
+            echo "::error::Cadastre o secret INGEST_URL (ou BASE_URL) em Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
       - name: Listar clínicas com painel configurado
         id: listar
         run: |
-          url="${{ secrets.SYNC_URL }}"
-          url="${url/sync-clinicorp/ingest-cards}"
+          url="${{ steps.resolve.outputs.url }}"
           resp=$(curl -s --max-time 20 -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" "${url}?list=1")
           echo "Resposta: $resp"
-          ids=$(echo "$resp" | jq -c '.accountIds // []')
+          ids=$(echo "$resp" | jq -c '.accountIds // []') || { echo "::error::Resposta não é JSON válido — confira INGEST_URL/BASE_URL e se o deploy tem /api/cron/ingest-cards."; exit 1; }
           echo "account_ids=$ids" >> "$GITHUB_OUTPUT"
 
   ingerir:
@@ -41,12 +57,10 @@ jobs:
     steps:
       - name: Ingerir clínica ${{ matrix.accountId }}
         run: |
-          url="${{ secrets.SYNC_URL }}"
-          url="${url/sync-clinicorp/ingest-cards}"
           status=$(curl -s -o response.json -w "%{http_code}" \
             --max-time 55 \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            "${url}?accountId=${{ matrix.accountId }}")
+            "${{ needs.listar-clinicas.outputs.url }}?accountId=${{ matrix.accountId }}")
           echo "HTTP $status"
           cat response.json
           if [ "$status" -ge 300 ]; then
