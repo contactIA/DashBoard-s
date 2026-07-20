@@ -4,12 +4,11 @@
 # 1 job por clínica em matrix. Aos :22 — fora dos :07/:37 do sync Clinicorp,
 # para a ingestão fotografar o painel já atualizado pelo sync.
 #
-# URL própria (INGEST_URL) — NÃO deriva de SYNC_URL por substituição de string
-# (frágil: dependia do secret terminar exatamente em ".../sync-clinicorp",
-# quebrou em produção). Fallback: se INGEST_URL não existir ainda, cai para
-# BASE_URL + /api/cron/ingest-cards (defina BASE_URL como o domínio raiz,
-# ex: https://dashboardodontologico.vercel.app) — assim dá para rodar sem
-# cadastrar um secret novo, mas o ideal é cadastrar INGEST_URL explícito.
+# IMPORTANTE (bug corrigido 20/07): a URL do endpoint contém o secret
+# INGEST_URL, e o GitHub Actions NÃO propaga valores de secret entre jobs via
+# outputs (proteção de segurança — o output chega VAZIO no job seguinte, e o
+# curl recebia só "?accountId=..." sem host → exit 3). Por isso CADA job
+# resolve a URL localmente a partir do secret, sem passar via needs.outputs.
 name: Ingest Cards
 
 on:
@@ -22,27 +21,20 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       account_ids: ${{ steps.listar.outputs.account_ids }}
-      url: ${{ steps.resolve.outputs.url }}
     steps:
-      - name: Resolver URL do endpoint
-        id: resolve
-        run: |
-          if [ -n "${{ secrets.INGEST_URL }}" ]; then
-            url="${{ secrets.INGEST_URL }}"
-          elif [ -n "${{ secrets.BASE_URL }}" ]; then
-            url="${{ secrets.BASE_URL }}/api/cron/ingest-cards"
-          else
-            echo "::error::Cadastre o secret INGEST_URL (ou BASE_URL) em Settings > Secrets and variables > Actions."
-            exit 1
-          fi
-          echo "url=$url" >> "$GITHUB_OUTPUT"
       - name: Listar clínicas com painel configurado
         id: listar
+        env:
+          INGEST_URL: ${{ secrets.INGEST_URL }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          url="${{ steps.resolve.outputs.url }}"
-          resp=$(curl -s --max-time 20 -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" "${url}?list=1")
+          if [ -n "$INGEST_URL" ]; then url="$INGEST_URL";
+          elif [ -n "$BASE_URL" ]; then url="$BASE_URL/api/cron/ingest-cards";
+          else echo "::error::Cadastre o secret INGEST_URL (ou BASE_URL)."; exit 1; fi
+          resp=$(curl -s --max-time 20 -H "Authorization: Bearer $CRON_SECRET" "${url}?list=1")
           echo "Resposta: $resp"
-          ids=$(echo "$resp" | jq -c '.accountIds // []') || { echo "::error::Resposta não é JSON válido — confira INGEST_URL/BASE_URL e se o deploy tem /api/cron/ingest-cards."; exit 1; }
+          ids=$(echo "$resp" | jq -c '.accountIds // []') || { echo "::error::Resposta não é JSON — confira INGEST_URL/deploy."; exit 1; }
           echo "account_ids=$ids" >> "$GITHUB_OUTPUT"
 
   ingerir:
@@ -55,23 +47,26 @@ jobs:
       matrix:
         accountId: ${{ fromJson(needs.listar-clinicas.outputs.account_ids) }}
     steps:
-      # --max-time 75 dá folga além do maxDuration=60 da function (vercel.json)
-      # — sem isso o curl cortava ANTES da Vercel terminar de responder
-      # (exit code 28/curl timeout, visto como "exit code 3" no job por causa
-      # do pipe com o comando seguinte). --retry cobre lentidão pontual de
-      # rede sem reprovar a clínica inteira por 1 execução ruim.
       - name: Ingerir clínica ${{ matrix.accountId }}
+        env:
+          INGEST_URL: ${{ secrets.INGEST_URL }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          ACCOUNT_ID: ${{ matrix.accountId }}
         run: |
+          if [ -n "$INGEST_URL" ]; then url="$INGEST_URL";
+          elif [ -n "$BASE_URL" ]; then url="$BASE_URL/api/cron/ingest-cards";
+          else echo "::error::Cadastre o secret INGEST_URL (ou BASE_URL)."; exit 1; fi
           status=$(curl -s -o response.json -w "%{http_code}" \
             --max-time 75 --retry 2 --retry-delay 5 --retry-connrefused \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            "${{ needs.listar-clinicas.outputs.url }}?accountId=${{ matrix.accountId }}") || {
-            echo "::error::curl falhou (timeout/conexão) para ${{ matrix.accountId }} — exit $?"
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "${url}?accountId=${ACCOUNT_ID}") || {
+            echo "::error::curl falhou (timeout/conexão) para ${ACCOUNT_ID} — exit $?"
             exit 1
           }
           echo "HTTP $status"
           cat response.json
           if [ "$status" -ge 300 ]; then
-            echo "::error::Ingestão de ${{ matrix.accountId }} falhou com HTTP $status"
+            echo "::error::Ingestão de ${ACCOUNT_ID} falhou com HTTP $status"
             exit 1
           fi
