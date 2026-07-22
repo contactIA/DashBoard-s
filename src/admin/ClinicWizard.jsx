@@ -21,6 +21,7 @@ const EXTRACT_FIELDS = [
   { key: 'date',  label: 'Agendado Para (data/hora da consulta)', kind: 'date', hint: 'A data que filtra o dashboard e alimenta "agendamentos futuros". Sem ela o card some das métricas por período.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)' },
   { key: 'time',  label: 'Horário',             kind: 'text', hint: 'Opcional — usado na lista de agendamentos. Ignorado quando "Agendado Para" já é um campo único data+hora.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)' },
   { key: 'scheduledAt', label: 'Agendado em (dia que a CRC agendou)', kind: 'date', hint: 'Opcional — alimenta a barra "Agendaram" do funil. Diferente da data da consulta.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)', noSuggest: true, optional: true },
+  { key: 'closedAt', label: 'Fechado em (dia que o orçamento foi aprovado)', kind: 'date', hint: 'Opcional — quando o contrato realmente fechou, pode ser meses após a consulta. Não mexe em "Agendado Para". Alimenta o KPI de fechamento por mês.', helenaSource: 'dueDate', helenaLabel: 'Data/hora da Helena (dueDate)', noSuggest: true, optional: true },
   { key: 'name',  label: 'Nome do paciente',    kind: 'text', hint: 'Exibido nas tabelas.', helenaSource: 'contactName', helenaLabel: 'Contato vinculado ao card' },
   { key: 'phone', label: 'Telefone',            kind: 'phone', hint: 'Opcional.', helenaSource: 'contactPhone', helenaLabel: 'Contato vinculado ao card' },
 ]
@@ -29,6 +30,7 @@ const emptyExtract = () => ({
   date:  [{ from: 'description', regex: '', format: 'YMD' }],
   time:  [{ from: 'description', regex: '' }],
   scheduledAt: [],
+  closedAt: [],
   name:  [{ from: 'title', regex: '' }],
   phone: [{ from: 'description', regex: '' }],
 })
@@ -36,11 +38,11 @@ const emptyExtract = () => ({
 const hasAnyRule = (ex) => ex && Object.values(ex).some(rules => rules?.some(r => r.regex || r.from))
 
 // _dates (steps._dates) diz ao SYNC do Clinicorp em qual customField escrever
-// "Agendado Para"/"Agendado em" — deriva do MESMO campo já escolhido no passo
-// de Extração (1ª regra, quando aponta para customFields.<key>), em vez de
-// pedir a mesma escolha duas vezes: uma única fonte de verdade por clínica,
-// sem risco de a leitura (_extract) e a escrita (_dates) apontarem pra keys
-// diferentes por engano.
+// "Agendado Para"/"Agendado em"/"Fechado em" — deriva do MESMO campo já
+// escolhido no passo de Extração (1ª regra, quando aponta para
+// customFields.<key>), em vez de pedir a mesma escolha duas vezes: uma única
+// fonte de verdade por clínica, sem risco de a leitura (_extract) e a escrita
+// (_dates) apontarem pra keys diferentes por engano.
 function customFieldKeyOf(rules) {
   for (const r of rules ?? []) {
     if (r?.from?.startsWith('customFields.')) return r.from.slice(13) || null
@@ -50,10 +52,12 @@ function customFieldKeyOf(rules) {
 function deriveDatesConfig(extract) {
   const scheduledForKey = customFieldKeyOf(extract.date)
   const createdAtKey    = customFieldKeyOf(extract.scheduledAt)
-  if (!scheduledForKey && !createdAtKey) return null
+  const closedAtKey     = customFieldKeyOf(extract.closedAt)
+  if (!scheduledForKey && !createdAtKey && !closedAtKey) return null
   return {
     ...(scheduledForKey ? { scheduledFor: { key: scheduledForKey } } : {}),
     ...(createdAtKey    ? { createdAt:    { key: createdAtKey } }    : {}),
+    ...(closedAtKey     ? { closedAt:     { key: closedAtKey } }     : {}),
   }
 }
 
@@ -1340,6 +1344,9 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
               ['Agendado em', datesCfg?.createdAt?.key
                 ? <code key="ca" className="font-mono text-xs text-emerald-600">customFields.{datesCfg.createdAt.key}</code>
                 : <span key="ca" className="text-slate-400">— não configurado (opcional)</span>],
+              ['Fechado em', datesCfg?.closedAt?.key
+                ? <code key="fe" className="font-mono text-xs text-emerald-600">customFields.{datesCfg.closedAt.key}</code>
+                : <span key="fe" className="text-slate-400">— não configurado (opcional)</span>],
               ['Clinicorp',   clinicorpConfig()
                 ? <span key="cc" className="text-emerald-600 font-medium">
                     Vinculado · {clinicorpConfig().units.map(u => u.label ? `${u.label} (${u.user})` : u.user).join(' · ')}
