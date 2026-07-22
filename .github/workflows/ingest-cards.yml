@@ -9,6 +9,15 @@
 # GitHub apaga output que contém secret → URL vazia → curl falha, exit 3).
 # O `tr -d` limpa espaço/quebra-de-linha que o humano cola sem querer no
 # secret (causa real de um exit 3 em 20/07) — usabilidade à prova de erro.
+#
+# `concurrency` (22/07): mesma proteção do sync-clinicorp.yml — evita 2+
+# execuções deste workflow rodando ao mesmo tempo (ex: disparo manual em cima
+# do cron agendado). A ingestão é upsert idempotente (não cria duplicata),
+# mas rodar em paralelo desperdiça chamadas à Helena/Supabase à toa.
+concurrency:
+  group: ingest-cards
+  cancel-in-progress: true
+
 name: Ingest Cards
 
 on:

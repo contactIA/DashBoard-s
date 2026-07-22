@@ -6,6 +6,18 @@
 # BASE_URL + /api/cron/sync-clinicorp) — NÃO passa entre jobs via outputs
 # (o GitHub apaga outputs que contêm secret, o que deixava a URL vazia e o
 # curl falhava com exit 3; mesma causa raiz do ingest, corrigida 20/07).
+#
+# `concurrency` (22/07): impede 2+ execuções deste workflow rodarem ao mesmo
+# tempo — causa raiz confirmada de cards DUPLICADOS em produção (disparos
+# manuais repetidos + o cron agendado rodando junto criavam o mesmo card 2-3x,
+# pois cada execução lia a lista de cards antes da outra criar os novos). A
+# nova execução CANCELA a anterior em vez de esperar — o endpoint também tem
+# um lock próprio (api/cron/sync-clinicorp.js) como segunda camada, cobrindo
+# disparo por qualquer via, não só este workflow.
+concurrency:
+  group: sync-clinicorp
+  cancel-in-progress: true
+
 name: Sync Clinicorp
 
 on:
