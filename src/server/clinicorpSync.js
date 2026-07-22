@@ -196,11 +196,14 @@ export async function syncClinicClinicorp(clinic) {
   }
 
   // _dates (setup): quais customFields do card recebem "Agendado Para" (data+hora
-  // da consulta, campo único) e "Agendado em" (dia em que o agendamento foi
-  // criado no Clinicorp). Ausente → LEGADO (keys fixas 'data'/'hor-rio', como
-  // antes desta mudança) — não mexe em clínica que ainda não migrou no wizard.
+  // da consulta, campo único), "Agendado em" (dia em que o agendamento foi
+  // criado no Clinicorp) e "Fechado em" (dia em que o ORÇAMENTO foi aprovado —
+  // pode ser meses depois da consulta, ex: agendado 28/05, consulta 03/06,
+  // fechou só em 20/07: as 3 datas são INDEPENDENTES, nenhuma sobrescreve a
+  // outra). Ausente → LEGADO (keys fixas 'data'/'hor-rio') — não mexe em
+  // clínica que ainda não migrou no wizard.
   const dateCfg = clinic.steps?._dates ?? null
-  function buildDateCustomFields(quando, time, criadoEm) {
+  function buildDateCustomFields(quando, time, criadoEm, fechadoEm) {
     if (!dateCfg) {
       return quando ? { data: fmtDateBR(quando), ...(time ? { 'hor-rio': time } : {}) } : null
     }
@@ -212,37 +215,18 @@ export async function syncClinicClinicorp(clinic) {
     }
     const ca = dateCfg.createdAt
     if (ca?.key && criadoEm) cf[ca.key] = isoLocal(criadoEm, null) // "Agendado em" (só data)
+    const fe = dateCfg.closedAt
+    if (fe?.key && fechadoEm) cf[fe.key] = isoLocal(fechadoEm, null) // "Fechado em" (só data)
     return Object.keys(cf).length ? cf : null
   }
 
   // Lê o valor atual de um customField do card — a Helena devolve tanto valor
   // simples quanto array de 1 item, dependendo do campo (confirmado via leitura
   // real). Confirmado por teste real (scripts/test-customfields-merge.mjs) que o
-  // PUT de customFields faz MERGE, não REPLACE — por isso o move de fechamento
-  // (2.2) não precisa reenviar 'agendado-em-' para preservá-lo.
+  // PUT de customFields faz MERGE, não REPLACE.
   const cardFieldValue = (card, key) => {
     const v = card.customFields?.[key]
     return Array.isArray(v) ? v[0] ?? null : v ?? null
-  }
-  // Hora atual gravada em "Agendado Para" do card, se houver — usada para
-  // preservar a hora original da consulta quando só o DIA precisa ser
-  // corrigido pela regra do fechamento (e.Date não tem hora).
-  function horaAtualDoCard(card) {
-    const sf = dateCfg?.scheduledFor
-    if (!sf?.key) return null
-    const atual = String(cardFieldValue(card, sf.key) ?? '')
-    return (atual.match(/T(\d{2}:\d{2})/) ?? [])[1] ?? null
-  }
-  // "agendado-para" desejado difere do gravado no card? Compara só a DATA
-  // (YYYY-MM-DD, tolerando o formato com barras que a Helena devolve em
-  // alguns campos) — a regra do fechamento substitui o DIA pelo dia do
-  // orçamento aprovado (e.Date não tem hora); a hora original da consulta
-  // não faz parte do que precisa ser corrigido aqui.
-  function precisaCorrigirData(card, quando) {
-    const sf = dateCfg?.scheduledFor
-    if (!sf?.key || !quando) return false
-    const atual = String(cardFieldValue(card, sf.key) ?? '').replace(/\//g, '-')
-    return atual.slice(0, 10) !== quando
   }
 
   let cards = []
@@ -376,12 +360,19 @@ export async function syncClinicClinicorp(clinic) {
       else if (['CHECKOUT', 'IN_SESSION', 'ARRIVED'].includes(type)) propose(a.Patient_PersonId, { target: 'NÃO FECHOU', motivo: `atendido ${quando}`, ...extra }, 4)
       else if (quando >= hoje) propose(a.Patient_PersonId, { target: 'AGENDADO', motivo: `consulta futura ${quando}`, futura: true, ...extra }, 1)
     }
+    // e.Date (≈ LastChange_Date, confirmado contra a API real 20/07: diferença
+    // de 1-2s) é QUANDO O STATUS DO ORÇAMENTO MUDOU pela última vez — para
+    // FECHOU (aprovado), essa é a data de FECHAMENTO, que pode ser meses depois
+    // da consulta (visto na prática: orçamento criado dez/25, aprovado jun/26).
+    // NUNCA é a data do "Agendado Para" — por isso `quando` aqui fica de fora
+    // do desejo (não é usado pelo CUTOFF/criação de card por agendamento) e
+    // vira `fechadoEm`, gravado só no novo campo "Fechado em" (dateCfg.closedAt).
     for (const e of estimates) {
-      const quando = String(e.Date ?? '').slice(0, 10)
-      const extra = { nome: e.PatientName, quando, telefone: e.PatientMobilePhone, patientId: e.PatientId }
-      if (e.Status === 'APPROVED') propose(e.PatientId, { target: 'FECHOU', valor: e.Amount, motivo: `orçamento APROVADO ${quando} · R$ ${e.Amount}`, ...extra }, 7)
-      else if (e.Status === 'OPEN') propose(e.PatientId, { target: 'ORÇAMENTO EM ABERTO', valor: e.Amount, motivo: `orçamento em aberto ${quando} · R$ ${e.Amount}`, ...extra }, 6)
-      else if (e.Status === 'REJECTED') propose(e.PatientId, { target: 'NÃO FECHOU', valor: e.Amount, motivo: `orçamento REPROVADO ${quando}`, ...extra }, 5)
+      const fechadoEm = String(e.Date ?? '').slice(0, 10)
+      const extra = { nome: e.PatientName, fechadoEm, telefone: e.PatientMobilePhone, patientId: e.PatientId }
+      if (e.Status === 'APPROVED') propose(e.PatientId, { target: 'FECHOU', valor: e.Amount, motivo: `orçamento APROVADO ${fechadoEm} · R$ ${e.Amount}`, ...extra }, 7)
+      else if (e.Status === 'OPEN') propose(e.PatientId, { target: 'ORÇAMENTO EM ABERTO', valor: e.Amount, motivo: `orçamento em aberto ${fechadoEm} · R$ ${e.Amount}`, ...extra }, 6)
+      else if (e.Status === 'REJECTED') propose(e.PatientId, { target: 'NÃO FECHOU', valor: e.Amount, motivo: `orçamento REPROVADO ${fechadoEm}`, ...extra }, 5)
     }
 
     for (const [pid, want] of desired) {
@@ -389,6 +380,11 @@ export async function syncClinicClinicorp(clinic) {
       if (!stepAlvo) continue
       const key = phoneKey(want.telefone)
       const card = cardsByClinicorpId.get(pid) ?? (key ? cardsByPhone.get(key) : null)
+      // Corte por histórico velho: desejos de ESTIMATE (FECHOU/aberto/reprovado)
+      // não têm `quando` (data de agendamento) — não fazem sentido criar card
+      // sozinhos sem uma consulta associada, então o corte não se aplica a eles
+      // (want.quando undefined → comparação sempre falsa → nunca bloqueia,
+      // mas a criação abaixo já exige want.target === 'FECHOU' explicitamente).
       if (want.quando < CUTOFF && !card) continue // histórico velho: só atualiza, nunca cria
 
       if (!card) {
@@ -396,7 +392,7 @@ export async function syncClinicClinicorp(clinic) {
           const crcNome = agendadorByPatient.get(pid)?.nome ?? null
           const crcTagId = resolveCrcTagId(crcNome) // SÓ o mapa do setup (_crcMap) — sem adivinhação
           if (crcNome && !crcTagId) summary.unmatchedCrc.add(crcNome)
-          allCreates.push({ unidade: unit.label || unit.user, tagId: unit.tagId, crcTagId, stepId: stepAlvo.id, step: stepAlvo.title, nome: want.nome, telefone: want.telefone, patientId: pid, valor: want.valor ?? null, quando: want.quando, time: want.time ?? null, criadoEm: want.criadoEm ?? null, motivo: want.motivo })
+          allCreates.push({ unidade: unit.label || unit.user, tagId: unit.tagId, crcTagId, stepId: stepAlvo.id, step: stepAlvo.title, nome: want.nome, telefone: want.telefone, patientId: pid, valor: want.valor ?? null, quando: want.quando ?? null, time: want.time ?? null, criadoEm: want.criadoEm ?? null, fechadoEm: want.fechadoEm ?? null, motivo: want.motivo })
         }
         continue
       }
@@ -431,25 +427,23 @@ export async function syncClinicClinicorp(clinic) {
     // (nome fora do crcMap) → crcTagId null → NÃO mexe em tagIds (decisão 2).
     const cardTagIds = card.tagIds ?? []
     const precisaCrc = Boolean(crcTagId) && !cardTagIds.includes(crcTagId)
-    // REGRA DO FECHAMENTO (2.1): card já em FECHOU nunca gerava PUT — gap
-    // que impedia a correção do "Agendado Para" para a data do fechamento
-    // em cards fechados antes desta regra existir. Só se aplica a target
-    // FECHOU (want.quando aqui é a data do orçamento aprovado, e.Date).
-    const precisaData = want.target === 'FECHOU' && precisaCorrigirData(card, want.quando)
-    // want.time nunca vem preenchido para FECHOU (estimates não têm hora) —
-    // ao corrigir só a data, preserva a hora que já estava no card.
-    const timeParaGravar = want.time ?? (precisaData ? horaAtualDoCard(card) : null)
+    // "Fechado em" (novo campo, 20/07): grava a data de APROVAÇÃO do orçamento
+    // SEM NUNCA tocar em "Agendado Para" — as 3 datas (agendado em/agendado
+    // para/fechado em) são independentes. Repara mesmo em card já FECHOU
+    // (fechouTerminal), pois o orçamento pode ser reaprovado/atualizado depois.
+    const precisaFechadoEm = want.target === 'FECHOU' && Boolean(want.fechadoEm) &&
+      dateCfg?.closedAt?.key && cardFieldValue(card, dateCfg.closedAt.key)?.slice(0, 10).replace(/\//g, '-') !== want.fechadoEm
 
     if (fechouTerminal || (ehRegressao && !reativacao)) {
-      if ((precisaValor && want.target === 'FECHOU') || precisaCrc || precisaData) {
-        allMoves.push({ cardId: card.id, card: card.title, stepAlvoId: card.stepId, valor: (precisaValor && want.target === 'FECHOU') ? want.valor : null, quando: want.quando, time: timeParaGravar, criadoEm: want.criadoEm ?? null, patientId: pid, crcTagId, cardTagIds, flags: { precisaValor, precisaCrc, precisaData, terminal: true } })
+      if ((precisaValor && want.target === 'FECHOU') || precisaCrc || precisaFechadoEm) {
+        allMoves.push({ cardId: card.id, card: card.title, stepAlvoId: card.stepId, valor: (precisaValor && want.target === 'FECHOU') ? want.valor : null, quando: null, time: null, criadoEm: null, fechadoEm: want.fechadoEm ?? null, patientId: pid, crcTagId, cardTagIds, flags: { precisaValor, precisaCrc, precisaFechadoEm, terminal: true } })
       }
       continue
     }
 
     const precisaMover = card.stepId !== stepAlvo.id
-    if (precisaMover || precisaValor || precisaCrc || precisaData) {
-      allMoves.push({ cardId: card.id, card: card.title, stepAlvoId: stepAlvo.id, valor: precisaValor ? want.valor : null, quando: want.quando, time: timeParaGravar, criadoEm: want.criadoEm ?? null, patientId: pid, crcTagId, cardTagIds, flags: { precisaMover, precisaValor, precisaCrc, precisaData } })
+    if (precisaMover || precisaValor || precisaCrc || precisaFechadoEm) {
+      allMoves.push({ cardId: card.id, card: card.title, stepAlvoId: stepAlvo.id, valor: precisaValor ? want.valor : null, quando: want.quando ?? null, time: want.time ?? null, criadoEm: want.criadoEm ?? null, fechadoEm: want.fechadoEm ?? null, patientId: pid, crcTagId, cardTagIds, flags: { precisaMover, precisaValor, precisaCrc, precisaFechadoEm } })
     }
   }
 
@@ -474,9 +468,14 @@ export async function syncClinicClinicorp(clinic) {
       const fields = ['metadata']
       if (m.stepAlvoId) { body.stepId = m.stepAlvoId; fields.push('stepId') }
       if (m.valor > 0) { body.monetaryAmount = m.valor; fields.push('monetaryAmount') }
-      const cf = buildDateCustomFields(m.quando, m.time, m.criadoEm)
+      const cf = buildDateCustomFields(m.quando, m.time, m.criadoEm, m.fechadoEm)
       if (cf) { body.customFields = cf; fields.push('customFields') }
-      if (m.quando) body.metadata.clinicorp_event_date = m.quando
+      // clinicorp_event_date alimenta o KPI "em que mês o card conta" (ver
+      // effectiveDate em src/utils/parseCards.js) — para FECHOU, é o fechadoEm
+      // (data de aprovação, pode ser meses após a consulta); para os demais
+      // desfechos, é a data do agendamento (m.quando). NUNCA os dois juntos.
+      const eventDate = m.fechadoEm ?? m.quando
+      if (eventDate) body.metadata.clinicorp_event_date = eventDate
       if (m.crcTagId && !tagsAtuais.includes(m.crcTagId)) {
         // Troca SÓ etiquetas de CRC mapeadas (allCrcTagIds); unidade/origem/etc.
         // intocáveis. m.crcTagId null (sem match) → não entra aqui, tagIds intocado.
@@ -485,7 +484,7 @@ export async function syncClinicClinicorp(clinic) {
       }
       body.fields = fields
       if (DRY) {
-        summary.moves.push({ card: m.card, cardId: m.cardId, stepAlvo: stepTitleById[m.stepAlvoId] ?? m.stepAlvoId, flags: m.flags ?? null, quando: m.quando ?? null, dryBody: body })
+        summary.moves.push({ card: m.card, cardId: m.cardId, stepAlvo: stepTitleById[m.stepAlvoId] ?? m.stepAlvoId, flags: m.flags ?? null, quando: eventDate ?? null, dryBody: body })
         continue
       }
 
@@ -493,7 +492,7 @@ export async function syncClinicClinicorp(clinic) {
       const stepJaOk = !body.stepId || fresh?.stepId === body.stepId
       const tagsJaOk = !body.tagIds
       const valorJaOk = !(m.valor > 0) || fresh?.monetaryAmount > 0
-      const dataJaOk = !m.quando || fresh?.metadata?.clinicorp_event_date === m.quando
+      const dataJaOk = !eventDate || fresh?.metadata?.clinicorp_event_date === eventDate
       if (stepJaOk && tagsJaOk && valorJaOk && dataJaOk) continue
       // Verificação pós-escrita: observado em 16/07 que a Helena às vezes
       // responde 200 SEM aplicar stepId/tagIds (no-op silencioso — o mesmo
@@ -515,7 +514,7 @@ export async function syncClinicClinicorp(clinic) {
         continue
       }
       summary.moved++
-      summary.moves.push({ card: m.card, flags: m.flags ?? null, quando: m.quando ?? null })
+      summary.moves.push({ card: m.card, flags: m.flags ?? null, quando: eventDate ?? null })
     } catch (err) { summary.failed++; summary.errors.push(`move "${m.card}": ${err.message}`) }
     await sleep(250)
   }
@@ -538,14 +537,17 @@ export async function syncClinicClinicorp(clinic) {
       const contact = await findOrCreateContact(c.nome, c.telefone)
       await sleep(150)
       const tagIds = [c.tagId, c.crcTagId].filter(Boolean)
-      const cf = buildDateCustomFields(c.quando, c.time, c.criadoEm)
+      const cf = buildDateCustomFields(c.quando, c.time, c.criadoEm, c.fechadoEm)
+      // Mesma regra do move: event_date é fechadoEm quando há fechamento,
+      // senão a data do agendamento — nunca os dois somados/confundidos.
+      const eventDate = c.fechadoEm ?? c.quando
       const body = {
         stepId: c.stepId, title: c.nome,
         ...(contact ? { contactIds: [contact.id] } : {}),
         ...(tagIds.length ? { tagIds } : {}),
         ...(c.valor > 0 ? { monetaryAmount: c.valor } : {}),
         ...(cf ? { customFields: cf } : {}),
-        metadata: { clinicorp_patient_id: String(c.patientId ?? ''), clinicorp_origem: c.motivo, ...(c.quando ? { clinicorp_event_date: c.quando } : {}) },
+        metadata: { clinicorp_patient_id: String(c.patientId ?? ''), clinicorp_origem: c.motivo, ...(eventDate ? { clinicorp_event_date: eventDate } : {}) },
       }
       await helena('POST', '/crm/v1/panel/card', body)
       summary.created++

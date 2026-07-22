@@ -33,19 +33,32 @@ o resto do código usa.
 - `api/dashboard.js:201-206` monta esse lookup (`stepLookup`) e anexa
   `stepType`/`stepLabel`/`stepColor` a cada card retornado.
 
-## 3. As TRÊS datas de um card (a parte que mais gera confusão)
+## 3. As QUATRO datas de um card (a parte que mais gera confusão)
 
 | Data | Campo no card | Quando é preenchida | Para que serve |
 |---|---|---|---|
 | **Criação do card** | `card.createdAt` (nativo Helena) | Quando o lead entrou no painel (CRC, IA ou sync) | Topo do funil: "Leads (entraram)" |
 | **Agendado em** | customField configurável (ex: `agendado-em-`), lido via `_extract.scheduledAt` → `c.scheduledAt` | Dia em que a CRC/IA/sync **marcou** o agendamento | Barra "Agendaram" do funil |
-| **Agendado Para** | customField configurável (ex: `agendado-para`, campo único data+hora), lido via `_extract.date`/`.time` → `c.date`/`c.time` | Dia/hora que o paciente **vai à clínica** | Agendamentos futuros, exibição geral |
-| **Data do evento** | `metadata.clinicorp_event_date` → `c.eventDate` | Gravada só pelo sync, quando o Clinicorp confirma um desfecho (fechou/faltou/desmarcou) | Atribuição temporal de KPIs e receita — impede que um card movido HOJE sobre um fato de meses atrás conte como receita do mês errado |
+| **Agendado Para** | customField configurável (ex: `agendado-para`, campo único data+hora), lido via `_extract.date`/`.time` → `c.date`/`c.time` | Dia/hora que o paciente **vai à clínica** — a consulta em si, IMUTÁVEL uma vez marcada | Agendamentos futuros, exibição geral |
+| **Fechado em** (novo, 20/07) | customField configurável (ex: `fechado-em-`), lido via `_extract.closedAt` → `c.closedAt` | Dia em que o **orçamento foi aprovado** no Clinicorp — pode ser MESES depois da consulta (ex: agendado 28/05, consulta 03/06, fechou 20/07) | Alimenta `metadata.clinicorp_event_date` quando o card fecha — nunca sobrescreve "Agendado Para" |
+| **Data do evento** | `metadata.clinicorp_event_date` → `c.eventDate` | Gravada só pelo sync: para FECHOU é o "Fechado em"; para os demais desfechos (faltou/desmarcou/etc.) é a data do agendamento | Atribuição temporal de KPIs e receita — impede que um card movido HOJE sobre um fato de meses atrás conte como receita do mês errado |
 
-**Regra de prioridade da "data efetiva"** (`effectiveDate`, `src/utils/parseCards.js:49-56`):
-1. `eventDate` se existir (fato real do Clinicorp);
-2. senão, se o card está em `lead` → data de **criação**;
-3. senão → data de **última atualização** (`updatedAt`).
+**LIÇÃO DE 20/07 (bug real, corrigido em `src/server/clinicorpSync.js`)**: antes
+desta correção, quando um orçamento aprovava no Clinicorp, o motor de sync
+gravava a data de aprovação (`e.Date`, que é ≈ `LastChange_Date` — confirmado
+contra a API real) TAMBÉM no campo "Agendado Para", sobrescrevendo a data real
+da consulta. Um paciente agendado em maio, atendido em junho, cujo orçamento só
+aprova em julho, tinha o card "Agendado Para" reescrito para julho — quebrando
+qualquer relatório de agenda por data de consulta. Agora as 3 datas
+(agendado em / agendado para / fechado em) são gravadas em campos
+INDEPENDENTES, nenhuma nunca sobrescreve outra. Ver `PROJETO CLINICORP + PAINEL/Documentação` para o payload real de `/estimates/list`.
+
+**Regra de prioridade da "data efetiva"** (`effectiveDate`, `src/utils/parseCards.js`, regra ESTRITA desde 18/07):
+1. `eventDate` se existir (fato real do Clinicorp — inclui o "Fechado em" quando aplicável);
+2. senão, se o card está em `lead`/`notScheduled` → data de **criação**;
+3. senão → **SÓ** a data do agendamento (`date`, "Agendado Para"). SEM fallback
+   por `updatedAt` — card sem essa data fica FORA das métricas por período
+   (ausência visível no aviso amarelo > número falso que mudava a cada edição).
 
 Essa `effectiveDate` é o que decide se um card "aconteceu" dentro do período
 filtrado, para **quase tudo**: KPIs, receita, tabela de perdidos, etc.
