@@ -215,16 +215,19 @@ export function autoDetectExtract(sampleCards = []) {
 }
 
 /** Extrai os campos de um card segundo a config _extract.
- *  scheduledAt ("Agendado em") só é calculado quando a clínica configurou a
- *  regra — ausente vira null, sem afetar clínicas legadas. */
+ *  scheduledAt ("Agendado em") e closedAt ("Fechado em") só são calculados
+ *  quando a clínica configurou a regra — ausentes viram null, sem afetar
+ *  clínicas legadas. closedAt é a data de aprovação do orçamento (pode ser
+ *  meses após `date`, a consulta) — nunca sobrescreve `date`. */
 export function extractCard(card, extractCfg) {
-  if (!extractCfg) return { date: null, time: null, name: null, phone: null, scheduledAt: null }
+  if (!extractCfg) return { date: null, time: null, name: null, phone: null, scheduledAt: null, closedAt: null }
   return {
     date:        extractWith(extractCfg.date,        card, 'date'),
     time:        extractWith(extractCfg.time,        card, 'text'),
     name:        extractWith(extractCfg.name,        card, 'text'),
     phone:       extractWith(extractCfg.phone,       card, 'phone'),
     scheduledAt: extractCfg.scheduledAt ? extractWith(extractCfg.scheduledAt, card, 'date') : null,
+    closedAt:    extractCfg.closedAt    ? extractWith(extractCfg.closedAt,    card, 'date') : null,
   }
 }
 
