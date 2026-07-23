@@ -100,15 +100,21 @@ for (const c of alvo) {
   const pid = String(c.metadata.clinicorp_patient_id)
   const est = approvedByUnit[unitLabel]?.get(pid)
   if (!est) { semOrcamento++; continue }
-  const fechadoEm = String(est.Date).slice(0, 10).replace(/-/g, '/')
+  const fechadoEmIso = String(est.Date).slice(0, 10)     // "2026-07-16"
+  const fechadoEm = fechadoEmIso.replace(/-/g, '/')       // "2026/07/16" (formato do customField)
   achados++
   console.log(`"${c.title}" [${unitLabel}] -> Fechado em = ${fechadoEm} (orçamento R$${est.Amount})`)
   if (APPLY) {
+    // grava customFields E metadata.clinicorp_event_date JUNTOS — bug de
+    // 23/07: um backfill anterior só gravava o customField e deixava o
+    // event_date (o campo que o dashboard REALMENTE lê) desatualizado,
+    // fazendo o card contar no mês errado mesmo com "Fechado em" certo.
     await helena('PUT', `/crm/v2/panel/card/${c.id}`, {
-      fields: ['customFields'],
+      fields: ['customFields', 'metadata'],
       customFields: { [closedAtKey]: fechadoEm },
+      metadata: { ...c.metadata, clinicorp_event_date: fechadoEmIso },
     })
-    console.log('  ✅ gravado')
+    console.log('  ✅ gravado (customField + metadata.event_date)')
     await new Promise(r => setTimeout(r, 250))
   }
 }
