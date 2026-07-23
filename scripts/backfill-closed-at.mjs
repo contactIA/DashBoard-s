@@ -89,13 +89,16 @@ for (const u of units) {
   console.log(`  ${byPid.size} paciente(s) com orçamento aprovado encontrado(s).`)
 }
 
-// 3) Casa cada card com a unidade pela etiqueta, e com o orçamento pelo patientId
-const tagIdToUnit = Object.fromEntries(units.map(u => [u.tagId, u.label]))
+// 3) Casa cada card com a unidade — clínica de unidade ÚNICA (sem tagId) não
+// precisa de etiqueta: todo card é dessa unidade. Clínica multi-unidade (ex:
+// IBS Bueno/Eldorado) casa pela etiqueta do card, nunca mistura contas.
+const unicaUnidade = units.length === 1 && !units[0].tagId ? units[0].label : null
+const tagIdToUnit = Object.fromEntries(units.filter(u => u.tagId).map(u => [u.tagId, u.label]))
 let achados = 0, semUnidade = 0, semOrcamento = 0
 
 for (const c of alvo) {
   const unitTag = (c.tagIds ?? []).find(t => tagIdToUnit[t])
-  const unitLabel = unitTag ? tagIdToUnit[unitTag] : null
+  const unitLabel = unicaUnidade ?? (unitTag ? tagIdToUnit[unitTag] : null)
   if (!unitLabel) { semUnidade++; continue }
   const pid = String(c.metadata.clinicorp_patient_id)
   const est = approvedByUnit[unitLabel]?.get(pid)
