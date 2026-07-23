@@ -9,3 +9,15 @@ Documentação API Helena/
 
 # saídas de scripts one-shot (relatórios com dados de pacientes)
 scripts/out/
+
+# ambiente local do Claude Code (skills/comandos) — não é parte do projeto
+.claude/
+
+# saída do graphify (grafo de conhecimento gerado localmente)
+graphify-out/
+
+# planos de execução de trabalho (documentos de sessão, não do produto)
+PLANO_*.md
+
+# credenciais de protótipo (nunca commitar; nenhum .env* deve entrar)
+PROJETO CLINICORP + PAINEL/sync-prototype/.env*
