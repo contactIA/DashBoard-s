@@ -61,7 +61,10 @@ async function acquireLock(accountId) {
 // Relê o `steps` FRESCO antes de liberar — o admin pode ter editado a
 // clínica no /setup durante a execução do sync; usar um `steps` antigo aqui
 // desfaria essa edição. Só remove `_syncLock`, preserva todo o resto.
-async function releaseLock(accountId) {
+// `unitsLastSync` (opcional): grava em cada unit.lastSyncAt o instante desta
+// execução — a PRÓXIMA rodada busca só a partir daí, não do zero (regra do
+// usuário, 23/07: nada aprovado/agendado antes da última rodada muda depois).
+async function releaseLock(accountId, unitsLastSync) {
   try {
     const getRes = await fetch(`${SUPABASE_URL}/rest/v1/clinics?account_id=eq.${encodeURIComponent(accountId)}&select=steps`, {
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
@@ -69,6 +72,15 @@ async function releaseLock(accountId) {
     if (!getRes.ok) return
     const [row] = await getRes.json()
     const { _syncLock, ...rest } = row?.steps ?? {}
+    if (unitsLastSync && Object.keys(unitsLastSync).length && rest._clinicorp?.units?.length) {
+      rest._clinicorp = {
+        ...rest._clinicorp,
+        units: rest._clinicorp.units.map((u) => {
+          const stamp = unitsLastSync[u.label || u.user]
+          return stamp ? { ...u, lastSyncAt: stamp } : u
+        }),
+      }
+    }
     await fetch(`${SUPABASE_URL}/rest/v1/clinics?account_id=eq.${encodeURIComponent(accountId)}`, {
       method: 'PATCH',
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
@@ -166,7 +178,7 @@ export default async function handler(req, res) {
     summary.durationMs = Date.now() - startedAt
     results.push(summary)
     await logSyncRun(summary) // auditoria persistente — best-effort, nunca derruba o sync
-    await releaseLock(clinic.accountId)
+    await releaseLock(clinic.accountId, summary.unitsLastSync)
     await sleep(500) // respiro entre clínicas
   }
 

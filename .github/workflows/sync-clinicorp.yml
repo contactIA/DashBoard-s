@@ -1,6 +1,9 @@
-# Dispara o sync Clinicorp -> Helena a cada 30 min via HTTP — usamos o GitHub
-# Actions em vez do Cron nativo da Vercel porque o plano Hobby só libera
-# cron 1x/dia (o schedule aqui não tem essa restrição).
+# Dispara o sync Clinicorp -> Helena 6x/dia via HTTP — usamos o GitHub Actions
+# em vez do Cron nativo da Vercel porque o plano Hobby só libera cron 1x/dia
+# (o schedule aqui não tem essa restrição). Horários fixos (decisão do usuário,
+# 23/07): 08h/11h/14h/16h/18h/22h — cobre o expediente e fecha o dia às 22h,
+# já que orçamento não costuma ser aprovado depois disso. Horário em UTC (BRT
+# é UTC-3, sem horário de verão) — 08h BRT = 11 UTC, e assim por diante.
 #
 # URL resolvida em CADA job a partir do secret (SYNC_URL, com fallback
 # BASE_URL + /api/cron/sync-clinicorp) — NÃO passa entre jobs via outputs
@@ -22,7 +25,8 @@ name: Sync Clinicorp
 
 on:
   schedule:
-    - cron: '7,37 * * * *'   # a cada 30 min, aos :07 e :37
+    - cron: '0 11,14,17,19,21 * * *'  # 08h,11h,14h,16h,18h BRT
+    - cron: '0 1 * * *'               # 22h BRT (vira 01h UTC do dia seguinte)
   workflow_dispatch: {}
 
 jobs:

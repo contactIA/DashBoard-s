@@ -19,5 +19,13 @@ graphify-out/
 # planos de execução de trabalho (documentos de sessão, não do produto)
 PLANO_*.md
 
+# documentação interna de regras de negócio (uso exclusivo do time, não do repo público)
+REGRAS_DASHBOARD.md
+GUIA_DASHBOARD_USUARIO.md
+Guia_Dashboard.pdf
+
 # credenciais de protótipo (nunca commitar; nenhum .env* deve entrar)
 PROJETO CLINICORP + PAINEL/sync-prototype/.env*
+
+# checkout antigo/legado, não é a raiz do projeto atual
+DashBoard-s/

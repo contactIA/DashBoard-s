@@ -110,7 +110,12 @@ export async function syncClinicClinicorp(clinic) {
   const units = clinic.steps?._clinicorp?.units ?? []
   // `moves` detalha cada PUT aplicado (card + flags que o dispararam) — é o
   // que permite diagnosticar um move que não converge (re-aplicado toda rodada).
-  const summary = { clinic: clinic.name, accountId: clinic.accountId, moved: 0, created: 0, failed: 0, errors: [], unmatchedCrc: new Set(), moves: [] }
+  // `unitsLastSync` devolve, por label de unidade, o instante desta execução —
+  // o chamador (api/cron/sync-clinicorp.js) grava isso em unit.lastSyncAt para
+  // a PRÓXIMA rodada buscar só o intervalo ainda não coberto (regra de 23/07:
+  // decisão do usuário — "não preciso buscar maio/janeiro de novo, o sync roda
+  // várias vezes ao dia, o que já foi coberto ontem não precisa ser refeito").
+  const summary = { clinic: clinic.name, accountId: clinic.accountId, moved: 0, created: 0, failed: 0, errors: [], unmatchedCrc: new Set(), moves: [], unitsLastSync: {} }
   if (!units.length) return summary
 
   const helenaAuth = { Authorization: normalizeHelenaToken(clinic.token) }
@@ -289,6 +294,16 @@ export async function syncClinicClinicorp(clinic) {
     const CUTOFF = unit.syncSince || (hoje.slice(0, 7) + '-01')
     const clinicorp = makeClinicorpClient({ user: unit.user, token: unit.token, subscriberId: unit.user })
 
+    // Janela de BUSCA (diferente do CUTOFF de criação acima): na 1ª sincronização
+    // desta unidade (sem lastSyncAt ainda) varre desde unit.syncSince — cobre o
+    // histórico da adoção. Da 2ª rodada em diante, varre só desde a última
+    // execução bem-sucedida (unit.lastSyncAt) — o sync roda várias vezes ao dia,
+    // então o que já foi coberto ontem não precisa ser refeito (regra do usuário,
+    // 23/07: buscar 12 meses/60 dias toda rodada é desperdício sem necessidade
+    // real, já que nada aprovado/agendado antes da última rodada muda depois).
+    const windowStart = unit.lastSyncAt ? iso(new Date(unit.lastSyncAt)) : CUTOFF
+    summary.unitsLastSync[unit.label || unit.user] = today.toISOString()
+
     // Mapa CRC POR UNIDADE (unit.crcMap): a mesma pessoa pode existir como
     // usuário diferente em cada conta Clinicorp (ex: "Gabriela Vieira Da
     // Silva" no Bueno, "Gabriela Vieira" no Eldorado) — por isso o mapa não é
@@ -306,13 +321,30 @@ export async function syncClinicClinicorp(clinic) {
       return null
     }
 
-    const apptFrom = iso(new Date(today.getTime() - 60 * 86_400_000))
+    // Quebra [windowStart, apptTo] em blocos de até 31 dias — limite real da
+    // API Clinicorp ("O intervalo entre as datas não pode ser maior que 31
+    // dias", confirmado em 23/07). Cobre exatamente o intervalo pendente desde
+    // a última rodada, sem reprocessar dias já sincronizados.
+    function monthlyRanges(fromIso, toIso) {
+      const ranges = []
+      let cursor = new Date(fromIso)
+      const end = new Date(toIso)
+      while (cursor <= end) {
+        const chunkEnd = new Date(Math.min(cursor.getTime() + 30 * 86_400_000, end.getTime()))
+        ranges.push([iso(cursor), iso(chunkEnd)])
+        cursor = new Date(chunkEnd.getTime() + 86_400_000)
+      }
+      return ranges
+    }
+
     const apptTo = iso(new Date(today.getTime() + 30 * 86_400_000))
     let appts = []
-    try {
-      const raw = await clinicorp.appointments(apptFrom, apptTo, { IncludeCanceled: 'true' })
-      appts = Array.isArray(raw) ? raw : raw.items ?? raw.list ?? []
-    } catch (err) { summary.errors.push(`[${unit.label || unit.user}] appointments: ${err.message}`); continue }
+    for (const [f, t] of monthlyRanges(windowStart, apptTo)) {
+      try {
+        const raw = await clinicorp.appointments(f, t, { IncludeCanceled: 'true' })
+        appts = appts.concat(Array.isArray(raw) ? raw : raw.items ?? raw.list ?? [])
+      } catch (err) { summary.errors.push(`[${unit.label || unit.user}] appointments ${f}..${t}: ${err.message}`) }
+    }
 
     let statusById = {}
     try {
@@ -321,9 +353,7 @@ export async function syncClinicClinicorp(clinic) {
     } catch { /* best-effort */ }
 
     let estimates = []
-    for (const back of [60, 30]) {
-      const f = iso(new Date(today.getTime() - back * 86_400_000))
-      const t = iso(new Date(today.getTime() - (back - 30) * 86_400_000))
+    for (const [f, t] of monthlyRanges(windowStart, hoje)) {
       try {
         const raw = await clinicorp.estimates(f, t)
         estimates = estimates.concat(Array.isArray(raw) ? raw : raw.items ?? raw.list ?? [])

@@ -113,3 +113,39 @@ describe('syncClinicClinicorp — regra das 3 datas independentes (20/07)', () =
     expect(move.dryBody.metadata.clinicorp_event_date).toBe('2026-07-20')
   })
 })
+
+describe('syncClinicClinicorp — janela de busca dinâmica (23/07)', () => {
+  it('sem lastSyncAt (1ª sincronização): busca desde unit.syncSince', async () => {
+    const calls = []
+    vi.stubGlobal('fetch', vi.fn(async (url) => {
+      calls.push(String(url))
+      return mockFetchSequence({})(url)
+    }))
+    await syncClinicClinicorp(clinic())
+    const estimateCalls = calls.filter(u => u.includes('/estimates/list'))
+    expect(estimateCalls.length).toBeGreaterThan(0)
+    // syncSince da fixture é 2025-01-01 — a 1ª janela deve começar ali, não 12 meses atrás de hoje
+    expect(estimateCalls[0]).toContain('from=2025-01-01')
+  })
+
+  it('com lastSyncAt: busca só a partir da última execução, não desde syncSince', async () => {
+    const calls = []
+    vi.stubGlobal('fetch', vi.fn(async (url) => {
+      calls.push(String(url))
+      return mockFetchSequence({})(url)
+    }))
+    const clinicComLastSync = clinic()
+    clinicComLastSync.steps._clinicorp.units[0].lastSyncAt = '2026-07-20T10:00:00.000Z'
+    await syncClinicClinicorp(clinicComLastSync)
+    const estimateCalls = calls.filter(u => u.includes('/estimates/list'))
+    expect(estimateCalls.length).toBeGreaterThan(0)
+    expect(estimateCalls[0]).toContain('from=2026-07-20')
+  })
+
+  it('retorna unitsLastSync no summary para o chamador persistir', async () => {
+    vi.stubGlobal('fetch', mockFetchSequence({}))
+    const summary = await syncClinicClinicorp(clinic())
+    expect(summary.unitsLastSync).toBeTruthy()
+    expect(summary.unitsLastSync['Matriz']).toBeTruthy()
+  })
+})
