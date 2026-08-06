@@ -372,7 +372,15 @@ export function funnelOf(cards, funnelCfg, opts = {}) {
 export function computeFunnel(cards, from, to, funnelCfg) {
   if (!cards?.length) return null
   const inRange      = cards.filter(c => inPeriod(c, from, to))
-  const entrou       = cards.filter(c => createdInPeriod(c, from, to)).length
+  // "Entraram" conta só as etapas configuradas como lead/qualificação
+  // (stages.naoAgendou — mesma config do /setup usada no rodapé "Não
+  // Agendados"), não todo card do painel: sem isso, cards em etapas como
+  // "Indicações"/"Não Atende"/"Solicitou Retorno" (fora do funil de vendas,
+  // mas ainda no painel) inflavam "Leads" mesmo já tendo avançado ou sendo
+  // irrelevantes para a métrica (regra do usuário, 24/07).
+  const stages    = funnelCfg?.stages ?? DEFAULT_FUNNEL_CFG.stages
+  const leadTypes = stages.naoAgendou ?? DEFAULT_FUNNEL_CFG.stages.naoAgendou
+  const entrou       = cards.filter(c => leadTypes.includes(c.stepType) && createdInPeriod(c, from, to)).length
   const agendouCards = agendouCardsOf(cards, from, to)
   return funnelOf(inRange, funnelCfg, { entrou, agendouCards })
 }

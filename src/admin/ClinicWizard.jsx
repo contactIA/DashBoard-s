@@ -948,8 +948,8 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
           </div>
 
           <div className="bg-white border border-slate-200 rounded-xl p-4">
-            <div className="text-sm font-semibold text-slate-800 mb-0.5">Não agendou <span className="font-normal text-slate-400">(estatística ao lado do funil, não é uma das barras)</span></div>
-            <p className="text-xs text-slate-400 mb-2">Aparece junto com Faltaram/Cancelaram/Remarcaram, embaixo do funil.</p>
+            <div className="text-sm font-semibold text-slate-800 mb-0.5">Não agendou</div>
+            <p className="text-xs text-slate-400 mb-2">Aparece junto com Faltaram/Cancelaram/Remarcaram, embaixo do funil — e define quais etapas contam na barra "Leads (entraram)" do topo do funil.</p>
             <div className="flex flex-wrap gap-1.5">
               {usedTypes.length === 0 && (
                 <span className="text-xs text-slate-400">Mapeie etapas na tela anterior primeiro.</span>
@@ -1383,7 +1383,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                   </div>
                 ))}
                 <div className="flex items-baseline gap-2">
-                  <span className="text-xs font-semibold text-slate-700 shrink-0">Não agendou (estatística):</span>
+                  <span className="text-xs font-semibold text-slate-700 shrink-0">Não agendou / Leads:</span>
                   <span className="text-xs text-slate-500">
                     {(funnelStages.naoAgendou ?? []).map(t => METRIC_TYPES.find(m => m.value === t)?.label ?? t).join(', ') || '—'}
                   </span>

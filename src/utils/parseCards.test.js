@@ -140,8 +140,21 @@ describe('computeFunnel — coortes distintas de propósito', () => {
       card({ stepType: 'attended', date: null, createdAt: '2026-06-01T00:00:00Z' }), // sem data → fora
     ]
     const f = computeFunnel(cards, '2026-07-01', '2026-07-31', null)
-    expect(f.entrou).toBe(2)      // lead + scheduled criados em julho
+    // "Leads (entraram)" só conta stages.naoAgendou (lead/notScheduled) — regra
+    // de 24/07: card que já avançou (scheduled) não infla "Leads", mesmo criado
+    // no período. Antes desta regra, "entrou" somava todo card criado, sem
+    // olhar stepType — inflava a métrica com etapas fora do funil de vendas.
+    expect(f.entrou).toBe(1)      // só o lead
     expect(f.agendou).toBe(1)     // só o scheduled (estrito por scheduledAt)
     expect(f.compareceu).toBe(0)  // attended sem data não computa
+  })
+
+  it('"entrou" ignora card já avançado mesmo criado no período (regra 24/07)', () => {
+    const cards = [
+      card({ stepType: 'lead', createdAt: '2026-07-05T00:00:00Z' }),
+      card({ stepType: 'converted', date: '2026-07-10', createdAt: '2026-07-02T00:00:00Z', value: 5000 }),
+    ]
+    const f = computeFunnel(cards, '2026-07-01', '2026-07-31', null)
+    expect(f.entrou).toBe(1) // o converted não conta em "entraram", só o lead
   })
 })
