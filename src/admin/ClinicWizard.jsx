@@ -8,9 +8,9 @@ const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
 const WIZARD_STEPS = ['Credenciais', 'Painel', 'Métricas', 'Funil', 'Extração', 'Dimensões', 'Clinicorp', 'Revisão']
 
-// As 3 barras configuráveis do funil (depois da 1ª, "Leads totais", que é
-// sempre o total de cards do período — não configurável, por isso fica fora
-// desta lista).
+// As 3 barras configuráveis do funil por checkbox de tipo próprio (depois da
+// 1ª, "Leads totais" — essa não tem checkbox dedicado: reaproveita a lista de
+// "Não agendou" mais abaixo, ver computeFunnel em utils/parseCards.js).
 const FUNNEL_STAGE_DEFS = [
   { key: 'agendou',    label: 'Agendaram' },
   { key: 'compareceu', label: 'Compareceram' },
@@ -920,7 +920,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
             <div className="px-4 py-3.5">
               <div className="text-sm font-semibold text-slate-800">Leads totais</div>
               <p className="text-xs text-slate-400 mt-0.5">
-                1ª barra do funil — sempre o total de cards que entraram no período. Não é configurável.
+                1ª barra do funil — cards criados no período cuja etapa atual está marcada em "Não agendou" (mais abaixo). Etapas fora dessa lista (ex: marcadas como Ignorar) não contam aqui.
               </p>
             </div>
             {FUNNEL_STAGE_DEFS.map(stage => (
