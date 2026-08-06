@@ -8,10 +8,12 @@ const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
 const WIZARD_STEPS = ['Credenciais', 'Painel', 'Métricas', 'Funil', 'Extração', 'Dimensões', 'Clinicorp', 'Revisão']
 
-// As 3 barras configuráveis do funil por checkbox de tipo próprio (depois da
-// 1ª, "Leads totais" — essa não tem checkbox dedicado: reaproveita a lista de
-// "Não agendou" mais abaixo, ver computeFunnel em utils/parseCards.js).
+// As 4 barras configuráveis do funil, cada uma com seu próprio checkbox de
+// tipos — independentes entre si (regra do usuário, 24/07: "Leads totais"
+// tem seleção própria, igual Agendaram/Compareceram/Fecharam, sem reaproveitar
+// a lista de "Não agendou" do rodapé).
 const FUNNEL_STAGE_DEFS = [
+  { key: 'entrou',     label: 'Leads totais' },
   { key: 'agendou',    label: 'Agendaram' },
   { key: 'compareceu', label: 'Compareceram' },
   { key: 'fechou',     label: 'Fecharam' },
@@ -917,12 +919,6 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
           </StepHeader>
 
           <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100">
-            <div className="px-4 py-3.5">
-              <div className="text-sm font-semibold text-slate-800">Leads totais</div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                1ª barra do funil — cards criados no período cuja etapa atual está marcada em "Não agendou" (mais abaixo). Etapas fora dessa lista (ex: marcadas como Ignorar) não contam aqui.
-              </p>
-            </div>
             {FUNNEL_STAGE_DEFS.map(stage => (
               <div key={stage.key} className="px-4 py-3.5">
                 <div className="text-sm font-semibold text-slate-800 mb-2">{stage.label}</div>
@@ -948,8 +944,8 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
           </div>
 
           <div className="bg-white border border-slate-200 rounded-xl p-4">
-            <div className="text-sm font-semibold text-slate-800 mb-0.5">Não agendou</div>
-            <p className="text-xs text-slate-400 mb-2">Aparece junto com Faltaram/Cancelaram/Remarcaram, embaixo do funil — e define quais etapas contam na barra "Leads (entraram)" do topo do funil.</p>
+            <div className="text-sm font-semibold text-slate-800 mb-0.5">Não agendou <span className="font-normal text-slate-400">(estatística ao lado do funil, não é uma das barras)</span></div>
+            <p className="text-xs text-slate-400 mb-2">Aparece junto com Faltaram/Cancelaram/Remarcaram, embaixo do funil.</p>
             <div className="flex flex-wrap gap-1.5">
               {usedTypes.length === 0 && (
                 <span className="text-xs text-slate-400">Mapeie etapas na tela anterior primeiro.</span>
@@ -1383,7 +1379,7 @@ export default function ClinicWizard({ clinic, onDone, onCancel }) {
                   </div>
                 ))}
                 <div className="flex items-baseline gap-2">
-                  <span className="text-xs font-semibold text-slate-700 shrink-0">Não agendou / Leads:</span>
+                  <span className="text-xs font-semibold text-slate-700 shrink-0">Não agendou (estatística):</span>
                   <span className="text-xs text-slate-500">
                     {(funnelStages.naoAgendou ?? []).map(t => METRIC_TYPES.find(m => m.value === t)?.label ?? t).join(', ') || '—'}
                   </span>

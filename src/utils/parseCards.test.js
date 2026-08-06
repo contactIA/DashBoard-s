@@ -157,4 +157,26 @@ describe('computeFunnel — coortes distintas de propósito', () => {
     const f = computeFunnel(cards, '2026-07-01', '2026-07-31', null)
     expect(f.entrou).toBe(1) // o converted não conta em "entraram", só o lead
   })
+
+  it('stages.entrou é configurável e independente de stages.naoAgendou', () => {
+    const cards = [
+      card({ stepType: 'lead', createdAt: '2026-07-05T00:00:00Z' }),
+      card({ stepType: 'scheduled', date: '2026-07-10', scheduledAt: '2026-07-04', createdAt: '2026-07-04T00:00:00Z' }),
+      card({ stepType: 'converted', date: '2026-07-11', createdAt: '2026-07-06T00:00:00Z', value: 3000 }),
+    ]
+    // clínica que quer TODOS os tipos contando como "Leads totais", mas mantém
+    // o rodapé "Não agendou" restrito — as duas listas não se influenciam.
+    const cfg = {
+      stages: {
+        entrou:     ['lead', 'scheduled', 'converted'],
+        naoAgendou: ['lead'],
+        agendou:    ['scheduled', 'converted'],
+        compareceu: ['converted'],
+        fechou:     ['converted'],
+      },
+    }
+    const f = computeFunnel(cards, '2026-07-01', '2026-07-31', cfg)
+    expect(f.entrou).toBe(3)     // os 3 tipos marcados em stages.entrou
+    expect(f.naoAgendou).toBe(1) // só o lead, conforme stages.naoAgendou
+  })
 })

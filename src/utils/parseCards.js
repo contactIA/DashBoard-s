@@ -286,6 +286,11 @@ export function computePreviousRevenue(cards, from, to, ticket, today) {
  */
 export const DEFAULT_FUNNEL_CFG = {
   stages: {
+    // "Leads totais" (1ª barra do funil) — seleção PRÓPRIA e independente de
+    // "naoAgendou" (que é só a estatística de rodapé, ver funnelOf). Regra do
+    // usuário, 24/07: cada barra do funil escolhe seus tipos livremente no
+    // /setup, igual Agendaram/Compareceram/Fecharam.
+    entrou:     ['lead', 'notScheduled'],
     naoAgendou: ['lead', 'notScheduled'],
     agendou:    ['scheduled', 'rescheduled', 'attended', 'negotiating', 'converted', 'missed', 'cancelled'],
     compareceu: ['attended', 'negotiating', 'converted'],
@@ -372,14 +377,13 @@ export function funnelOf(cards, funnelCfg, opts = {}) {
 export function computeFunnel(cards, from, to, funnelCfg) {
   if (!cards?.length) return null
   const inRange      = cards.filter(c => inPeriod(c, from, to))
-  // "Entraram" conta só as etapas configuradas como lead/qualificação
-  // (stages.naoAgendou — mesma config do /setup usada no rodapé "Não
-  // Agendados"), não todo card do painel: sem isso, cards em etapas como
-  // "Indicações"/"Não Atende"/"Solicitou Retorno" (fora do funil de vendas,
-  // mas ainda no painel) inflavam "Leads" mesmo já tendo avançado ou sendo
-  // irrelevantes para a métrica (regra do usuário, 24/07).
+  // "Entraram" conta só as etapas escolhidas em stages.entrou (checkbox
+  // PRÓPRIO no /setup, independente de "naoAgendou" — que é só a estatística
+  // de rodapé) — sem isso, cards em etapas fora do funil de vendas (ex:
+  // "Indicações"/"Não Atende"/"Solicitou Retorno") inflavam "Leads" mesmo já
+  // tendo avançado ou sendo irrelevantes para a métrica (regra do usuário, 24/07).
   const stages    = funnelCfg?.stages ?? DEFAULT_FUNNEL_CFG.stages
-  const leadTypes = stages.naoAgendou ?? DEFAULT_FUNNEL_CFG.stages.naoAgendou
+  const leadTypes = stages.entrou ?? DEFAULT_FUNNEL_CFG.stages.entrou
   const entrou       = cards.filter(c => leadTypes.includes(c.stepType) && createdInPeriod(c, from, to)).length
   const agendouCards = agendouCardsOf(cards, from, to)
   return funnelOf(inRange, funnelCfg, { entrou, agendouCards })
