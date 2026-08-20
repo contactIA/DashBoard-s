@@ -4,6 +4,7 @@
 // conferência com as colunas do painel. Período: mês corrente.
 import { readFileSync } from 'node:fs'
 import { computeKpis, computeFunnel, breakdownByDimension, campaignBreakdown } from '../src/utils/parseCards.js'
+import { sbHeaders } from '../src/server/supabase.js'
 
 for (const line of readFileSync(new URL('../.env', import.meta.url), 'utf8').split('\n')) {
   const m = line.match(/^([A-Z_]+)=(.*)$/)
@@ -16,7 +17,7 @@ const pct = (v) => v == null ? '—' : v.toFixed(1).replace('.', ',') + '%'
 
 async function main() {
   const res = await fetch(`${process.env.SUPABASE_URL}/rest/v1/clinics?account_id=eq.${IBS_ACCOUNT_ID}&select=panel_id,token,steps`, {
-    headers: { apikey: process.env.SUPABASE_SERVICE_KEY, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_KEY}` },
+    headers: sbHeaders(),
   })
   const [row] = await res.json()
   const steps = row.steps ?? {}

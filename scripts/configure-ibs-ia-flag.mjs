@@ -3,6 +3,7 @@
 // para agendar. Faz MERGE em memória antes do PATCH (mesmo padrão dos demais
 // scripts de configuração), sem perder nenhuma chave existente.
 import { readFileSync } from 'node:fs'
+import { sbHeaders } from '../src/server/supabase.js'
 
 for (const line of readFileSync(new URL('../.env', import.meta.url), 'utf8').split('\n')) {
   const m = line.match(/^([A-Z_]+)=(.*)$/)
@@ -13,7 +14,7 @@ const IBS_ACCOUNT_ID = '58e1700e-84e1-4d41-aaa9-2918925a3cef'
 
 async function sbGet(path) {
   const res = await fetch(`${process.env.SUPABASE_URL}/rest/v1${path}`, {
-    headers: { apikey: process.env.SUPABASE_SERVICE_KEY, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_KEY}` },
+    headers: sbHeaders(),
   })
   if (!res.ok) throw new Error(`Supabase GET ${res.status}: ${(await res.text()).slice(0, 300)}`)
   return res.json()
@@ -22,10 +23,7 @@ async function sbGet(path) {
 async function sbPatch(path, body) {
   const res = await fetch(`${process.env.SUPABASE_URL}/rest/v1${path}`, {
     method: 'PATCH',
-    headers: {
-      apikey: process.env.SUPABASE_SERVICE_KEY, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
-      'Content-Type': 'application/json', Prefer: 'return=representation',
-    },
+    headers: sbHeaders({ 'Content-Type': 'application/json', Prefer: 'return=representation' }),
     body: JSON.stringify(body),
   })
   if (!res.ok) throw new Error(`Supabase PATCH ${res.status}: ${(await res.text()).slice(0, 300)}`)

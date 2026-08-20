@@ -9,6 +9,7 @@
 //   node scripts/fix-crc-tags-ibs.mjs --apply     → aplica de fato (após revisar o dry-run)
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs'
 import { makeClinicorpClient } from '../src/server/clinicorp.js'
+import { sbHeaders } from '../src/server/supabase.js'
 
 for (const line of readFileSync(new URL('../.env', import.meta.url), 'utf8').split('\n')) {
   const m = line.match(/^([A-Z_]+)=(.*)$/)
@@ -34,7 +35,7 @@ async function withRetry429(fn, { attempts = 3, baseDelayMs = 2000 } = {}) {
 
 async function sbGet(path) {
   const res = await fetch(`${process.env.SUPABASE_URL}/rest/v1${path}`, {
-    headers: { apikey: process.env.SUPABASE_SERVICE_KEY, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_KEY}` },
+    headers: sbHeaders(),
   })
   if (!res.ok) throw new Error(`Supabase GET ${res.status}: ${(await res.text()).slice(0, 300)}`)
   return res.json()

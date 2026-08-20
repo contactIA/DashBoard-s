@@ -1,13 +1,13 @@
+import { sbHeaders as sbBaseHeaders } from '../../src/server/supabase.js'
+
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY
 
+// Content-Type default: todo write deste arquivo manda JSON e conta com isso
+// sem repetir o header. O resto (apikey, Authorization, Accept/Content-Profile)
+// vem do helper compartilhado.
 function sbHeaders(extra = {}) {
-  return {
-    'apikey':        SUPABASE_KEY,
-    'Authorization': `Bearer ${SUPABASE_KEY}`,
-    'Content-Type':  'application/json',
-    ...extra,
-  }
+  return sbBaseHeaders({ 'Content-Type': 'application/json', ...extra })
 }
 
 async function sb(path, init = {}) {

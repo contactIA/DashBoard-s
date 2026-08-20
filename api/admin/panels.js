@@ -1,3 +1,5 @@
+import { sb } from '../../src/server/supabase.js'
+
 const HELENA_BASE = 'https://api.wts.chat'
 
 const stripAccents = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -73,15 +75,7 @@ async function fetchCustomFieldsSafe(token) {
 
 // Resolve o token da clínica já cadastrada (modo edição, sem re-digitar o token)
 async function tokenFromSupabase(accountId) {
-  const url = `${process.env.SUPABASE_URL}/rest/v1/clinics?account_id=eq.${encodeURIComponent(accountId)}&select=token&limit=1`
-  const res = await fetch(url, {
-    headers: {
-      'apikey':        process.env.SUPABASE_SERVICE_KEY,
-      'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
-    },
-  })
-  if (!res.ok) throw new Error(`Supabase ${res.status}`)
-  const rows = await res.json()
+  const rows = await sb(`/clinics?account_id=eq.${encodeURIComponent(accountId)}&select=token&limit=1`)
   return rows[0]?.token ?? null
 }
 
