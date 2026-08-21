@@ -106,8 +106,17 @@ async function withRetry429(fn, { attempts = 3, baseDelayMs = 2000 } = {}) {
  * da tabela `clinics`, com token e steps._clinicorp sem máscara).
  * Retorna um resumo — nunca lança; erros por unidade ficam em `errors`.
  */
-export async function syncClinicClinicorp(clinic) {
-  const units = clinic.steps?._clinicorp?.units ?? []
+export async function syncClinicClinicorp(clinic, opts = {}) {
+  const allUnits = clinic.steps?._clinicorp?.units ?? []
+  // `onlyUnit` (label) sincroniza UMA unidade por execução — clínica com 2+
+  // contas Clinicorp (ex: 2 filiais) somava o trabalho das duas na mesma
+  // função serverless e estourava o maxDuration, morrendo antes de liberar o
+  // lock e travando a clínica em todas as rodadas seguintes (causa raiz real,
+  // IBS parada de 28/07 a 21/08). Fatiar por unidade mantém cada execução
+  // curta, do mesmo jeito que o workflow já fatia por clínica.
+  const units = opts.onlyUnit
+    ? allUnits.filter((u) => (u.label || u.user) === opts.onlyUnit)
+    : allUnits
   // `moves` detalha cada PUT aplicado (card + flags que o dispararam) — é o
   // que permite diagnosticar um move que não converge (re-aplicado toda rodada).
   // `unitsLastSync` devolve, por label de unidade, o instante desta execução —
@@ -115,7 +124,11 @@ export async function syncClinicClinicorp(clinic) {
   // a PRÓXIMA rodada buscar só o intervalo ainda não coberto (regra de 23/07:
   // decisão do usuário — "não preciso buscar maio/janeiro de novo, o sync roda
   // várias vezes ao dia, o que já foi coberto ontem não precisa ser refeito").
-  const summary = { clinic: clinic.name, accountId: clinic.accountId, moved: 0, created: 0, failed: 0, errors: [], unmatchedCrc: new Set(), moves: [], unitsLastSync: {} }
+  const summary = { clinic: clinic.name, accountId: clinic.accountId, unit: opts.onlyUnit ?? null, moved: 0, created: 0, failed: 0, errors: [], unmatchedCrc: new Set(), moves: [], unitsLastSync: {} }
+  if (opts.onlyUnit && !units.length) {
+    summary.errors.push(`unidade "${opts.onlyUnit}" não encontrada em _clinicorp.units`)
+    return summary
+  }
   if (!units.length) return summary
 
   const helenaAuth = { Authorization: normalizeHelenaToken(clinic.token) }
@@ -281,7 +294,10 @@ export async function syncClinicClinicorp(clinic) {
   const allMoves = [], allCreates = [], moveCandidates = []
   // Só etiquetas conhecidas por algum crcMap podem ser removidas/trocadas pelo
   // MOVE — protege tags de unidade/origem/etc., que não fazem parte disso.
-  const allCrcTagIds = new Set(units.flatMap((u) => (u.crcMap ?? []).map((m) => m.tagId)))
+  // Usa allUnits (não `units`): com onlyUnit, o conjunto precisa continuar
+  // conhecendo as tags de CRC das OUTRAS unidades, senão um paciente que troca
+  // de unidade acumularia duas etiquetas de CRC (a antiga não seria removida).
+  const allCrcTagIds = new Set(allUnits.flatMap((u) => (u.crcMap ?? []).map((m) => m.tagId)))
 
   for (const unit of units) {
     if (!unit.user || !unit.token) continue

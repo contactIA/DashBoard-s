@@ -9,6 +9,7 @@ create table if not exists public.sync_log (
   executed_at   timestamptz not null default now(),
   account_id    uuid        not null,
   clinic_name   text,
+  unit          text,       -- unidade Clinicorp da rodada (null = clínica inteira, formato antigo)
   moved         int         not null default 0,
   created       int         not null default 0,
   failed        int         not null default 0,
@@ -16,6 +17,9 @@ create table if not exists public.sync_log (
   unmatched_crc jsonb,      -- nomes de CRC sem etiqueta correspondente na Helena
   duration_ms   int
 );
+
+-- Para bancos criados antes de 21/08 (a coluna `unit` veio depois):
+alter table public.sync_log add column if not exists unit text;
 
 -- Consultas por clínica e por período são o uso principal
 create index if not exists sync_log_account_id_executed_at

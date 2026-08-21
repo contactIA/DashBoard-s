@@ -36,7 +36,24 @@ const LOCK_TTL_MS = 4 * 60 * 1000 // folga acima do tempo real de 1 clínica (vi
 // entre o GET e o PATCH (PostgREST não expõe compare-and-swap simples aqui),
 // mas ela é de dezenas de ms — ordens de grandeza menor que os 6-30s da
 // race condition original (execuções inteiras rodando em paralelo).
-async function acquireLock(accountId) {
+// O lock é POR UNIDADE quando `unit` é informada (`_syncLock.units[label]`) —
+// Bueno e Eldorado da mesma clínica rodam em execuções separadas e não podem
+// bloquear uma à outra. Sem `unit`, mantém o lock legado no nível da clínica
+// (`_syncLock.lockedAt`), preservando o comportamento de quem chama o endpoint
+// sem fatiar.
+function readLockAt(steps, unit) {
+  const l = steps?._syncLock
+  if (!l) return null
+  return unit ? (l.units?.[unit] ?? null) : (l.lockedAt ?? null)
+}
+
+function writeLock(steps, unit, iso) {
+  const prev = steps?._syncLock ?? {}
+  if (!unit) return { ...steps, _syncLock: { ...prev, lockedAt: iso } }
+  return { ...steps, _syncLock: { ...prev, units: { ...(prev.units ?? {}), [unit]: iso } } }
+}
+
+async function acquireLock(accountId, unit) {
   const getRes = await fetch(`${SUPABASE_URL}/rest/v1/clinics?account_id=eq.${encodeURIComponent(accountId)}&select=steps`, {
     headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
   })
@@ -44,11 +61,11 @@ async function acquireLock(accountId) {
   const [row] = await getRes.json()
   const fresh = row?.steps ?? {}
   const now = Date.now()
-  const existing = fresh?._syncLock?.lockedAt
+  const existing = readLockAt(fresh, unit)
   if (existing && now - Date.parse(existing) < LOCK_TTL_MS) {
     return { ok: false, lockedAt: existing }
   }
-  const newSteps = { ...fresh, _syncLock: { lockedAt: new Date(now).toISOString() } }
+  const newSteps = writeLock(fresh, unit, new Date(now).toISOString())
   const res = await fetch(`${SUPABASE_URL}/rest/v1/clinics?account_id=eq.${encodeURIComponent(accountId)}`, {
     method: 'PATCH',
     headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
@@ -64,14 +81,32 @@ async function acquireLock(accountId) {
 // `unitsLastSync` (opcional): grava em cada unit.lastSyncAt o instante desta
 // execução — a PRÓXIMA rodada busca só a partir daí, não do zero (regra do
 // usuário, 23/07: nada aprovado/agendado antes da última rodada muda depois).
-async function releaseLock(accountId, unitsLastSync) {
+async function releaseLock(accountId, unitsLastSync, unit) {
   try {
     const getRes = await fetch(`${SUPABASE_URL}/rest/v1/clinics?account_id=eq.${encodeURIComponent(accountId)}&select=steps`, {
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
     })
     if (!getRes.ok) return
     const [row] = await getRes.json()
-    const { _syncLock, ...rest } = row?.steps ?? {}
+    // Libera SÓ o próprio lock: com `unit`, remove apenas a chave desta unidade
+    // (apagar `_syncLock` inteiro destravaria a unidade irmã que ainda está
+    // rodando em paralelo). Sem `unit`, remove o lock legado da clínica.
+    const steps = row?.steps ?? {}
+    let rest
+    if (unit) {
+      const prev = steps._syncLock ?? {}
+      const { [unit]: _done, ...outrasUnidades } = prev.units ?? {}
+      const nextLock = { ...prev, units: outrasUnidades }
+      if (!nextLock.lockedAt && !Object.keys(outrasUnidades).length) {
+        const { _syncLock, ...semLock } = steps
+        rest = semLock
+      } else {
+        rest = { ...steps, _syncLock: nextLock }
+      }
+    } else {
+      const { _syncLock, ...semLock } = steps
+      rest = semLock
+    }
     if (unitsLastSync && Object.keys(unitsLastSync).length && rest._clinicorp?.units?.length) {
       rest._clinicorp = {
         ...rest._clinicorp,
@@ -104,6 +139,7 @@ async function logSyncRun(summary) {
       body: JSON.stringify({
         account_id:    summary.accountId,
         clinic_name:   summary.clinic,
+        unit:          summary.unit ?? null,
         moved:         summary.moved,
         created:       summary.created,
         failed:        summary.failed,
@@ -134,6 +170,9 @@ export default async function handler(req, res) {
   await sleep(jitterMs)
 
   const accountId = req.query?.accountId ?? null
+  // `unit` (label da unidade Clinicorp) fatia a execução: uma unidade por
+  // chamada. Sem ela, o comportamento é o antigo (todas as unidades juntas).
+  const unit = req.query?.unit ?? null
   const filter = accountId ? `&account_id=eq.${encodeURIComponent(accountId)}` : ''
   const res_ = await fetch(`${SUPABASE_URL}/rest/v1/clinics?select=account_id,name,panel_id,token,steps${filter}`, {
     headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
@@ -150,8 +189,18 @@ export default async function handler(req, res) {
   // Modo leve: só lista quem tem Clinicorp vinculado (sem sincronizar nada) —
   // o workflow usa isso pra saber quais accountId chamar, um por vez, cada
   // um em sua própria chamada (evita estourar o maxDuration somando todas).
+  // `targets` desce um nível: um item por UNIDADE, não por clínica — clínica
+  // com 2 contas Clinicorp virava uma execução única longa demais para o
+  // maxDuration (causa raiz da IBS travada de 28/07 a 21/08). `accountIds`
+  // segue no payload para compatibilidade com workflow antigo.
   if (req.query?.list === '1') {
-    return res.status(200).json({ accountIds: clinics.map((c) => c.accountId) })
+    const targets = clinics.flatMap((c) =>
+      (c.steps?._clinicorp?.units ?? []).map((u) => ({
+        accountId: c.accountId,
+        unit: u.label || u.user,
+      }))
+    )
+    return res.status(200).json({ accountIds: clinics.map((c) => c.accountId), targets })
   }
 
   if (accountId && !clinics.length) {
@@ -160,10 +209,10 @@ export default async function handler(req, res) {
 
   const results = []
   for (const clinic of clinics) {
-    const lock = await acquireLock(clinic.accountId)
+    const lock = await acquireLock(clinic.accountId, unit)
     if (!lock.ok) {
       const summary = {
-        clinic: clinic.name, accountId: clinic.accountId, moved: 0, created: 0, failed: 0,
+        clinic: clinic.name, accountId: clinic.accountId, unit: unit ?? null, moved: 0, created: 0, failed: 0,
         errors: [`sync ignorado — já há uma execução em andamento (lock de ${lock.lockedAt ?? 'origem desconhecida'}, TTL ${LOCK_TTL_MS / 1000}s). Evita a duplicação de cards por execuções concorrentes (bug confirmado em 22/07).`],
         unmatchedCrc: [], durationMs: 0,
       }
@@ -172,13 +221,13 @@ export default async function handler(req, res) {
       continue
     }
     const startedAt = Date.now()
-    const summary = await syncClinicClinicorp(clinic).catch((err) => ({
-      clinic: clinic.name, accountId: clinic.accountId, moved: 0, created: 0, failed: 1, errors: [err.message], unmatchedCrc: [],
+    const summary = await syncClinicClinicorp(clinic, { onlyUnit: unit }).catch((err) => ({
+      clinic: clinic.name, accountId: clinic.accountId, unit: unit ?? null, moved: 0, created: 0, failed: 1, errors: [err.message], unmatchedCrc: [],
     }))
     summary.durationMs = Date.now() - startedAt
     results.push(summary)
     await logSyncRun(summary) // auditoria persistente — best-effort, nunca derruba o sync
-    await releaseLock(clinic.accountId, summary.unitsLastSync)
+    await releaseLock(clinic.accountId, summary.unitsLastSync, unit)
     await sleep(500) // respiro entre clínicas
   }
 

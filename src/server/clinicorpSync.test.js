@@ -149,3 +149,46 @@ describe('syncClinicClinicorp — janela de busca dinâmica (23/07)', () => {
     expect(summary.unitsLastSync['Matriz']).toBeTruthy()
   })
 })
+
+describe('syncClinicClinicorp — fatiamento por unidade (21/08)', () => {
+  // Clínica com 2 contas Clinicorp sob o mesmo painel (caso real: 2 filiais).
+  const clinicDuasUnidades = () => {
+    const c = clinic()
+    c.steps._clinicorp = {
+      units: [
+        { label: 'Unidade A', tagId: 'tag-a', user: 'ua', token: 'ta', syncSince: '2026-07-01', crcMap: [{ clinicorpName: 'ANA', tagId: 'tag-crc-a' }] },
+        { label: 'Unidade B', tagId: 'tag-b', user: 'ub', token: 'tb', syncSince: '2026-07-01', crcMap: [{ clinicorpName: 'BIA', tagId: 'tag-crc-b' }] },
+      ],
+    }
+    return c
+  }
+
+  it('sem onlyUnit: processa TODAS as unidades (comportamento antigo preservado)', async () => {
+    vi.stubGlobal('fetch', mockFetchSequence({}))
+    const summary = await syncClinicClinicorp(clinicDuasUnidades())
+    expect(Object.keys(summary.unitsLastSync).sort()).toEqual(['Unidade A', 'Unidade B'])
+    expect(summary.unit).toBeNull()
+  })
+
+  it('com onlyUnit: processa SÓ a unidade pedida — metade do trabalho por execução', async () => {
+    const calls = []
+    vi.stubGlobal('fetch', vi.fn(async (url) => {
+      calls.push(String(url))
+      return mockFetchSequence({})(url)
+    }))
+    const summary = await syncClinicClinicorp(clinicDuasUnidades(), { onlyUnit: 'Unidade B' })
+    expect(Object.keys(summary.unitsLastSync)).toEqual(['Unidade B'])
+    expect(summary.unit).toBe('Unidade B')
+    // não deve ter tocado nas credenciais da unidade A
+    expect(calls.some(u => u.includes('/estimates/list'))).toBe(true)
+    expect(summary.errors).toEqual([])
+  })
+
+  it('onlyUnit inexistente: erro explícito, não silencia nem processa tudo', async () => {
+    vi.stubGlobal('fetch', mockFetchSequence({}))
+    const summary = await syncClinicClinicorp(clinicDuasUnidades(), { onlyUnit: 'Unidade Fantasma' })
+    expect(summary.moved).toBe(0)
+    expect(summary.created).toBe(0)
+    expect(summary.errors.join(' ')).toContain('não encontrada')
+  })
+})

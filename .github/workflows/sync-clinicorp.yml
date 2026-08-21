@@ -33,9 +33,9 @@ jobs:
   listar-clinicas:
     runs-on: ubuntu-latest
     outputs:
-      account_ids: ${{ steps.listar.outputs.account_ids }}
+      targets: ${{ steps.listar.outputs.targets }}
     steps:
-      - name: Listar clínicas com Clinicorp vinculado
+      - name: Listar unidades Clinicorp a sincronizar
         id: listar
         env:
           SYNC_URL: ${{ secrets.SYNC_URL }}
@@ -48,40 +48,46 @@ jobs:
           url=$(printf '%s' "$url" | tr -d ' \t\r\n')  # remove espaço/quebra coladas no secret
           resp=$(curl -s --max-time 20 -H "Authorization: Bearer $CRON_SECRET" "${url}?list=1")
           echo "Resposta: $resp"
-          ids=$(echo "$resp" | jq -c '.accountIds // []') || { echo "::error::Resposta não é JSON — confira SYNC_URL/deploy."; exit 1; }
-          echo "account_ids=$ids" >> "$GITHUB_OUTPUT"
+          # Um item por UNIDADE (não por clínica): clínica com 2 contas Clinicorp
+          # somava as duas na mesma função e estourava o maxDuration, morrendo
+          # antes de liberar o lock e travando tudo (IBS parada 28/07→21/08).
+          targets=$(echo "$resp" | jq -c '.targets // []') || { echo "::error::Resposta não é JSON — confira SYNC_URL/deploy."; exit 1; }
+          if [ "$targets" = "[]" ]; then echo "::warning::Nenhuma unidade retornada — deploy antigo sem .targets?"; fi
+          echo "targets=$targets" >> "$GITHUB_OUTPUT"
 
   sincronizar:
     needs: listar-clinicas
-    if: needs.listar-clinicas.outputs.account_ids != '[]'
+    if: needs.listar-clinicas.outputs.targets != '[]'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       max-parallel: 4
       matrix:
-        accountId: ${{ fromJson(needs.listar-clinicas.outputs.account_ids) }}
+        target: ${{ fromJson(needs.listar-clinicas.outputs.targets) }}
     steps:
-      - name: Sincronizar clínica ${{ matrix.accountId }}
+      - name: Sincronizar ${{ matrix.target.accountId }} · ${{ matrix.target.unit }}
         env:
           SYNC_URL: ${{ secrets.SYNC_URL }}
           BASE_URL: ${{ secrets.BASE_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
-          ACCOUNT_ID: ${{ matrix.accountId }}
+          ACCOUNT_ID: ${{ matrix.target.accountId }}
+          UNIT: ${{ matrix.target.unit }}
         run: |
           if [ -n "$SYNC_URL" ]; then url="$SYNC_URL";
           elif [ -n "$BASE_URL" ]; then url="$BASE_URL/api/cron/sync-clinicorp";
           else echo "::error::Cadastre o secret SYNC_URL (ou BASE_URL)."; exit 1; fi
           url=$(printf '%s' "$url" | tr -d ' \t\r\n')  # remove espaço/quebra coladas no secret
+          unit_enc=$(jq -rn --arg u "$UNIT" '$u|@uri')  # label pode ter espaço/acento
           status=$(curl -s -o response.json -w "%{http_code}" \
-            --max-time 75 --retry 2 --retry-delay 5 --retry-connrefused \
+            --max-time 120 --retry 2 --retry-delay 5 --retry-connrefused \
             -H "Authorization: Bearer $CRON_SECRET" \
-            "${url}?accountId=${ACCOUNT_ID}") || {
-            echo "::error::curl falhou (timeout/conexão) para ${ACCOUNT_ID} — exit $?"
+            "${url}?accountId=${ACCOUNT_ID}&unit=${unit_enc}") || {
+            echo "::error::curl falhou (timeout/conexão) para ${ACCOUNT_ID}/${UNIT} — exit $?"
             exit 1
           }
           echo "HTTP $status"
           cat response.json
           if [ "$status" -ge 300 ]; then
-            echo "::error::Sync de ${ACCOUNT_ID} falhou com HTTP $status"
+            echo "::error::Sync de ${ACCOUNT_ID}/${UNIT} falhou com HTTP $status"
             exit 1
           fi
