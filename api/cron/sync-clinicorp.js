@@ -76,6 +76,38 @@ async function acquireLock(accountId, unit) {
   return { ok: true, steps: newSteps }
 }
 
+// CHECKPOINT: grava só o lastSyncAt das unidades, sem mexer no lock. Chamado
+// pelo motor (opts.onUnitDone) assim que a coleta de uma unidade conclui, em
+// vez de esperar o releaseLock no fim. Se a função morrer por timeout depois
+// disto, o progresso já está salvo e a próxima rodada parte de uma janela
+// curta — sem isto, clínica que nunca completa nunca fica leve (IBS/Salutar
+// presas ~3 semanas mesmo após o maxDuration subir para 300s).
+async function saveLastSyncAt(accountId, unitsLastSync) {
+  const getRes = await fetch(`${SUPABASE_URL}/rest/v1/clinics?account_id=eq.${encodeURIComponent(accountId)}&select=steps`, {
+    headers: sbHeaders(),
+  })
+  if (!getRes.ok) throw new Error(`GET ${getRes.status}`)
+  const [row] = await getRes.json()
+  const steps = row?.steps ?? {}
+  if (!steps._clinicorp?.units?.length) return
+  const next = {
+    ...steps,
+    _clinicorp: {
+      ...steps._clinicorp,
+      units: steps._clinicorp.units.map((u) => {
+        const stamp = unitsLastSync[u.label || u.user]
+        return stamp ? { ...u, lastSyncAt: stamp } : u
+      }),
+    },
+  }
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/clinics?account_id=eq.${encodeURIComponent(accountId)}`, {
+    method: 'PATCH',
+    headers: sbHeaders({ 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
+    body: JSON.stringify({ steps: next }),
+  })
+  if (!res.ok) throw new Error(`PATCH ${res.status}`)
+}
+
 // Relê o `steps` FRESCO antes de liberar — o admin pode ter editado a
 // clínica no /setup durante a execução do sync; usar um `steps` antigo aqui
 // desfaria essa edição. Só remove `_syncLock`, preserva todo o resto.
@@ -219,7 +251,10 @@ export default async function handler(req, res) {
       continue
     }
     const startedAt = Date.now()
-    const summary = await syncClinicClinicorp(clinic, { onlyUnit: unit }).catch((err) => ({
+    const summary = await syncClinicClinicorp(clinic, {
+      onlyUnit: unit,
+      onUnitDone: (unitsLastSync) => saveLastSyncAt(clinic.accountId, unitsLastSync),
+    }).catch((err) => ({
       clinic: clinic.name, accountId: clinic.accountId, unit: unit ?? null, moved: 0, created: 0, failed: 1, errors: [err.message], unmatchedCrc: [],
     }))
     summary.durationMs = Date.now() - startedAt

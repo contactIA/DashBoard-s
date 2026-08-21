@@ -192,3 +192,46 @@ describe('syncClinicClinicorp — fatiamento por unidade (21/08)', () => {
     expect(summary.errors.join(' ')).toContain('não encontrada')
   })
 })
+
+describe('syncClinicClinicorp — checkpoint do lastSyncAt (21/08)', () => {
+  it('chama onUnitDone com o avanço da janela, para o chamador persistir antes do fim', async () => {
+    vi.stubGlobal('fetch', mockFetchSequence({}))
+    const recebido = []
+    const summary = await syncClinicClinicorp(clinic(), {
+      onUnitDone: (m) => { recebido.push(m) },
+    })
+    expect(recebido).toHaveLength(1)
+    expect(recebido[0]['Matriz']).toBeTruthy()
+    expect(summary.errors).toEqual([])
+  })
+
+  it('coleta com janela falhando NÃO avança o lastSyncAt — intervalo precisa ser relido', async () => {
+    // estimates/list falha; appointments segue ok. Usa 500 (não 429) de
+    // propósito: 429 aciona o backoff real do withRetry429 (2s+4s) e o teste
+    // gastaria segundos esperando — o que importa aqui é a janela ter falhado.
+    vi.stubGlobal('fetch', vi.fn(async (url) => {
+      const u = String(url)
+      if (u.includes('/estimates/list')) {
+        return { ok: false, status: 500, text: async () => '{"error":"boom"}' }
+      }
+      return mockFetchSequence({})(url)
+    }))
+    const recebido = []
+    const summary = await syncClinicClinicorp(clinic(), {
+      onUnitDone: (m) => { recebido.push(m) },
+    })
+    // marcador NÃO avança e o callback não é chamado: nada a persistir
+    expect(summary.unitsLastSync).toEqual({})
+    expect(recebido).toHaveLength(0)
+    expect(summary.errors.join(' ')).toMatch(/estimates/)
+  })
+
+  it('falha ao persistir o checkpoint é registrada, não derruba o sync', async () => {
+    vi.stubGlobal('fetch', mockFetchSequence({}))
+    const summary = await syncClinicClinicorp(clinic(), {
+      onUnitDone: () => { throw new Error('supabase fora do ar') },
+    })
+    expect(summary.errors.join(' ')).toContain('checkpoint lastSyncAt')
+    expect(summary.failed).toBe(0) // o sync em si não é penalizado
+  })
+})

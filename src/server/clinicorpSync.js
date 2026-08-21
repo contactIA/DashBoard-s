@@ -318,7 +318,6 @@ export async function syncClinicClinicorp(clinic, opts = {}) {
     // 23/07: buscar 12 meses/60 dias toda rodada é desperdício sem necessidade
     // real, já que nada aprovado/agendado antes da última rodada muda depois).
     const windowStart = unit.lastSyncAt ? iso(new Date(unit.lastSyncAt)) : CUTOFF
-    summary.unitsLastSync[unit.label || unit.user] = today.toISOString()
 
     // Mapa CRC POR UNIDADE (unit.crcMap): a mesma pessoa pode existir como
     // usuário diferente em cada conta Clinicorp (ex: "Gabriela Vieira Da
@@ -353,13 +352,19 @@ export async function syncClinicClinicorp(clinic, opts = {}) {
       return ranges
     }
 
+    // `coletaLimpa`: só avança o lastSyncAt desta unidade se TODAS as janelas
+    // vieram sem erro. Uma janela que falhou (ex: 429 da Helena) precisa ser
+    // relida na próxima rodada — avançar o marcador aqui perderia aquele
+    // intervalo para sempre, silenciosamente.
+    let coletaLimpa = true
+
     const apptTo = iso(new Date(today.getTime() + 30 * 86_400_000))
     let appts = []
     for (const [f, t] of monthlyRanges(windowStart, apptTo)) {
       try {
         const raw = await clinicorp.appointments(f, t, { IncludeCanceled: 'true' })
         appts = appts.concat(Array.isArray(raw) ? raw : raw.items ?? raw.list ?? [])
-      } catch (err) { summary.errors.push(`[${unit.label || unit.user}] appointments ${f}..${t}: ${err.message}`) }
+      } catch (err) { coletaLimpa = false; summary.errors.push(`[${unit.label || unit.user}] appointments ${f}..${t}: ${err.message}`) }
     }
 
     let statusById = {}
@@ -373,8 +378,13 @@ export async function syncClinicClinicorp(clinic, opts = {}) {
       try {
         const raw = await clinicorp.estimates(f, t)
         estimates = estimates.concat(Array.isArray(raw) ? raw : raw.items ?? raw.list ?? [])
-      } catch (err) { summary.errors.push(`[${unit.label || unit.user}] estimates ${f}..${t}: ${err.message}`) }
+      } catch (err) { coletaLimpa = false; summary.errors.push(`[${unit.label || unit.user}] estimates ${f}..${t}: ${err.message}`) }
     }
+
+    // Coleta desta unidade concluída sem furos: registra o avanço da janela.
+    // O chamador persiste isto via opts.onUnitDone (checkpoint), então mesmo
+    // que a execução morra mais adiante o progresso não se perde.
+    if (coletaLimpa) summary.unitsLastSync[unit.label || unit.user] = today.toISOString()
 
     const desired = new Map()
     const propose = (pid, entry, priority) => {
@@ -602,5 +612,17 @@ export async function syncClinicClinicorp(clinic, opts = {}) {
   }
 
   summary.unmatchedCrc = [...summary.unmatchedCrc]
+
+  // Persiste o lastSyncAt AGORA, não só no releaseLock do chamador: se a função
+  // serverless morrer por timeout depois disto, o progresso desta rodada não se
+  // perde e a PRÓXIMA já parte de uma janela curta. Sem isto, uma clínica que
+  // nunca consegue completar fica presa num ciclo: é lenta porque varre desde
+  // syncSince, e varre desde syncSince porque nunca completou (causa real de
+  // IBS/Salutar travadas por ~3 semanas mesmo depois do maxDuration subir).
+  if (opts.onUnitDone && Object.keys(summary.unitsLastSync).length) {
+    try { await opts.onUnitDone(summary.unitsLastSync) }
+    catch (err) { summary.errors.push(`checkpoint lastSyncAt: ${err.message}`) }
+  }
+
   return summary
 }
