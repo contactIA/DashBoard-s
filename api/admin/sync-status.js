@@ -1,3 +1,5 @@
+import { sbHeaders } from '../../src/server/supabase.js'
+
 // Widget de saúde do sync (PLANO_AGENDADOR_CAMPANHA.md FASE 7): lê a
 // tabela sync_log (gravada por api/cron/sync-clinicorp.js a cada rodada) e
 // devolve, por clínica: última rodada + agregados das últimas 24h +
@@ -7,7 +9,7 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY
 
 async function sb(path) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1${path}`, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+    headers: sbHeaders(),
   })
   const body = await res.text()
   if (!res.ok) throw new Error(`Supabase ${res.status}: ${body.slice(0, 300)}`)

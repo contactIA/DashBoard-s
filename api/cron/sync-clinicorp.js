@@ -4,6 +4,7 @@
 // painel. Motor em src/server/clinicorpSync.js (validado manualmente antes
 // de entrar aqui — ver PROJETO CLINICORP + PAINEL/sync-prototype/).
 import { syncClinicClinicorp } from '../../src/server/clinicorpSync.js'
+import { sbHeaders } from '../../src/server/supabase.js'
 
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -55,7 +56,7 @@ function writeLock(steps, unit, iso) {
 
 async function acquireLock(accountId, unit) {
   const getRes = await fetch(`${SUPABASE_URL}/rest/v1/clinics?account_id=eq.${encodeURIComponent(accountId)}&select=steps`, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+    headers: sbHeaders(),
   })
   if (!getRes.ok) return { ok: false, lockedAt: null, error: `lock GET ${getRes.status}` }
   const [row] = await getRes.json()
@@ -68,7 +69,7 @@ async function acquireLock(accountId, unit) {
   const newSteps = writeLock(fresh, unit, new Date(now).toISOString())
   const res = await fetch(`${SUPABASE_URL}/rest/v1/clinics?account_id=eq.${encodeURIComponent(accountId)}`, {
     method: 'PATCH',
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    headers: sbHeaders({ 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
     body: JSON.stringify({ steps: newSteps }),
   })
   if (!res.ok) return { ok: false, lockedAt: null, error: `lock PATCH ${res.status}` }
@@ -84,7 +85,7 @@ async function acquireLock(accountId, unit) {
 async function releaseLock(accountId, unitsLastSync, unit) {
   try {
     const getRes = await fetch(`${SUPABASE_URL}/rest/v1/clinics?account_id=eq.${encodeURIComponent(accountId)}&select=steps`, {
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+      headers: sbHeaders(),
     })
     if (!getRes.ok) return
     const [row] = await getRes.json()
@@ -118,7 +119,7 @@ async function releaseLock(accountId, unitsLastSync, unit) {
     }
     await fetch(`${SUPABASE_URL}/rest/v1/clinics?account_id=eq.${encodeURIComponent(accountId)}`, {
       method: 'PATCH',
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      headers: sbHeaders({ 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
       body: JSON.stringify({ steps: rest }),
     })
   } catch { /* best-effort — o lock expira sozinho via LOCK_TTL_MS mesmo se isto falhar */ }
@@ -132,10 +133,7 @@ async function logSyncRun(summary) {
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/sync_log`, {
       method: 'POST',
-      headers: {
-        apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json', Prefer: 'return=minimal',
-      },
+      headers: sbHeaders({ 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
       body: JSON.stringify({
         account_id:    summary.accountId,
         clinic_name:   summary.clinic,
@@ -175,7 +173,7 @@ export default async function handler(req, res) {
   const unit = req.query?.unit ?? null
   const filter = accountId ? `&account_id=eq.${encodeURIComponent(accountId)}` : ''
   const res_ = await fetch(`${SUPABASE_URL}/rest/v1/clinics?select=account_id,name,panel_id,token,steps${filter}`, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+    headers: sbHeaders(),
   })
   if (!res_.ok) {
     return res.status(502).json({ error: `Supabase ${res_.status}: ${(await res_.text()).slice(0, 300)}` })
