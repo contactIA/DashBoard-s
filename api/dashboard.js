@@ -1,4 +1,5 @@
 import { extractCard, computeDims } from '../src/utils/extract.js'
+import { sbHeaders } from '../src/server/supabase.js'
 
 const HELENA_BASE   = 'https://api.wts.chat'
 const SUPABASE_URL  = process.env.SUPABASE_URL
@@ -25,12 +26,7 @@ async function getClinicConfig(idOrSlug) {
   const field = UUID_RE.test(idOrSlug) ? 'account_id' : 'slug'
   const url = `${SUPABASE_URL}/rest/v1/clinics?${field}=eq.${encodeURIComponent(idOrSlug)}&select=*&limit=1`
 
-  const res = await fetch(url, {
-    headers: {
-      'apikey':        SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-    },
-  })
+  const res = await fetch(url, { headers: sbHeaders() })
 
   const body = await res.text()
   if (!res.ok) throw new Error(`Supabase ${res.status}: ${body.slice(0, 300)}`)
@@ -144,7 +140,7 @@ async function fetchAllCardRows(accountId) {
   for (let offset = 0; ; offset += CHUNK) {
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/cards?account_id=eq.${encodeURIComponent(accountId)}&select=card_id,step_id,title,name,phone,date,time,scheduled_at,event_date,value,dims,created_at,updated_at&order=card_id`,
-      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, Range: `${offset}-${offset + CHUNK - 1}` } }
+      { headers: sbHeaders({ Range: `${offset}-${offset + CHUNK - 1}` }) }
     )
     const body = await res.text()
     if (!res.ok) throw new Error(`Supabase cards ${res.status}: ${body.slice(0, 200)}`)

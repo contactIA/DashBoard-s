@@ -5,6 +5,7 @@
 // Diferença: aqui entram TODAS as clínicas (qualquer uma com painel+token),
 // não só as com Clinicorp vinculado.
 import { ingestClinicCards } from '../../src/server/cardsIngest.js'
+import { sbHeaders } from '../../src/server/supabase.js'
 
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -23,10 +24,7 @@ async function logIngestRun(summary) {
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/ingest_log`, {
       method: 'POST',
-      headers: {
-        apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json', Prefer: 'return=minimal',
-      },
+      headers: sbHeaders({ 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
       body: JSON.stringify({
         account_id:  summary.accountId,
         clinic_name: summary.clinic,
@@ -54,7 +52,7 @@ export default async function handler(req, res) {
   const accountId = req.query?.accountId ?? null
   const filter = accountId ? `&account_id=eq.${encodeURIComponent(accountId)}` : ''
   const res_ = await fetch(`${SUPABASE_URL}/rest/v1/clinics?select=account_id,name,panel_id,token,steps${filter}`, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+    headers: sbHeaders(),
   })
   if (!res_.ok) {
     return res.status(502).json({ error: `Supabase ${res_.status}: ${(await res_.text()).slice(0, 300)}` })
@@ -75,7 +73,7 @@ export default async function handler(req, res) {
 
   const results = []
   for (const clinic of clinics) {
-    const summary = await ingestClinicCards(clinic, { supabaseUrl: SUPABASE_URL, supabaseKey: SUPABASE_KEY })
+    const summary = await ingestClinicCards(clinic)
     results.push(summary)
     await logIngestRun(summary)
     await sleep(500)

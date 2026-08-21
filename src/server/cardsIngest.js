@@ -1,3 +1,5 @@
+import { sbFetch } from './supabase.js'
+
 // Ingestor de cards Helena → Supabase (PLANO_INGESTAO_E_PROCESSO.md, FASE A2).
 //
 // Estratégia (supabase/INGESTAO_API.md, descoberta de 18/07/2026 na Salutar):
@@ -80,14 +82,13 @@ export function mapCardRow(card, { accountId, stepLookup, extractCfg, dimsCfg, n
   }
 }
 
-async function upsertBatch(rows, { supabaseUrl, supabaseKey }) {
-  const res = await fetch(`${supabaseUrl}/rest/v1/cards?on_conflict=account_id,card_id`, {
+async function upsertBatch(rows) {
+  const res = await sbFetch('/cards?on_conflict=account_id,card_id', {
     method: 'POST',
-    headers: {
-      apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}`,
+    headers: sbHeaders({
       'Content-Type': 'application/json',
       Prefer: 'resolution=merge-duplicates,return=minimal',
-    },
+    }),
     body: JSON.stringify(rows),
   })
   if (!res.ok) {
@@ -101,7 +102,7 @@ async function upsertBatch(rows, { supabaseUrl, supabaseKey }) {
  * clinic: { accountId, name, panelId, token, steps } (linha de `clinics`).
  * Retorna resumo para o ingest_log. Nunca lança — erros vão no resumo.
  */
-export async function ingestClinicCards(clinic, { supabaseUrl, supabaseKey } = {}) {
+export async function ingestClinicCards(clinic) {
   const startedAt = Date.now()
   const summary = {
     accountId: clinic.accountId, clinic: clinic.name,
@@ -142,7 +143,7 @@ export async function ingestClinicCards(clinic, { supabaseUrl, supabaseKey } = {
 
     // Upsert em lotes de 500 — 908 cards = 2 POSTs.
     for (let i = 0; i < rows.length; i += 500) {
-      await upsertBatch(rows.slice(i, i + 500), { supabaseUrl, supabaseKey })
+      await upsertBatch(rows.slice(i, i + 500))
       summary.upserted += Math.min(500, rows.length - i)
     }
   } catch (err) {

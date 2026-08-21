@@ -3,6 +3,7 @@
 // Helena ao usuário que agenda no Clinicorp (ex: digitar "gabriela" e achar
 // "GABRIELA RONCATO"), em vez do admin ter que descobrir/digitar de cabeça.
 import { makeClinicorpClient } from '../../src/server/clinicorp.js'
+import { sbHeaders } from '../../src/server/supabase.js'
 
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -20,7 +21,7 @@ async function restoreRealTokens(units, accountId) {
   if (!needsRestore || !accountId || !SUPABASE_URL || !SUPABASE_KEY) return units
 
   const res = await fetch(`${SUPABASE_URL}/rest/v1/clinics?account_id=eq.${encodeURIComponent(accountId)}&select=steps&limit=1`, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+    headers: sbHeaders(),
   })
   if (!res.ok) return units
   const [row] = await res.json()
