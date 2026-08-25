@@ -235,3 +235,73 @@ describe('syncClinicClinicorp — checkpoint do lastSyncAt (21/08)', () => {
     expect(summary.failed).toBe(0) // o sync em si não é penalizado
   })
 })
+
+describe('syncClinicClinicorp — cache de telefone de contato (21/08)', () => {
+  // A listagem de cards da Helena traz o contato como {id,name}, SEM telefone.
+  // Buscar um a um a cada rodada custava ~1 request por card (~4.000 na IBS)
+  // contra o teto de 5.000/5min — origem dos 429 que derrubavam a Helena.
+  const cardComContato = {
+    ...CARD_AGENDADO,
+    contacts: [{ id: 'contact-1', name: 'Paciente X' }],
+  }
+
+  function mockComCards(cards) {
+    return vi.fn(async (url) => {
+      const u = String(url)
+      const json = (body) => ({ ok: true, text: async () => JSON.stringify(body) })
+      if (u.includes('/crm/v1/panel/panel-1?')) {
+        return json({ id: PANEL_ID, steps: [{ id: 'step-agendado', title: 'Agendado' }, { id: 'step-fechou', title: 'Fechou' }], tags: [] })
+      }
+      if (u.includes('/crm/v1/panel/card?PanelId=')) return json({ items: cards, hasMorePages: false })
+      if (u.includes('/crm/v1/panel/card/card-1')) return json(cards[0])
+      if (u.includes('/appointment/status_list')) return json({ list: [] })
+      if (u.includes('/appointment/list')) return json([])
+      if (u.includes('/estimates/list')) return json([])
+      if (u.includes('/core/v1/contact/')) return json({ id: 'contact-1', phoneNumber: '5562999999999' })
+      return json({})
+    })
+  }
+
+  it('telefone em cache: NÃO faz request por contato', async () => {
+    const fetchMock = mockComCards([cardComContato])
+    vi.stubGlobal('fetch', fetchMock)
+    const summary = await syncClinicClinicorp(clinic(), {
+      phoneCache: {
+        get: async () => ({ 'contact-1': '5562999999999' }),
+        put: async () => {},
+      },
+    })
+    const chamadasDeContato = fetchMock.mock.calls
+      .map(c => String(c[0]))
+      .filter(u => u.includes('/core/v1/contact/'))
+    expect(chamadasDeContato).toHaveLength(0)
+    expect(summary.contactsFromCache).toBe(1)
+    expect(summary.contactsFetched).toBe(0)
+  })
+
+  it('contato novo: busca na Helena e grava no cache para a próxima rodada', async () => {
+    vi.stubGlobal('fetch', mockComCards([cardComContato]))
+    const gravados = []
+    const summary = await syncClinicClinicorp(clinic(), {
+      phoneCache: {
+        get: async () => ({}),                       // cache vazio
+        put: async (m) => { gravados.push(m) },
+      },
+    })
+    expect(summary.contactsFetched).toBe(1)
+    expect(gravados).toHaveLength(1)
+    expect(gravados[0]['contact-1']).toBe('5562999999999')
+  })
+
+  it('cache fora do ar: registra o aviso e segue buscando na Helena', async () => {
+    vi.stubGlobal('fetch', mockComCards([cardComContato]))
+    const summary = await syncClinicClinicorp(clinic(), {
+      phoneCache: {
+        get: async () => { throw new Error('supabase off') },
+        put: async () => {},
+      },
+    })
+    expect(summary.errors.join(' ')).toContain('cache de telefones indisponível')
+    expect(summary.contactsFetched).toBe(1)  // fallback: buscou mesmo assim
+  })
+})

@@ -1,9 +1,15 @@
-# Dispara o sync Clinicorp -> Helena 6x/dia via HTTP — usamos o GitHub Actions
-# em vez do Cron nativo da Vercel porque o plano Hobby só libera cron 1x/dia
-# (o schedule aqui não tem essa restrição). Horários fixos (decisão do usuário,
-# 23/07): 08h/11h/14h/16h/18h/22h — cobre o expediente e fecha o dia às 22h,
-# já que orçamento não costuma ser aprovado depois disso. Horário em UTC (BRT
-# é UTC-3, sem horário de verão) — 08h BRT = 11 UTC, e assim por diante.
+# Dispara o sync Clinicorp -> Helena via HTTP — usamos o GitHub Actions em vez
+# do Cron nativo da Vercel porque o plano Hobby só libera cron 1x/dia (o
+# schedule aqui não tem essa restrição).
+#
+# ESCALONAMENTO (21/08): a Helena limita ~5.000 requisições a cada 5 minutos
+# POR CONTA. Disparar todas as clínicas de uma vez estourava esse teto e
+# derrubava a Helena inteira (não só o sync). Agora as unidades rodam em
+# SÉRIE, com INTERVALO_MIN de espaço entre elas: 2 levas por dia, manhã
+# (07h BRT) e noite (19h BRT), cada uma espalhando a carga por ~2h.
+# Adicionar ou remover clínica não exige mexer neste arquivo — a lista vem
+# do endpoint (?list=1) e o espaçamento é aplicado sobre ela.
+# Horário em UTC (BRT = UTC-3, sem horário de verão): 07h BRT = 10 UTC.
 #
 # URL resolvida em CADA job a partir do secret (SYNC_URL, com fallback
 # BASE_URL + /api/cron/sync-clinicorp) — NÃO passa entre jobs via outputs
@@ -25,9 +31,14 @@ name: Sync Clinicorp
 
 on:
   schedule:
-    - cron: '0 11,14,17,19,21 * * *'  # 08h,11h,14h,16h,18h BRT
-    - cron: '0 1 * * *'               # 22h BRT (vira 01h UTC do dia seguinte)
-  workflow_dispatch: {}
+    - cron: '0 10 * * *'  # 07h BRT — leva da manhã, espalha até ~09h
+    - cron: '0 22 * * *'  # 19h BRT — leva da noite, espalha até ~21h
+  workflow_dispatch:
+    inputs:
+      intervalo_min:
+        description: 'Minutos entre uma unidade e a seguinte (0 = sem espera)'
+        required: false
+        default: '5'
 
 jobs:
   listar-clinicas:
@@ -55,39 +66,63 @@ jobs:
           if [ "$targets" = "[]" ]; then echo "::warning::Nenhuma unidade retornada — deploy antigo sem .targets?"; fi
           echo "targets=$targets" >> "$GITHUB_OUTPUT"
 
+  # Um único job processa as unidades EM SÉRIE, com espera entre elas. Em vez
+  # de matrix paralela (que disparava tudo junto e estourava o teto de
+  # 5.000 req/5min da Helena), aqui a carga é espalhada no tempo. Uma unidade
+  # que falha NÃO interrompe as demais — o resultado de cada uma é acumulado e
+  # o job só falha no fim, para o log mostrar o quadro completo.
   sincronizar:
     needs: listar-clinicas
     if: needs.listar-clinicas.outputs.targets != '[]'
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      max-parallel: 4
-      matrix:
-        target: ${{ fromJson(needs.listar-clinicas.outputs.targets) }}
+    timeout-minutes: 350  # teto do GitHub é 360; 24 unidades × 5min ≈ 120min
     steps:
-      - name: Sincronizar ${{ matrix.target.accountId }} · ${{ matrix.target.unit }}
+      - name: Sincronizar unidades espaçadas no tempo
         env:
           SYNC_URL: ${{ secrets.SYNC_URL }}
           BASE_URL: ${{ secrets.BASE_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
-          ACCOUNT_ID: ${{ matrix.target.accountId }}
-          UNIT: ${{ matrix.target.unit }}
+          TARGETS: ${{ needs.listar-clinicas.outputs.targets }}
+          INTERVALO_MIN: ${{ github.event.inputs.intervalo_min || '5' }}
         run: |
           if [ -n "$SYNC_URL" ]; then url="$SYNC_URL";
           elif [ -n "$BASE_URL" ]; then url="$BASE_URL/api/cron/sync-clinicorp";
           else echo "::error::Cadastre o secret SYNC_URL (ou BASE_URL)."; exit 1; fi
           url=$(printf '%s' "$url" | tr -d ' \t\r\n')  # remove espaço/quebra coladas no secret
-          unit_enc=$(jq -rn --arg u "$UNIT" '$u|@uri')  # label pode ter espaço/acento
-          status=$(curl -s -o response.json -w "%{http_code}" \
-            --max-time 120 --retry 2 --retry-delay 5 --retry-connrefused \
-            -H "Authorization: Bearer $CRON_SECRET" \
-            "${url}?accountId=${ACCOUNT_ID}&unit=${unit_enc}") || {
-            echo "::error::curl falhou (timeout/conexão) para ${ACCOUNT_ID}/${UNIT} — exit $?"
-            exit 1
-          }
-          echo "HTTP $status"
-          cat response.json
-          if [ "$status" -ge 300 ]; then
-            echo "::error::Sync de ${ACCOUNT_ID}/${UNIT} falhou com HTTP $status"
+
+          total=$(echo "$TARGETS" | jq 'length')
+          espera=$(( INTERVALO_MIN * 60 ))
+          echo "Unidades a sincronizar: $total · intervalo: ${INTERVALO_MIN}min"
+          falhas=0
+
+          for i in $(seq 0 $(( total - 1 ))); do
+            acc=$(echo "$TARGETS" | jq -r ".[$i].accountId")
+            unit=$(echo "$TARGETS" | jq -r ".[$i].unit")
+            unit_enc=$(echo "$TARGETS" | jq -r ".[$i].unit|@uri")  # label pode ter espaço/acento
+
+            echo "::group::[$(( i + 1 ))/$total] $acc · $unit ($(date -u +%H:%M:%S) UTC)"
+            status=$(curl -s -o response.json -w "%{http_code}" \
+              --max-time 300 --retry 2 --retry-delay 10 --retry-connrefused \
+              -H "Authorization: Bearer $CRON_SECRET" \
+              "${url}?accountId=${acc}&unit=${unit_enc}") || status="000"
+            echo "HTTP $status"
+            cat response.json 2>/dev/null || true
+            echo "::endgroup::"
+
+            if [ "$status" = "000" ] || [ "$status" -ge 300 ]; then
+              echo "::warning::Falha em ${acc}/${unit} (HTTP $status) — seguindo para a próxima"
+              falhas=$(( falhas + 1 ))
+            fi
+
+            # Espera antes da PRÓXIMA (não depois da última, para não segurar o job à toa)
+            if [ "$i" -lt "$(( total - 1 ))" ] && [ "$espera" -gt 0 ]; then
+              echo "Aguardando ${INTERVALO_MIN}min para respeitar o rate limit da Helena..."
+              sleep "$espera"
+            fi
+          done
+
+          echo "Concluído: $(( total - falhas ))/$total unidades sincronizadas"
+          if [ "$falhas" -gt 0 ]; then
+            echo "::error::$falhas unidade(s) falharam — veja os grupos acima"
             exit 1
           fi

@@ -264,16 +264,43 @@ export async function syncClinicClinicorp(clinic, opts = {}) {
   // e o sync CRIA CARD DUPLICADO para paciente com cadastro dobrado no
   // Clinicorp (aconteceu de verdade em 16/07: 5 duplicatas em uma rodada que
   // estourou rate-limit). withRetry429 + falha residual registrada em errors.
+  // A listagem de cards traz o contato só como {id,name} — o telefone exige um
+  // GET por contato. Sem cache isso era ~1 request por card a cada rodada
+  // (~4.000 na IBS, contra o limite de 5.000/5min da Helena), e era a causa
+  // real dos 429 que derrubavam o sync. Telefone de contato não muda na
+  // prática, então busca-se UMA vez e reusa: a rodada seguinte só consulta os
+  // ids que ainda não estão no cache.
   const contactIds = [...new Set(cards.map((c) => c.contacts?.[0]?.id ?? c.contactIds?.[0]).filter(Boolean))]
   const contactPhone = {}
   let contactFetchFails = 0
-  for (let i = 0; i < contactIds.length; i += 10) {
-    await Promise.all(contactIds.slice(i, i + 10).map(async (id) => {
+
+  let idsFaltando = contactIds
+  if (opts.phoneCache) {
+    try {
+      const cached = await opts.phoneCache.get(contactIds)
+      for (const [id, phone] of Object.entries(cached ?? {})) contactPhone[id] = phone
+      idsFaltando = contactIds.filter((id) => !(id in contactPhone))
+    } catch (err) {
+      summary.errors.push(`cache de telefones indisponível (seguindo sem ele): ${err.message}`)
+    }
+  }
+  summary.contactsFromCache = contactIds.length - idsFaltando.length
+  summary.contactsFetched = idsFaltando.length
+
+  const novos = {}
+  for (let i = 0; i < idsFaltando.length; i += 10) {
+    await Promise.all(idsFaltando.slice(i, i + 10).map(async (id) => {
       try {
         const ct = await helenaGet(`/core/v1/contact/${id}`)
-        contactPhone[id] = ct?.phoneNumber ?? ct?.phoneNumberFormatted ?? null
+        const phone = ct?.phoneNumber ?? ct?.phoneNumberFormatted ?? null
+        contactPhone[id] = phone
+        novos[id] = phone
       } catch { contactFetchFails++ }
     }))
+  }
+  if (opts.phoneCache && Object.keys(novos).length) {
+    try { await opts.phoneCache.put(novos) }
+    catch (err) { summary.errors.push(`cache de telefones não gravado: ${err.message}`) }
   }
   if (contactFetchFails > 0) summary.errors.push(`contatos: ${contactFetchFails} telefone(s) não carregado(s) — dedup por telefone parcial nesta rodada`)
 
