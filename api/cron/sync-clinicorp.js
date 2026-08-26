@@ -5,6 +5,7 @@
 // de entrar aqui — ver PROJETO CLINICORP + PAINEL/sync-prototype/).
 import { syncClinicClinicorp } from '../../src/server/clinicorpSync.js'
 import { sbHeaders } from '../../src/server/supabase.js'
+import { makePhoneCache } from '../../src/server/phoneCache.js'
 
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -76,41 +77,6 @@ async function acquireLock(accountId, unit) {
   return { ok: true, steps: newSteps }
 }
 
-// Cache id->telefone de contato (tabela dashboards.contact_phone). A listagem
-// de cards da Helena não traz telefone, só {id,name}; buscar um a um a cada
-// rodada custava ~1 request por card (~4.000 na IBS) contra o limite de
-// 5.000/5min — origem real dos 429. Telefone não muda, então basta buscar uma
-// vez. `get` lê em lotes (evita URL gigante), `put` grava os novos.
-const phoneCache = {
-  async get(ids) {
-    const out = {}
-    for (let i = 0; i < ids.length; i += 200) {
-      const lote = ids.slice(i, i + 200)
-      const inList = lote.map((id) => `"${id}"`).join(',')
-      const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/contact_phone?contact_id=in.(${encodeURIComponent(inList)})&select=contact_id,phone`,
-        { headers: sbHeaders() }
-      )
-      if (!res.ok) throw new Error(`GET ${res.status}`)
-      for (const row of await res.json()) out[row.contact_id] = row.phone
-    }
-    return out
-  },
-  async put(map) {
-    const rows = Object.entries(map).map(([contact_id, phone]) => ({ contact_id, phone }))
-    for (let i = 0; i < rows.length; i += 500) {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/contact_phone`, {
-        method: 'POST',
-        headers: sbHeaders({
-          'Content-Type': 'application/json',
-          Prefer: 'return=minimal,resolution=merge-duplicates',
-        }),
-        body: JSON.stringify(rows.slice(i, i + 500)),
-      })
-      if (!res.ok) throw new Error(`POST ${res.status}`)
-    }
-  },
-}
 
 // CHECKPOINT: grava só o lastSyncAt das unidades, sem mexer no lock. Chamado
 // pelo motor (opts.onUnitDone) assim que a coleta de uma unidade conclui, em
@@ -290,7 +256,7 @@ export default async function handler(req, res) {
     const summary = await syncClinicClinicorp(clinic, {
       onlyUnit: unit,
       onUnitDone: (unitsLastSync) => saveLastSyncAt(clinic.accountId, unitsLastSync),
-      phoneCache,
+      phoneCache: makePhoneCache(),
     }).catch((err) => ({
       clinic: clinic.name, accountId: clinic.accountId, unit: unit ?? null, moved: 0, created: 0, failed: 1, errors: [err.message], unmatchedCrc: [],
     }))
