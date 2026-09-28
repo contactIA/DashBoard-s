@@ -224,11 +224,17 @@ export default async function handler(req, res) {
     }
 
     // ── Listagem de todos os painéis (paginado) ──────────────────────────────
+    // v2, não v1: a Helena tem painéis MANAGEMENT (gestão) e SALES (vendas), e
+    // a listagem v1 devolve SÓ os de gestão — os de vendas somem do wizard sem
+    // erro nenhum. Confirmado em 28/09/2026 contra as contas reais (ex: Di Dea
+    // v1=14, v2=14 gestão + 1 vendas). A v2 é superconjunto dos campos da v1
+    // (+ `type`). Só a LISTAGEM muda: o painel por ID continua na v1 (a v2 dessa
+    // rota dá 404) e a v1 de panel/{id} e panel/card atende painel SALES normal.
     let pageNumber = 1
     let hasMore = true
     let items = []
     while (hasMore && pageNumber <= 10) {
-      const page = await helenaGet(`/crm/v1/panel?PageSize=100&PageNumber=${pageNumber}`, token)
+      const page = await helenaGet(`/crm/v2/panel?PageSize=100&PageNumber=${pageNumber}`, token)
       items = items.concat(page.items ?? [])
       hasMore = page.hasMorePages === true
       pageNumber++
@@ -242,6 +248,7 @@ export default async function handler(req, res) {
           title:       p.title,
           description: p.description,
           key:         p.key,
+          type:        p.type ?? null,
           scope:       p.scope,
           companyId:   p.companyId,
         })),
